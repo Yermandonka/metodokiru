@@ -24,7 +24,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ->execute([
                     (int) $_POST['edad'],
                     trim($_POST['mensaje_diario']),
-                    max(1, (int) $_POST['tiempo_maximo']),
+                    max(0, (int) $_POST['tiempo_maximo']),   // 0 = sin límite
                     $_POST['avatar'] ?: 'zorro',
                     ($_POST['nivel_id'] === '' ? null : (int) $_POST['nivel_id']),
                     $aid,
@@ -117,8 +117,8 @@ render_header('Perfil de ' . $alumno['nombre'], 'panel', '', [['← Volver', $vo
             <label>Mensaje diario (recordatorio)
                 <textarea name="mensaje_diario" rows="2"><?= e($alumno['mensaje_diario']) ?></textarea>
             </label>
-            <label>Tiempo máximo diario (min)
-                <input type="number" name="tiempo_maximo" value="<?= (int)$alumno['tiempo_maximo'] ?>" min="1" max="240">
+            <label>Tiempo máximo diario (min) · <small class="muted">0 = sin límite</small>
+                <input type="number" name="tiempo_maximo" value="<?= (int)$alumno['tiempo_maximo'] ?>" min="0" max="240">
             </label>
             <label>Avatar
                 <select name="avatar">

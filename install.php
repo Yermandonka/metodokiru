@@ -54,7 +54,7 @@ try {
             nivel_id INT NULL,
             avatar VARCHAR(40) DEFAULT 'zorro',
             mensaje_diario TEXT,
-            tiempo_maximo INT DEFAULT 30,
+            tiempo_maximo INT DEFAULT 0,
             ultima_conexion DATETIME NULL,
             FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE
         ) ENGINE=InnoDB",
@@ -161,7 +161,7 @@ try {
         // Alumnos de ejemplo
         $mkAlumno = function (PDO $pdo, int $uid, int $edad, int $mentorId, string $msg) {
             $st = $pdo->prepare('INSERT INTO alumnos (usuario_id, edad, mentor_id, mensaje_diario, tiempo_maximo)
-                                 VALUES (?,?,?,?,30)');
+                                 VALUES (?,?,?,?,0)');
             $st->execute([$uid, $edad, $mentorId, $msg]);
             return (int) $pdo->lastInsertId();
         };

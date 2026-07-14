@@ -51,7 +51,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         if ($datos['rol'] === 'alumno') {
             db()->prepare('INSERT INTO alumnos (usuario_id, edad, mentor_id, mensaje_diario, tiempo_maximo)
-                           VALUES (?,?,NULL,?,30)')
+                           VALUES (?,?,NULL,?,0)')
                 ->execute([$uid, $datos['edad'], '¡Bienvenido a Método Kiru! 🦊']);
         }
 

@@ -24,7 +24,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $uid = (int) db()->lastInsertId();
             if ($rol === 'alumno') {
                 $mentorId = ($_POST['mentor_id'] ?? '') !== '' ? (int) $_POST['mentor_id'] : null;
-                db()->prepare('INSERT INTO alumnos (usuario_id, edad, mentor_id, mensaje_diario) VALUES (?,?,?,?)')
+                db()->prepare('INSERT INTO alumnos (usuario_id, edad, mentor_id, mensaje_diario, tiempo_maximo) VALUES (?,?,?,?,0)')
                     ->execute([$uid, (int) $_POST['edad'], $mentorId, '¡Bienvenido a Método Kiru!']);
             }
             flash(ucfirst($rol) . ' «' . $nombre . '» creado.');
