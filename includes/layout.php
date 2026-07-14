@@ -19,7 +19,7 @@ function render_header(string $titulo, string $tema = 'panel', string $mundo = '
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title><?= e($titulo) ?> · <?= e(APP_NAME) ?></title>
-    <link rel="stylesheet" href="<?= url('assets/css/style.css') ?>">
+    <link rel="stylesheet" href="<?= asset('assets/css/style.css') ?>">
 </head>
 <body class="<?= e($bodyClass) ?>">
 <header class="topbar">
@@ -61,6 +61,7 @@ function render_footer(): void
     <div class="uso-chip" id="usoChip" title="Tiempo de uso de hoy">
         ⏳ <span id="usoTexto"><?= $uso ?></span><?= $ilim ? ' min' : '/' . $max . ' min' ?>
     </div>
+    <?php if (!$ilim): ?>
     <div class="uso-overlay" id="usoOverlay" hidden>
         <div class="uso-msg">
             <div class="uso-ico">🌙</div>
@@ -69,6 +70,7 @@ function render_footer(): void
             <a class="btn-logout" href="<?= url('logout.php') ?>">Salir</a>
         </div>
     </div>
+    <?php endif; ?>
     <script>
         window.KIRU = {
             base: <?= json_encode(BASE_URL) ?>,
@@ -77,7 +79,7 @@ function render_footer(): void
         };
     </script>
 <?php endif; ?>
-<script src="<?= url('assets/js/app.js') ?>"></script>
+<script src="<?= asset('assets/js/app.js') ?>"></script>
 </body>
 </html>
 <?php

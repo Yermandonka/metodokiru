@@ -17,6 +17,14 @@ function url(string $path = ''): string
     return BASE_URL . '/' . ltrim($path, '/');
 }
 
+/** Como url() pero añade ?v=<fecha del archivo> para romper la caché del navegador. */
+function asset(string $path): string
+{
+    $full = __DIR__ . '/../' . ltrim($path, '/');
+    $v = @filemtime($full) ?: 1;
+    return url($path) . '?v=' . $v;
+}
+
 function redirect(string $path): void
 {
     header('Location: ' . url($path));
