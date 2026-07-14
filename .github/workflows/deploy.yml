@@ -1,0 +1,32 @@
+name: Desplegar en InfinityFree (FTP)
+
+# Se ejecuta en cada push a main, o manualmente desde la pestaña Actions.
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar el código
+        uses: actions/checkout@v4
+
+      - name: Subir por FTP a InfinityFree
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          protocol: ftp
+          port: 21
+          # En InfinityFree la web se sirve desde la carpeta htdocs/
+          server-dir: htdocs/
+          # Archivos que NO se suben al servidor
+          exclude: |
+            **/.git*
+            **/.git*/**
+            **/.github/**
+            **/*.md
+            sql/**
