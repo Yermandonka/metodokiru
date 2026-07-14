@@ -56,8 +56,14 @@ define('APP_NAME', 'Método Kiru');
 define('TIEMPO_LIMITE_ACTIVO', false);
 
 // --- IA (Fase 2, opcional) ---
-// Se lee de una variable de entorno para no dejar la clave en el código.
-define('OPENAI_API_KEY', getenv('OPENAI_API_KEY') ?: '');
+// La clave se busca en 2 sitios (por este orden):
+//   1) Variable de entorno OPENAI_API_KEY  (recomendado en Railway)
+//   2) Archivo config/openai_key.txt        (cómodo en local; está en .gitignore)
+$openaiKey = getenv('OPENAI_API_KEY') ?: '';
+if (!$openaiKey && is_file(__DIR__ . '/openai_key.txt')) {
+    $openaiKey = trim((string) file_get_contents(__DIR__ . '/openai_key.txt'));
+}
+define('OPENAI_API_KEY', $openaiKey);
 
 // Zona horaria
 date_default_timezone_set('Europe/Madrid');

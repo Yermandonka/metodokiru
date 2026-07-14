@@ -12,5 +12,8 @@ tmp/
 # Configuración local con credenciales reales (si haces una copia aparte)
 config/config.local.php
 
+# Clave de la API de IA (nunca subir a GitHub)
+config/openai_key.txt
+
 # Copias de seguridad de la base de datos
 *.sql.bak
