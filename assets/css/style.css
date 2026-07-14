@@ -292,6 +292,38 @@ code { background: #efe7d8; padding: 1px 6px; border-radius: 6px; font-size: .85
 body.bloqueado { overflow: hidden; }
 
 /* =========================================================
+   CONTENIDO IA (Markdown) + herramientas
+   ========================================================= */
+.md-tools { display: flex; gap: 6px; flex-wrap: wrap; }
+.md-tools button {
+    background: var(--arena); color: var(--marron-osc); border: 1px solid var(--linea);
+    border-radius: 8px; padding: 6px 10px; font-size: .8rem; cursor: pointer; font-weight: 600;
+}
+.md-tools button:hover { background: var(--crema); }
+
+.md-content { font-size: 16px; line-height: 1.65; color: var(--texto); }
+.md-content h1, .md-content h2, .md-content h3, .md-content h4 { color: var(--marron-osc); margin: 1.1em 0 .4em; }
+.md-content h2 { border-bottom: 2px solid var(--linea); padding-bottom: 4px; }
+.md-content ul, .md-content ol { padding-left: 1.4em; margin: .5em 0; }
+.md-content li { margin: .25em 0; }
+.md-content p { margin: .6em 0; }
+.md-content strong { color: var(--marron-osc); }
+.md-content code { background: #efe7d8; padding: 1px 6px; border-radius: 5px; font-size: .9em; }
+.md-content pre.md-pre { background: #2f2a24; color: #f4efe6; padding: 14px; border-radius: 10px; overflow-x: auto; }
+.md-content pre.md-pre code { background: none; color: inherit; padding: 0; }
+.md-content:fullscreen { background: var(--crema2); padding: 48px 8vw; overflow: auto; }
+
+@media print {
+    body:has(#genContent) .topbar,
+    body:has(#genContent) .foot,
+    body:has(#genContent) .uso-chip,
+    body:has(#genContent) .md-tools,
+    body:has(#genContent) main > *:not(:has(#genContent)) { display: none !important; }
+    body:has(#genContent) .card { box-shadow: none; border: none; padding: 0; margin: 0; }
+    body:has(#genContent) .wrap { padding: 0; }
+}
+
+/* =========================================================
    RESPONSIVE / MÓVIL
    ========================================================= */
 

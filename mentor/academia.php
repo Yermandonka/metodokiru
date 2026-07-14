@@ -108,9 +108,46 @@ render_header('Zona académica', 'panel', '', $nav);
 <?php if ($errorIA): ?><div class="login-error"><?= e($errorIA) ?></div><?php endif; ?>
 <?php if ($generado): ?>
 <div class="card">
-    <h3>Contenido generado</h3>
-    <pre style="white-space:pre-wrap;font-family:inherit;line-height:1.6"><?= e($generado) ?></pre>
+    <div class="card-head">
+        <h3>Contenido generado</h3>
+        <div class="md-tools">
+            <button type="button" data-z="-" title="Reducir texto">A−</button>
+            <button type="button" data-z="0" title="Tamaño normal">Reiniciar</button>
+            <button type="button" data-z="+" title="Aumentar texto">A+</button>
+            <button type="button" id="mdPrint" title="Imprimir">🖨️ Imprimir</button>
+            <button type="button" id="mdCopy" title="Copiar texto">📋 Copiar</button>
+            <button type="button" id="mdFull" title="Pantalla completa">⛶ Pantalla completa</button>
+        </div>
+    </div>
+    <div class="md-content" id="genContent"><?= md_to_html($generado) ?></div>
 </div>
+<script>
+(function () {
+    var md = document.getElementById('genContent');
+    if (!md) return;
+    var fs = 16;
+    function setFs(v) { fs = Math.max(10, Math.min(34, v)); md.style.fontSize = fs + 'px'; }
+    document.querySelectorAll('.md-tools [data-z]').forEach(function (b) {
+        b.addEventListener('click', function () {
+            var z = b.getAttribute('data-z');
+            if (z === '+') setFs(fs + 2); else if (z === '-') setFs(fs - 2); else setFs(16);
+        });
+    });
+    var p = document.getElementById('mdPrint');
+    if (p) p.addEventListener('click', function () { window.print(); });
+    var c = document.getElementById('mdCopy');
+    if (c) c.addEventListener('click', function () {
+        navigator.clipboard.writeText(md.innerText).then(function () {
+            c.textContent = '✅ Copiado';
+            setTimeout(function () { c.textContent = '📋 Copiar'; }, 1500);
+        });
+    });
+    var f = document.getElementById('mdFull');
+    if (f) f.addEventListener('click', function () {
+        if (!document.fullscreenElement) { md.requestFullscreen(); } else { document.exitFullscreen(); }
+    });
+})();
+</script>
 <?php endif; ?>
 <?php endif; ?>
 <?php render_footer(); ?>

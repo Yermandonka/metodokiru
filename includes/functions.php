@@ -237,6 +237,84 @@ function ai_generar(string $tema, int $edad = 12): string
     return $texto;
 }
 
+/* ---------- Markdown ---------- */
+
+/** Convierte Markdown (el que devuelve la IA) en HTML seguro. */
+function md_to_html(string $md): string
+{
+    $md = str_replace("\r\n", "\n", $md);
+    $lines = explode("\n", $md);
+    $html = '';
+    $inList = null;   // 'ul' | 'ol'
+    $inCode = false;
+    $para = [];
+
+    $flushPara = function () use (&$para, &$html) {
+        if ($para) {
+            $html .= '<p>' . md_inline(implode(' ', $para)) . "</p>\n";
+            $para = [];
+        }
+    };
+    $closeList = function () use (&$inList, &$html) {
+        if ($inList) { $html .= "</$inList>\n"; $inList = null; }
+    };
+
+    foreach ($lines as $line) {
+        $t = trim($line);
+
+        if (preg_match('/^```/', $t)) {                       // bloque de código
+            $flushPara(); $closeList();
+            if (!$inCode) { $html .= '<pre class="md-pre"><code>'; $inCode = true; }
+            else { $html .= "</code></pre>\n"; $inCode = false; }
+            continue;
+        }
+        if ($inCode) { $html .= htmlspecialchars($line) . "\n"; continue; }
+
+        if ($t === '') { $flushPara(); $closeList(); continue; }
+
+        if (preg_match('/^(#{1,6})\s+(.*)$/', $t, $m)) {      // encabezado
+            $flushPara(); $closeList();
+            $lvl = strlen($m[1]);
+            $html .= "<h$lvl>" . md_inline($m[2]) . "</h$lvl>\n";
+            continue;
+        }
+        if (preg_match('/^(-{3,}|\*{3,}|_{3,})$/', $t)) {     // regla horizontal
+            $flushPara(); $closeList();
+            $html .= "<hr>\n";
+            continue;
+        }
+        if (preg_match('/^\d+[\.\)]\s+(.*)$/', $t, $m)) {     // lista ordenada
+            $flushPara();
+            if ($inList !== 'ol') { $closeList(); $html .= "<ol>\n"; $inList = 'ol'; }
+            $html .= '<li>' . md_inline($m[1]) . "</li>\n";
+            continue;
+        }
+        if (preg_match('/^[-*+]\s+(.*)$/', $t, $m)) {         // lista no ordenada
+            $flushPara();
+            if ($inList !== 'ul') { $closeList(); $html .= "<ul>\n"; $inList = 'ul'; }
+            $html .= '<li>' . md_inline($m[1]) . "</li>\n";
+            continue;
+        }
+
+        $closeList();                                         // párrafo
+        $para[] = $t;
+    }
+    $flushPara(); $closeList();
+    if ($inCode) { $html .= "</code></pre>\n"; }
+    return $html;
+}
+
+/** Formato en línea: negrita, cursiva y código. Escapa el HTML primero. */
+function md_inline(string $s): string
+{
+    $s = htmlspecialchars($s, ENT_QUOTES, 'UTF-8');
+    $s = preg_replace('/\*\*(.+?)\*\*/s', '<strong>$1</strong>', $s);
+    $s = preg_replace('/__(.+?)__/s', '<strong>$1</strong>', $s);
+    $s = preg_replace('/(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)/s', '<em>$1</em>', $s);
+    $s = preg_replace('/`([^`]+?)`/', '<code>$1</code>', $s);
+    return $s;
+}
+
 /** Racha de días consecutivos con conexión (hasta hoy). */
 function racha_dias(int $alumnoId): int
 {
