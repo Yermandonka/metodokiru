@@ -44,6 +44,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </label>
             <button type="submit">Entrar</button>
         </form>
+        <p class="login-hint">¿No tienes cuenta? <a href="<?= url('registro.php') ?>">Crea una aquí</a></p>
         <p class="login-hint">Prueba: <code>alumno</code> / <code>alumno123</code></p>
     </div>
 </body>
