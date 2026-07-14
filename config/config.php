@@ -55,15 +55,17 @@ define('APP_NAME', 'Método Kiru');
 // true  = se respeta el "tiempo máximo" de cada alumno (0 en ese alumno = sin límite).
 define('TIEMPO_LIMITE_ACTIVO', false);
 
-// --- IA (Fase 2, opcional) ---
+// --- IA (Fase 2) · Google Gemini (tiene nivel gratuito) ---
 // La clave se busca en 2 sitios (por este orden):
-//   1) Variable de entorno OPENAI_API_KEY  (recomendado en Railway)
-//   2) Archivo config/openai_key.txt        (cómodo en local; está en .gitignore)
-$openaiKey = getenv('OPENAI_API_KEY') ?: '';
-if (!$openaiKey && is_file(__DIR__ . '/openai_key.txt')) {
-    $openaiKey = trim((string) file_get_contents(__DIR__ . '/openai_key.txt'));
+//   1) Variable de entorno GEMINI_API_KEY  (recomendado en Railway)
+//   2) Archivo config/gemini_key.txt        (cómodo en local; está en .gitignore)
+$geminiKey = getenv('GEMINI_API_KEY') ?: '';
+if (!$geminiKey && is_file(__DIR__ . '/gemini_key.txt')) {
+    $geminiKey = trim((string) file_get_contents(__DIR__ . '/gemini_key.txt'));
 }
-define('OPENAI_API_KEY', $openaiKey);
+define('GEMINI_API_KEY', $geminiKey);
+// Modelo gratuito por defecto (se puede cambiar con la variable GEMINI_MODEL).
+define('GEMINI_MODEL', getenv('GEMINI_MODEL') ?: 'gemini-2.0-flash');
 
 // Zona horaria
 date_default_timezone_set('Europe/Madrid');

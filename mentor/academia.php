@@ -99,8 +99,8 @@ render_header('Zona académica', 'panel', '', $nav);
             </label>
             <button class="btn">Generar teoría y ejercicios</button>
         </form>
-        <?php if (!OPENAI_API_KEY): ?>
-            <p class="muted" style="margin-top:10px">💡 Para activar la IA, añade tu clave <code>OPENAI_API_KEY</code> en <code>config/config.php</code>.</p>
+        <?php if (!GEMINI_API_KEY): ?>
+            <p class="muted" style="margin-top:10px">💡 Para activar la IA (gratis con Gemini), añade tu clave en la variable <code>GEMINI_API_KEY</code> o en el archivo <code>config/gemini_key.txt</code>.</p>
         <?php endif; ?>
     </div>
 </div>

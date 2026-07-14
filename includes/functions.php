@@ -183,36 +183,39 @@ function uso_hoy(int $alumnoId): int
 /* ---------- IA (Fase 2) ---------- */
 
 /**
- * Llama a la API de OpenAI para generar contenido académico.
+ * Llama a la API de Google Gemini para generar contenido académico.
  * Devuelve el texto o lanza RuntimeException si algo falla / no hay clave.
  */
 function ai_generar(string $tema, int $edad = 12): string
 {
-    if (!OPENAI_API_KEY) {
-        throw new RuntimeException('No hay clave de OpenAI configurada. Añádela en config/config.php (OPENAI_API_KEY).');
+    if (!GEMINI_API_KEY) {
+        throw new RuntimeException('No hay clave de Gemini configurada. Añádela en la variable GEMINI_API_KEY (Railway) o en config/gemini_key.txt (local).');
     }
-    $prompt = "Eres un profesor del Método Kiru para niños de $edad años. "
-        . "Sobre el tema: \"$tema\", crea contenido en español, claro y motivador, con este formato Markdown:\n"
+    $prompt = "Sobre el tema: \"$tema\", crea contenido educativo en español para un niño de $edad años, "
+        . "claro y motivador, en formato Markdown con estas secciones exactas:\n"
         . "## Teoría (breve)\n## Ejemplos\n## Ejercicios (5, estilo Duolingo)\n## Soluciones\n"
         . "Adáptalo a 10-13 años.";
 
     $payload = json_encode([
-        'model' => 'gpt-4o-mini',
-        'messages' => [
-            ['role' => 'system', 'content' => 'Eres un tutor educativo para niños.'],
-            ['role' => 'user', 'content' => $prompt],
+        'system_instruction' => [
+            'parts' => [['text' => 'Eres un tutor del Método Kiru para niños. Explicas de forma sencilla, amena y positiva.']],
         ],
-        'temperature' => 0.7,
+        'contents' => [
+            ['parts' => [['text' => $prompt]]],
+        ],
+        'generationConfig' => ['temperature' => 0.7],
     ]);
 
-    $ch = curl_init('https://api.openai.com/v1/chat/completions');
+    $url = 'https://generativelanguage.googleapis.com/v1beta/models/' . GEMINI_MODEL . ':generateContent';
+
+    $ch = curl_init($url);
     curl_setopt_array($ch, [
         CURLOPT_RETURNTRANSFER => true,
         CURLOPT_POST => true,
         CURLOPT_POSTFIELDS => $payload,
         CURLOPT_HTTPHEADER => [
             'Content-Type: application/json',
-            'Authorization: Bearer ' . OPENAI_API_KEY,
+            'x-goog-api-key: ' . GEMINI_API_KEY,
         ],
         CURLOPT_TIMEOUT => 45,
     ]);
@@ -220,14 +223,18 @@ function ai_generar(string $tema, int $edad = 12): string
     if ($resp === false) {
         $err = curl_error($ch);
         curl_close($ch);
-        throw new RuntimeException('Error de conexión con OpenAI: ' . $err);
+        throw new RuntimeException('Error de conexión con Gemini: ' . $err);
     }
     curl_close($ch);
     $data = json_decode($resp, true);
     if (isset($data['error'])) {
-        throw new RuntimeException('OpenAI: ' . ($data['error']['message'] ?? 'error desconocido'));
+        throw new RuntimeException('Gemini: ' . ($data['error']['message'] ?? 'error desconocido'));
     }
-    return $data['choices'][0]['message']['content'] ?? '(Sin respuesta)';
+    $texto = $data['candidates'][0]['content']['parts'][0]['text'] ?? '';
+    if ($texto === '') {
+        throw new RuntimeException('Gemini no devolvió contenido (posible bloqueo de seguridad o modelo no disponible).');
+    }
+    return $texto;
 }
 
 /** Racha de días consecutivos con conexión (hasta hoy). */

@@ -49,7 +49,7 @@ Railway detecta el push y actualiza la web automáticamente. ✅
 
 ## Notas
 - **IA (Fase 2):** para activarla, añade en Railway una variable
-  `OPENAI_API_KEY` con tu clave de OpenAI (Variables → New Variable).
+  `GEMINI_API_KEY` con tu clave gratuita de Google Gemini (Variables → New Variable).
 - **Coste:** Railway da un crédito de prueba gratuito; después el plan Hobby
   ronda los 5 $/mes según uso. El desarrollo local en XAMPP sigue siendo gratis.
 - **Local:** en tu XAMPP todo sigue igual (`config.php` detecta `localhost`).

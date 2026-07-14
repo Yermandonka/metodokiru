@@ -58,7 +58,7 @@ Stack: **PHP 8 + MySQL/MariaDB** (pensado para **XAMPP**). Sin dependencias exte
 - Editar niveles/mundos y los umbrales de SkillCoins.
 
 **Fase 2 (parcial):** Zona académica del mentor: activar materias y **generar teoría/ejercicios con IA**
-(requiere una clave de OpenAI en `config/config.php`).
+(requiere una clave gratuita de Google Gemini; ver abajo).
 
 ---
 

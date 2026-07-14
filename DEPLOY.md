@@ -60,7 +60,7 @@ Abre `https://TU-DOMINIO/` y accede con `admin / admin123` (cámbialo después).
 
 - **Seguridad:** cambia las contraseñas de ejemplo y borra `install.php` tras instalar.
 - **IA (Fase 2):** el hosting gratuito de InfinityFree suele **bloquear conexiones salientes**,
-  por lo que la generación con OpenAI puede no funcionar en el plan gratis.
+  por lo que la generación con Gemini puede no funcionar en el plan gratis.
   Todo lo demás (Fase 1) funciona con normalidad.
 - **HTTPS:** InfinityFree ofrece SSL gratis; puedes activarlo desde el panel.
 
