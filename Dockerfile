@@ -4,8 +4,9 @@ FROM php:8.2-apache
 # Extensión de MySQL (PDO) que usa la app
 RUN docker-php-ext-install pdo pdo_mysql
 
-# Módulo de reescritura de Apache (por si se usa más adelante)
-RUN a2enmod rewrite
+# Deja un único MPM cargado (evita el error "More than one MPM loaded")
+RUN a2dismod mpm_event mpm_worker 2>/dev/null || true; \
+    a2enmod mpm_prefork rewrite
 
 # Copia el proyecto al directorio web
 COPY . /var/www/html/
