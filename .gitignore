@@ -1,0 +1,16 @@
+# Sistema operativo / editores
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/
+
+# Logs y temporales
+*.log
+tmp/
+
+# Configuración local con credenciales reales (si haces una copia aparte)
+config/config.local.php
+
+# Copias de seguridad de la base de datos
+*.sql.bak

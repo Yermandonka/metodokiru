@@ -1,0 +1,50 @@
+<?php
+require_once __DIR__ . '/includes/functions.php';
+
+// Si ya hay sesión, al panel que corresponda.
+if ($u = current_user()) {
+    redirect('dashboard.php');
+}
+
+$error = '';
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $username = trim($_POST['username'] ?? '');
+    $password = $_POST['password'] ?? '';
+    $stmt = db()->prepare('SELECT * FROM usuarios WHERE username = ?');
+    $stmt->execute([$username]);
+    $user = $stmt->fetch();
+    if ($user && password_verify($password, $user['password_hash'])) {
+        session_regenerate_id(true);
+        $_SESSION['user_id'] = $user['id'];
+        redirect('dashboard.php');
+    }
+    $error = 'Usuario o contraseña incorrectos.';
+}
+?>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Entrar · <?= e(APP_NAME) ?></title>
+    <link rel="stylesheet" href="<?= url('assets/css/style.css') ?>">
+</head>
+<body class="login-body">
+    <div class="login-card">
+        <div class="login-logo">狐</div>
+        <h1>Método Kiru</h1>
+        <p class="login-sub">Entra en tu mundo</p>
+        <?php if ($error): ?><div class="login-error"><?= e($error) ?></div><?php endif; ?>
+        <form method="post" autocomplete="off">
+            <label>Usuario
+                <input type="text" name="username" required autofocus>
+            </label>
+            <label>Contraseña
+                <input type="password" name="password" required>
+            </label>
+            <button type="submit">Entrar</button>
+        </form>
+        <p class="login-hint">Prueba: <code>alumno</code> / <code>alumno123</code></p>
+    </div>
+</body>
+</html>
