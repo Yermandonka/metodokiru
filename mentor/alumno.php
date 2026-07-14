@@ -13,7 +13,7 @@ if ($user['rol'] === 'mentor' && (int) $alumno['mentor_id'] !== (int) $user['id'
     http_response_code(403);
     die('Este alumno no está asignado a ti.');
 }
-$volver = $user['rol'] === 'admin' ? 'admin/index.php' : 'mentor/index.php';
+$volver = $user['rol'] === 'admin' ? 'admin/resumen.php' : 'mentor/dashboard.php';
 
 /* ---------- Acciones ---------- */
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {

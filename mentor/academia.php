@@ -43,7 +43,7 @@ if ($aid) {
     $materias = $st->fetchAll();
 }
 
-$nav = [['Dashboard', 'mentor/index.php', false], ['Zona académica', 'mentor/academia.php', true]];
+$nav = [['Dashboard', 'mentor/dashboard.php', false], ['Zona académica', 'mentor/academia.php', true]];
 render_header('Zona académica', 'panel', '', $nav);
 ?>
 <div class="page-head">

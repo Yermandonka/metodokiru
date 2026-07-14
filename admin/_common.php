@@ -5,7 +5,7 @@ require_once __DIR__ . '/../includes/layout.php';
 function nav_admin(string $a): array
 {
     $items = [
-        ['Resumen', 'admin/index.php', 'index'],
+        ['Resumen', 'admin/resumen.php', 'index'],
         ['Usuarios', 'admin/usuarios.php', 'usuarios'],
         ['Niveles', 'admin/niveles.php', 'niveles'],
     ];

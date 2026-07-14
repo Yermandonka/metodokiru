@@ -105,7 +105,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <button type="submit">Crear cuenta</button>
         </form>
 
-        <p class="login-hint">¿Ya tienes cuenta? <a href="<?= url('index.php') ?>">Inicia sesión</a></p>
+        <p class="login-hint">¿Ya tienes cuenta? <a href="<?= url('login.php') ?>">Inicia sesión</a></p>
     </div>
 
     <script>

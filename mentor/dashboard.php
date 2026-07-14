@@ -8,7 +8,7 @@ $mid = (int) $user['id'];
 if (($_GET['leer'] ?? '') !== '') {
     db()->prepare('UPDATE notificaciones SET leida = 1 WHERE id = ? AND mentor_id = ?')
         ->execute([(int) $_GET['leer'], $mid]);
-    redirect('mentor/index.php');
+    redirect('mentor/dashboard.php');
 }
 
 $alumnos = db()->prepare(
@@ -27,7 +27,7 @@ $notis->execute([$mid]);
 $notis = $notis->fetchAll();
 
 $nav = [
-    ['Dashboard', 'mentor/index.php', true],
+    ['Dashboard', 'mentor/dashboard.php', true],
     ['Zona académica', 'mentor/academia.php', false],
 ];
 render_header('Panel del mentor', 'panel', '', $nav);
@@ -78,7 +78,7 @@ render_header('Panel del mentor', 'panel', '', $nav);
                     <div class="noti-foot">
                         <small><?= e(date('d/m H:i', strtotime($n['creada_en']))) ?></small>
                         <?php if (!$n['leida']): ?>
-                            <a href="<?= url('mentor/index.php?leer=' . (int)$n['id']) ?>">Marcar leída</a>
+                            <a href="<?= url('mentor/dashboard.php?leer=' . (int)$n['id']) ?>">Marcar leída</a>
                         <?php endif; ?>
                     </div>
                 </div>

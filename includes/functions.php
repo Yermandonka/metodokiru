@@ -58,7 +58,7 @@ function require_login(array $roles = []): array
 {
     $user = current_user();
     if (!$user) {
-        redirect('index.php');
+        redirect('login.php');
     }
     if ($roles && !in_array($user['rol'], $roles, true)) {
         http_response_code(403);

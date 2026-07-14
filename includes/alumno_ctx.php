@@ -30,7 +30,7 @@ $GLOBALS['KIRU_USO'] = ['uso' => $usoHoy, 'max' => $tiempoMax];
 function nav_alumno(string $activo): array
 {
     $items = [
-        ['Inicio', 'alumno/index.php', 'index'],
+        ['Inicio', 'alumno/inicio.php', 'index'],
         ['Objetivos', 'alumno/objetivos.php', 'objetivos'],
         ['SkillCoins', 'alumno/skillcoins.php', 'skillcoins'],
         ['Estadísticas', 'alumno/estadisticas.php', 'estadisticas'],
