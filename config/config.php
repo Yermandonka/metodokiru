@@ -65,7 +65,7 @@ if (!$geminiKey && is_file(__DIR__ . '/gemini_key.txt')) {
 }
 define('GEMINI_API_KEY', $geminiKey);
 // Modelo gratuito por defecto (se puede cambiar con la variable GEMINI_MODEL).
-define('GEMINI_MODEL', getenv('GEMINI_MODEL') ?: 'gemini-2.0-flash');
+define('GEMINI_MODEL', getenv('GEMINI_MODEL') ?: 'gemini-2.5-flash');
 
 // Zona horaria
 date_default_timezone_set('Europe/Madrid');
