@@ -20,8 +20,9 @@ registrar_conexion((int) $alumno['id']);
 $nivel = nivel_actual($alumno);
 $mundo = $nivel['mundo'];
 
-$usoHoy    = uso_hoy((int) $alumno['id']);
-$tiempoMax = (int) $alumno['tiempo_maximo'];
+$usoHoy = uso_hoy((int) $alumno['id']);
+// Si el límite global está desactivado, max = 0 (sin límite) pase lo que pase en la BD.
+$tiempoMax = (TIEMPO_LIMITE_ACTIVO ? (int) $alumno['tiempo_maximo'] : 0);
 
 // Datos para el widget de tiempo de uso (lo pinta render_footer).
 $GLOBALS['KIRU_USO'] = ['uso' => $usoHoy, 'max' => $tiempoMax];

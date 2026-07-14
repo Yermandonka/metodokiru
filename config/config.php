@@ -50,6 +50,11 @@ if ($esLocal) {
 // --- Aplicación ---
 define('APP_NAME', 'Método Kiru');
 
+// Límite de tiempo diario del alumno.
+// false = DESACTIVADO globalmente (nunca aparece "La sesión de hoy ha terminado").
+// true  = se respeta el "tiempo máximo" de cada alumno (0 en ese alumno = sin límite).
+define('TIEMPO_LIMITE_ACTIVO', false);
+
 // --- IA (Fase 2, opcional) ---
 // Se lee de una variable de entorno para no dejar la clave en el código.
 define('OPENAI_API_KEY', getenv('OPENAI_API_KEY') ?: '');

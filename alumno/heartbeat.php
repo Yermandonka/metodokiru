@@ -29,5 +29,5 @@ db()->prepare(
 
 echo json_encode([
     'uso' => uso_hoy($aid),
-    'max' => (int) $alumno['tiempo_maximo'],
+    'max' => (TIEMPO_LIMITE_ACTIVO ? (int) $alumno['tiempo_maximo'] : 0),
 ]);
