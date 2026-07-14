@@ -4,9 +4,15 @@ FROM php:8.2-apache
 # Extensión de MySQL (PDO) que usa la app
 RUN docker-php-ext-install pdo pdo_mysql
 
-# Deja un único MPM cargado (evita el error "More than one MPM loaded")
-RUN a2dismod mpm_event mpm_worker 2>/dev/null || true; \
-    a2enmod mpm_prefork rewrite
+# Deja UN ÚNICO MPM cargado (evita "More than one MPM loaded").
+# Se manipulan los enlaces directamente para no depender del orden de a2enmod/a2dismod.
+RUN rm -f /etc/apache2/mods-enabled/mpm_*.load /etc/apache2/mods-enabled/mpm_*.conf \
+ && ln -s /etc/apache2/mods-available/mpm_prefork.load /etc/apache2/mods-enabled/mpm_prefork.load \
+ && ln -s /etc/apache2/mods-available/mpm_prefork.conf /etc/apache2/mods-enabled/mpm_prefork.conf \
+ && a2enmod rewrite
+
+# Comprobación en tiempo de build: aborta si queda más de un MPM enlazado
+RUN test "$(ls /etc/apache2/mods-enabled/mpm_*.load | wc -l)" = "1"
 
 # Copia el proyecto al directorio web
 COPY . /var/www/html/
