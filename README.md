@@ -77,6 +77,7 @@ install.php    instalador (crea BD + datos de ejemplo)
 
 ---
 
-## 🌐 Desplegar gratis
+## 🌐 Desplegar online
 
-Consulta **[DEPLOY.md](DEPLOY.md)** — guía paso a paso con InfinityFree (PHP + MySQL gratis).
+- **[RAILWAY.md](RAILWAY.md)** — *recomendado*. Conectado a GitHub: cada `push` despliega solo, con MySQL incluida. (Crédito gratis y luego ~5 $/mes.)
+- **[DEPLOY.md](DEPLOY.md)** — alternativa 100% gratis con InfinityFree (PHP + MySQL por FTP).

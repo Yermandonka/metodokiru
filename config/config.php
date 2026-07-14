@@ -24,16 +24,27 @@ if ($esLocal) {
     define('BASE_URL', '/metodokiru');  // subcarpeta dentro de htdocs
     ini_set('display_errors', '1');
 } else {
-    /* ---------- PRODUCCIÓN (InfinityFree) ----------
-       Rellena estos 4 valores con los de tu panel:
-       vPanel → MySQL Databases. */
-    define('DB_HOST', 'sqlXXX.infinityfree.com'); // "MySQL Host Name"
-    define('DB_PORT', '3306');
-    define('DB_USER', 'epiz_XXXXXXX');            // "MySQL User Name"
-    define('DB_PASS', 'TU_CONTRASENA_BD');        // contraseña de tu cuenta
-    define('DB_NAME', 'epiz_XXXXXXX_kiru');       // "MySQL Database Name"
-    define('BASE_URL', '');                        // la app va en la raíz del dominio
-    ini_set('display_errors', '0');               // no mostrar errores en público
+    /* ---------- PRODUCCIÓN (Railway u otro host) ----------
+       Las credenciales llegan por variables de entorno.
+       Railway MySQL expone MYSQL_URL (mysql://usuario:pass@host:puerto/base). */
+    $url = getenv('MYSQL_URL') ?: getenv('DATABASE_URL') ?: '';
+    if ($url) {
+        $p = parse_url($url);
+        define('DB_HOST', $p['host'] ?? 'localhost');
+        define('DB_PORT', (string) ($p['port'] ?? 3306));
+        define('DB_USER', $p['user'] ?? 'root');
+        define('DB_PASS', $p['pass'] ?? '');
+        define('DB_NAME', ltrim($p['path'] ?? '/railway', '/'));
+    } else {
+        // Alternativa: variables sueltas (Railway también ofrece MYSQL*)
+        define('DB_HOST', getenv('MYSQLHOST') ?: getenv('DB_HOST') ?: 'localhost');
+        define('DB_PORT', getenv('MYSQLPORT') ?: getenv('DB_PORT') ?: '3306');
+        define('DB_USER', getenv('MYSQLUSER') ?: getenv('DB_USER') ?: 'root');
+        define('DB_PASS', getenv('MYSQLPASSWORD') ?: getenv('DB_PASS') ?: '');
+        define('DB_NAME', getenv('MYSQLDATABASE') ?: getenv('DB_NAME') ?: 'railway');
+    }
+    define('BASE_URL', '');            // la app va en la raíz del dominio
+    ini_set('display_errors', '0');    // no mostrar errores en público
 }
 
 // --- Aplicación ---
