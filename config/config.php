@@ -50,6 +50,11 @@ if ($esLocal) {
 // --- Aplicación ---
 define('APP_NAME', 'Método Kiru');
 
+// --- Sesión persistente ("mantener sesión iniciada") ---
+// Días que se recuerda al usuario sin volver a pedir contraseña.
+define('REMEMBER_DIAS', 90);
+define('REMEMBER_COOKIE', 'kiru_recuerdame');
+
 // Límite de tiempo diario del alumno.
 // false = DESACTIVADO globalmente (nunca aparece "La sesión de hoy ha terminado").
 // true  = se respeta el "tiempo máximo" de cada alumno (0 en ese alumno = sin límite).

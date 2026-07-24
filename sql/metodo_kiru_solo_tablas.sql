@@ -220,6 +220,23 @@ LOCK TABLES `usuarios` WRITE;
 INSERT INTO `usuarios` VALUES (1,'admin','$2y$10$sazakjzMvUoLTdA6s8Kk.Oc5gNnTaey2DoVPD9JV6vQsCAuk0XXWW','admin','Administrador','2026-07-14 00:59:47'),(2,'mentor','$2y$10$X1xMp.lxQBi7uLuYOI0weO7ZBNiEbMsm7TJYJKYOMRxYlfQzxYWL2','mentor','Ana (Mentora)','2026-07-14 00:59:47'),(3,'alumno','$2y$10$xLrUMWsEb7lPWG4p.JEqNeo/GMIy7h9f3BltHd8TM7G1gPgfn4fyW','alumno','Leo','2026-07-14 00:59:47'),(4,'mara','$2y$10$QX831iNkt3GLHLPZCvtS8eASrEwibk.m0fZcgPw1imdqy4SvcEU3q','alumno','Mara','2026-07-14 00:59:47'),(5,'izan','$2y$10$0ugsdzylgWdLytvsc9QyJejjTDExwfzjIK.gUj3dFZNQAgnnzt/.S','alumno','Izan','2026-07-14 00:59:47');
 /*!40000 ALTER TABLE `usuarios` ENABLE KEYS */;
 UNLOCK TABLES;
+DROP TABLE IF EXISTS `sesiones_recordadas`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `sesiones_recordadas` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `usuario_id` int(11) NOT NULL,
+  `selector` char(24) NOT NULL,
+  `validador_hash` char(64) NOT NULL,
+  `expira` datetime NOT NULL,
+  `creado_en` datetime DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `selector` (`selector`),
+  KEY `usuario_id` (`usuario_id`),
+  CONSTRAINT `sesiones_recordadas_ibfk_1` FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;

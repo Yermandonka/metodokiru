@@ -55,9 +55,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ->execute([$uid, $datos['edad'], '¡Bienvenido a Método Kiru! 🦊']);
         }
 
-        // Inicia sesión automáticamente.
+        // Inicia sesión automáticamente y la mantiene iniciada.
         session_regenerate_id(true);
         $_SESSION['user_id'] = $uid;
+        remember_crear($uid);
         redirect('dashboard.php');
     }
 }

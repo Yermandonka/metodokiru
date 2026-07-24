@@ -2,7 +2,23 @@
 require_once __DIR__ . '/../config/db.php';
 
 if (session_status() === PHP_SESSION_NONE) {
+    // Cookie de sesión de larga duración: la sesión sobrevive al cierre del navegador.
+    $vida = 60 * 60 * 24 * REMEMBER_DIAS;
+    ini_set('session.gc_maxlifetime', (string) $vida);
+    session_set_cookie_params([
+        'lifetime' => $vida,
+        'path'     => (BASE_URL ?: '') . '/',
+        'secure'   => es_https(),
+        'httponly' => true,
+        'samesite' => 'Lax',
+    ]);
     session_start();
+}
+
+function es_https(): bool
+{
+    return (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
+        || (($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '') === 'https');
 }
 
 /* ---------- Utilidades ---------- */
@@ -47,11 +63,97 @@ function flash(?string $msg = null): ?string
 function current_user(): ?array
 {
     if (empty($_SESSION['user_id'])) {
+        remember_login_desde_cookie();
+    }
+    if (empty($_SESSION['user_id'])) {
         return null;
     }
     $stmt = db()->prepare('SELECT * FROM usuarios WHERE id = ?');
     $stmt->execute([$_SESSION['user_id']]);
     return $stmt->fetch() ?: null;
+}
+
+/* ---------- Sesión persistente ("recuérdame") ----------
+   Además de la sesión PHP, se guarda un token en una cookie de larga duración.
+   La cookie lleva "selector:validador"; en la BD solo se guarda el hash del
+   validador, así un volcado de la tabla no permite suplantar a nadie. */
+
+function remember_tabla(): void
+{
+    static $creada = false;
+    if ($creada) {
+        return;
+    }
+    db()->exec("CREATE TABLE IF NOT EXISTS sesiones_recordadas (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        usuario_id INT NOT NULL,
+        selector CHAR(24) NOT NULL UNIQUE,
+        validador_hash CHAR(64) NOT NULL,
+        expira DATETIME NOT NULL,
+        creado_en DATETIME DEFAULT CURRENT_TIMESTAMP,
+        INDEX (usuario_id),
+        FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE
+    ) ENGINE=InnoDB");
+    $creada = true;
+}
+
+function remember_cookie(string $valor, int $expiraTs): void
+{
+    setcookie(REMEMBER_COOKIE, $valor, [
+        'expires'  => $expiraTs,
+        'path'     => (BASE_URL ?: '') . '/',
+        'secure'   => es_https(),
+        'httponly' => true,
+        'samesite' => 'Lax',
+    ]);
+}
+
+/** Crea un token nuevo para el usuario y deja la cookie puesta. */
+function remember_crear(int $usuarioId): void
+{
+    remember_tabla();
+    $selector  = bin2hex(random_bytes(12));
+    $validador = bin2hex(random_bytes(32));
+    $expira    = time() + 60 * 60 * 24 * REMEMBER_DIAS;
+    db()->prepare('INSERT INTO sesiones_recordadas (usuario_id, selector, validador_hash, expira) VALUES (?,?,?,?)')
+        ->execute([$usuarioId, $selector, hash('sha256', $validador), date('Y-m-d H:i:s', $expira)]);
+    remember_cookie($selector . ':' . $validador, $expira);
+}
+
+/** Si hay cookie válida, restaura la sesión (y rota el token). */
+function remember_login_desde_cookie(): void
+{
+    $cookie = $_COOKIE[REMEMBER_COOKIE] ?? '';
+    if (!$cookie || substr_count($cookie, ':') !== 1) {
+        return;
+    }
+    [$selector, $validador] = explode(':', $cookie);
+    remember_tabla();
+    $stmt = db()->prepare('SELECT * FROM sesiones_recordadas WHERE selector = ? AND expira > NOW()');
+    $stmt->execute([$selector]);
+    $fila = $stmt->fetch();
+    if (!$fila || !hash_equals($fila['validador_hash'], hash('sha256', $validador))) {
+        // Cookie inválida o caducada: se limpia para no reintentar en cada página.
+        remember_cookie('', time() - 3600);
+        return;
+    }
+    session_regenerate_id(true);
+    $_SESSION['user_id'] = (int) $fila['usuario_id'];
+    // Rotación: el token usado se sustituye por uno nuevo.
+    db()->prepare('DELETE FROM sesiones_recordadas WHERE id = ?')->execute([$fila['id']]);
+    remember_crear((int) $fila['usuario_id']);
+}
+
+/** Borra el token actual y la cookie (se usa al cerrar sesión). */
+function remember_olvidar(): void
+{
+    $cookie = $_COOKIE[REMEMBER_COOKIE] ?? '';
+    if ($cookie && substr_count($cookie, ':') === 1) {
+        [$selector] = explode(':', $cookie);
+        remember_tabla();
+        db()->prepare('DELETE FROM sesiones_recordadas WHERE selector = ?')->execute([$selector]);
+    }
+    remember_cookie('', time() - 3600);
 }
 
 function require_login(array $roles = []): array

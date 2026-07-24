@@ -127,6 +127,17 @@ try {
             nombre VARCHAR(100) NOT NULL,
             activa TINYINT(1) DEFAULT 0
         ) ENGINE=InnoDB",
+
+        'sesiones_recordadas' => "CREATE TABLE IF NOT EXISTS sesiones_recordadas (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            usuario_id INT NOT NULL,
+            selector CHAR(24) NOT NULL UNIQUE,
+            validador_hash CHAR(64) NOT NULL,
+            expira DATETIME NOT NULL,
+            creado_en DATETIME DEFAULT CURRENT_TIMESTAMP,
+            INDEX (usuario_id),
+            FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE
+        ) ENGINE=InnoDB",
     ];
 
     foreach ($tables as $name => $sql) {

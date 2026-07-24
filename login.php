@@ -16,6 +16,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($user && password_verify($password, $user['password_hash'])) {
         session_regenerate_id(true);
         $_SESSION['user_id'] = $user['id'];
+        // Mantiene la sesión iniciada aunque se cierre el navegador.
+        remember_crear((int) $user['id']);
         redirect('dashboard.php');
     }
     $error = 'Usuario o contraseña incorrectos.';
