@@ -7,8 +7,10 @@ web_menu();
   <!-- HERO -->
   <header class="hero">
     <nav>
-      <div class="logo">Método Kiru</div>
-      <button class="menu-btn">☰</button>
+      <?php web_brand() ?>
+      <div class="nav-actions">
+        <?php web_menu_btn() ?>
+      </div>
     </nav>
 
     <div class="hero-content">

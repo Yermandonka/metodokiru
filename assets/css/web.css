@@ -1,3 +1,18 @@
+/* Paleta compartida con el campus (assets/css/style.css) */
+:root{
+  --arena:#e9e0cf;
+  --crema:#f6f1e7;
+  --crema2:#fffdf8;
+  --marron:#6b5b4a;
+  --marron-osc:#4a3f33;
+  --oliva:#7c8a5a;
+  --dorado:#c9a227;
+  --texto:#3a322a;
+  --muted:#9a8d79;
+  --linea:#e4d9c7;
+  --sombra:0 6px 20px rgba(74,63,51,.08);
+}
+
 *{
   margin:0;
   padding:0;
@@ -5,10 +20,28 @@
 }
 
 body{
-  background:#f7f6f2;
-  color:#111;
-  font-family:Georgia, serif;
+  background:var(--crema);
+  color:var(--texto);
+  font-family:-apple-system,"Segoe UI",system-ui,sans-serif;
   -webkit-font-smoothing:antialiased;
+}
+
+/* Los titulares grandes conservan la serifa de la web original */
+h1,h2,h3,blockquote,.logo,.logo-link{
+  font-family:Georgia, serif;
+}
+
+/* ---------- Animaciones de aparición al hacer scroll ---------- */
+@media (prefers-reduced-motion: no-preference){
+  .reveal{
+    opacity:0;
+    transform:translateY(28px);
+    transition:opacity .7s ease, transform .7s ease;
+  }
+  .reveal.visible{
+    opacity:1;
+    transform:none;
+  }
 }
 
 /* =========================
@@ -33,57 +66,132 @@ nav{
 }
 
 .btn-accede{
-  background:#111;
-  color:white !important;
-  padding:10px 22px;
+  background:linear-gradient(135deg, var(--dorado), #e6c657);
+  color:#3a2e0a !important;
+  padding:14px 30px;
   border-radius:999px;
-  font-size:14px;
-  letter-spacing:1px;
+  font-size:16px;
+  font-weight:700;
+  letter-spacing:1.5px;
+  font-family:-apple-system,"Segoe UI",system-ui,sans-serif;
   transition:.25s;
 }
 
 .btn-accede:hover{
-  opacity:.85;
+  transform:translateY(-2px);
 }
 
-.menu-btn,
-.close-menu{
-  border:none;
-  background:none;
-  cursor:pointer;
-  color:#111;
+/* Marca 狐 (misma que el campus): vuelve a la portada al pulsarla */
+.brand-kiru{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  text-decoration:none;
+  color:var(--texto) !important;
 }
 
+.brand-kiru .brand-mark{
+  width:38px;
+  height:38px;
+  display:grid;
+  place-items:center;
+  border-radius:10px;
+  background:var(--marron);
+  color:#fff;
+  font-size:20px;
+  font-family:-apple-system,"Segoe UI",system-ui,sans-serif;
+}
+
+/* Botón hamburguesa: tres barras que se cruzan al abrir */
 .menu-btn{
-  font-size:32px;
+  width:52px;
+  height:52px;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  gap:5px;
+
+  border:1px solid var(--linea);
+  border-radius:999px;
+  background:var(--crema2);
+  cursor:pointer;
+  transition:.25s;
+}
+
+.menu-btn span{
+  display:block;
+  width:20px;
+  height:2px;
+  background:var(--marron-osc);
+  border-radius:2px;
+  transition:.3s ease;
+}
+
+.menu-btn:hover{
+  background:var(--arena);
+}
+
+.menu-btn.abierto span:nth-child(1){
+  transform:translateY(7px) rotate(45deg);
+}
+.menu-btn.abierto span:nth-child(2){
+  opacity:0;
+}
+.menu-btn.abierto span:nth-child(3){
+  transform:translateY(-7px) rotate(-45deg);
 }
 
 .close-menu{
-  position:absolute;
-  top:40px;
-  right:40px;
-  font-size:32px;
+  width:44px;
+  height:44px;
+  display:grid;
+  place-items:center;
+
+  border:1px solid var(--linea);
+  border-radius:999px;
+  background:var(--crema2);
+  color:var(--texto);
+  font-size:16px;
+  cursor:pointer;
+  transition:.25s;
+}
+
+.close-menu:hover{
+  background:var(--arena);
+  transform:rotate(90deg);
+}
+
+/* Botón secundario pequeño de las cabeceras (Reservar / WhatsApp) */
+.mini-btn{
+  padding:10px 20px;
+  border:1px solid var(--marron);
+  border-radius:999px;
+  color:var(--marron) !important;
+  font-size:14px;
+  transition:.25s;
+}
+
+.mini-btn:hover{
+  background:var(--marron);
+  color:#fff !important;
 }
 
 /* =========================
-   MENÚ OVERLAY
+   MENÚ LATERAL
 ========================= */
 
 .menu-overlay{
   position:fixed;
   inset:0;
-  background:#f7f6f2;
+  background:rgba(58,50,42,.35);
+  backdrop-filter:blur(5px);
+  -webkit-backdrop-filter:blur(5px);
   z-index:999;
-
-  display:flex;
-  flex-direction:column;
-  justify-content:center;
-  align-items:center;
-  gap:24px;
 
   opacity:0;
   pointer-events:none;
-  transition:.3s ease;
+  transition:opacity .3s ease;
 }
 
 .menu-overlay.active{
@@ -91,15 +199,96 @@ nav{
   pointer-events:auto;
 }
 
-.menu-overlay a{
-  text-decoration:none;
-  color:#111;
-  font-size:34px;
-  transition:.2s;
+.menu-panel{
+  position:absolute;
+  top:0;
+  right:0;
+  bottom:0;
+  width:min(400px, 100%);
+
+  display:flex;
+  flex-direction:column;
+  padding:28px 34px 34px;
+  overflow-y:auto;
+
+  background:var(--crema);
+  box-shadow:-20px 0 60px rgba(0,0,0,.15);
+
+  transform:translateX(100%);
+  transition:transform .35s cubic-bezier(.22,.8,.3,1);
 }
 
-.menu-overlay a:hover{
-  opacity:.6;
+.menu-overlay.active .menu-panel{
+  transform:none;
+}
+
+.menu-top{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:40px;
+}
+
+.menu-links{
+  display:flex;
+  flex-direction:column;
+  flex:1;
+}
+
+.menu-links a{
+  font-family:Georgia, serif;
+  font-size:28px;
+  color:var(--texto);
+  padding:14px 0;
+  border-bottom:1px solid var(--linea);
+
+  opacity:0;
+  transform:translateX(24px);
+  transition:opacity .4s ease, transform .4s ease, color .2s, padding .2s;
+}
+
+.menu-overlay.active .menu-links a{
+  opacity:1;
+  transform:none;
+}
+
+/* El retardo escalonado solo afecta a la entrada (opacity y transform),
+   no al color ni al padding del hover. */
+.menu-links a:nth-child(1){ transition-delay:.05s,.05s,0s,0s }
+.menu-links a:nth-child(2){ transition-delay:.1s,.1s,0s,0s }
+.menu-links a:nth-child(3){ transition-delay:.15s,.15s,0s,0s }
+.menu-links a:nth-child(4){ transition-delay:.2s,.2s,0s,0s }
+.menu-links a:nth-child(5){ transition-delay:.25s,.25s,0s,0s }
+.menu-links a:nth-child(6){ transition-delay:.3s,.3s,0s,0s }
+
+.menu-links a:hover{
+  color:var(--marron);
+  padding-left:8px;
+}
+
+.menu-acciones{
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+  margin-top:34px;
+}
+
+.menu-acciones a{
+  text-align:center;
+}
+
+.menu-cta{
+  padding:14px 30px;
+  border:1px solid var(--marron);
+  border-radius:999px;
+  color:var(--marron) !important;
+  font-size:15px;
+  transition:.25s;
+}
+
+.menu-cta:hover{
+  background:var(--marron);
+  color:#fff !important;
 }
 
 /* =========================
@@ -161,9 +350,9 @@ h1{
 }
 
 .primary{
-  background:#111;
+  background:var(--marron);
   color:white;
-  border:1px solid #111;
+  border:1px solid var(--marron);
 
 }
 .primary,
@@ -175,21 +364,91 @@ h1{
 }
 
 .primary:hover{
-  opacity:.9;
+  background:var(--marron-osc);
+  border-color:var(--marron-osc);
 }
 
 .secondary{
-  color:#111;
-  border:1px solid #111;
+  color:var(--marron);
+  border:1px solid var(--marron);
 }
 
 .secondary:hover{
-  background:#111;
-  color:white;
+  background:var(--marron);
+  color:white !important;
 }
 .secondary,
 .secondary:visited{
-  color:#111 !important;
+  color:var(--marron) !important;
+}
+
+/* =========================
+   PORTADA CONDENSADA
+   (menos espacio en blanco, solo en la página principal)
+========================= */
+
+.pagina-inicio .hero{
+  min-height:78vh;
+  padding:32px 7% 60px;
+}
+
+.pagina-inicio h1{
+  font-size:72px;
+  margin-bottom:18px;
+}
+
+.pagina-inicio .subtitle{
+  font-size:20px;
+  line-height:1.6;
+  margin-bottom:30px;
+}
+
+.pagina-inicio .quote{
+  padding:64px 7%;
+}
+
+.pagina-inicio .quote h2{
+  font-size:46px;
+}
+
+.pagina-inicio .testimonials{
+  padding:70px 7%;
+}
+
+.pagina-inicio .testimonials h2{
+  font-size:38px;
+  margin-bottom:40px;
+}
+
+.pagina-inicio blockquote{
+  font-size:25px;
+  margin:0 auto 36px;
+}
+
+@media(max-width:900px){
+  .pagina-inicio .hero{
+    min-height:auto;
+    padding:24px 6% 50px;
+  }
+  .pagina-inicio h1{
+    font-size:46px;
+  }
+  .pagina-inicio .quote{
+    padding:44px 6%;
+  }
+  .pagina-inicio .quote h2{
+    font-size:30px;
+  }
+  .pagina-inicio .testimonials{
+    padding:50px 6%;
+  }
+  .pagina-inicio .testimonials h2{
+    font-size:30px;
+  }
+  .pagina-inicio blockquote{
+    font-size:20px;
+    margin-bottom:28px;
+  }
 }
 
 /* =========================
@@ -214,7 +473,9 @@ h1{
 ========================= */
 
 .testimonials{
-  background:white;
+  background:var(--crema2);
+  border-top:1px solid var(--linea);
+  border-bottom:1px solid var(--linea);
   padding:120px 7%;
 }
 
@@ -254,17 +515,17 @@ blockquote span{
 }
 
 .programa-card{
-  background:#f9f4ec;
-  border:1px solid #e4d8c7;
+  background:var(--crema2);
+  border:1px solid var(--linea);
   border-radius:20px;
   padding:35px;
   position:relative;
 
-  box-shadow:0 10px 30px rgba(0,0,0,.05);
+  box-shadow:var(--sombra);
 }
 
 .programa-card.destacado{
-  border:2px solid #c8a97e;
+  border:2px solid var(--dorado);
   transform:scale(1.02);
 }
 
@@ -273,8 +534,8 @@ blockquote span{
   top:-12px;
   right:20px;
 
-  background:#c8a97e;
-  color:white;
+  background:var(--dorado);
+  color:#3a2e0a;
 
   padding:8px 16px;
   border-radius:999px;
@@ -313,7 +574,7 @@ blockquote span{
 
 .programa-card li.si::before{
   content:"✓";
-  color:#8a9a5b;
+  color:var(--oliva);
   font-weight:bold;
   font-size:1.2rem;
 }
@@ -363,17 +624,17 @@ blockquote span{
 }
 
 .tarifa-card{
-  background:#f9f4ec;
-  border:1px solid #e4d8c7;
+  background:var(--crema2);
+  border:1px solid var(--linea);
   border-radius:20px;
   padding:35px;
 
-  box-shadow:0 10px 30px rgba(0,0,0,.05);
+  box-shadow:var(--sombra);
   position:relative;
 }
 
 .tarifa-card.destacado{
-  border:2px solid #c8a97e;
+  border:2px solid var(--dorado);
 }
 
 .tarifa-card h3{
@@ -406,21 +667,6 @@ blockquote span{
   color:#3d342b;
 }
 
-.etiqueta{
-  position:absolute;
-  top:-12px;
-  right:20px;
-
-  background:#c8a97e;
-  color:white;
-
-  padding:8px 16px;
-  border-radius:999px;
-
-  font-size:.8rem;
-  font-weight:600;
-}
-
 /* =========================
    SUBPÁGINAS
 ========================= */
@@ -448,11 +694,12 @@ blockquote span{
 }
 
 .faq-item{
-  background:white;
+  background:var(--crema2);
+  border:1px solid var(--linea);
   border-radius:24px;
   margin-bottom:18px;
   padding:10px 28px;
-  box-shadow:0 10px 25px rgba(0,0,0,.04);
+  box-shadow:var(--sombra);
 }
 
 .faq-question{
@@ -499,12 +746,13 @@ blockquote span{
 }
 
 .family-card{
-  background:white;
+  background:var(--crema2);
+  border:1px solid var(--linea);
   border-radius:28px;
   padding:40px;
   text-decoration:none;
-  color:#111;
-  box-shadow:0 10px 25px rgba(0,0,0,.04);
+  color:var(--texto);
+  box-shadow:var(--sombra);
   transition:.25s;
 }
 
@@ -588,8 +836,13 @@ blockquote span{
     font-size:20px;
   }
 
-  .menu-overlay a{
-    font-size:28px;
+  .menu-links a{
+    font-size:24px;
+  }
+
+  .btn-accede{
+    padding:12px 22px;
+    font-size:14px;
   }
 
   .program-table{
@@ -630,7 +883,8 @@ blockquote span{
   max-width: 900px;
   margin: 0 auto 100px;
   padding: 50px;
-  background: white;
+  background: var(--crema2);
+  border: 1px solid var(--linea);
   border-radius: 32px;
 }
 
@@ -679,7 +933,8 @@ blockquote span{
   display:flex;
   gap:50px;
   align-items:center;
-  background:white;
+  background:var(--crema2);
+  border:1px solid var(--linea);
   border-radius:32px;
   padding:40px;
 }
@@ -748,12 +1003,13 @@ a:visited{
 /* TARJETAS */
 
 .family-card{
-  background:white;
+  background:var(--crema2);
+  border:1px solid var(--linea);
   border-radius:24px;
   padding:40px;
   text-decoration:none;
-  color:#111;
-  box-shadow:0 8px 24px rgba(0,0,0,.05);
+  color:var(--texto);
+  box-shadow:var(--sombra);
   transition:.25s;
 }
 

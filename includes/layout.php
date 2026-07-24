@@ -23,10 +23,10 @@ function render_header(string $titulo, string $tema = 'panel', string $mundo = '
 </head>
 <body class="<?= e($bodyClass) ?>">
 <header class="topbar">
-    <div class="brand">
+    <a class="brand" href="<?= url('index.php') ?>" title="Ir a la página principal">
         <span class="brand-mark">狐</span>
         <span class="brand-name"><?= e(APP_NAME) ?></span>
-    </div>
+    </a>
     <?php if ($nav): ?>
     <nav class="mainnav">
         <?php foreach ($nav as $item): ?>

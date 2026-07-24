@@ -6,13 +6,15 @@ web_menu();
 
   <header class="subpage-hero">
     <nav>
-      <a href="<?= url('index.php') ?>" class="logo-link">Método Kiru</a>
-
-      <a href="<?= CALENDLY_URL ?>"
-         target="_blank"
-         class="mini-btn">
-        Reservar llamada
-      </a>
+      <?php web_brand() ?>
+      <div class="nav-actions">
+        <a href="<?= CALENDLY_URL ?>"
+           target="_blank"
+           class="mini-btn">
+          Reservar llamada
+        </a>
+        <?php web_menu_btn() ?>
+      </div>
     </nav>
 
     <div class="subpage-content">

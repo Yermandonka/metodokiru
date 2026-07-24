@@ -39,7 +39,7 @@ code { background: #efe7d8; padding: 1px 6px; border-radius: 6px; font-size: .85
     padding: 12px 26px; background: var(--crema2);
     border-bottom: 1px solid var(--linea); position: sticky; top: 0; z-index: 20;
 }
-.brand { display: flex; align-items: center; gap: 10px; font-weight: 700; }
+.brand { display: flex; align-items: center; gap: 10px; font-weight: 700; text-decoration: none; }
 .brand-mark {
     width: 34px; height: 34px; display: grid; place-items: center; border-radius: 10px;
     background: var(--marron); color: #fff; font-size: 18px;
@@ -192,7 +192,10 @@ code { background: #efe7d8; padding: 1px 6px; border-radius: 6px; font-size: .85
     background: var(--crema2); border-radius: 22px; padding: 40px 38px; width: min(340px, 92vw);
     box-shadow: 0 20px 50px rgba(74,63,51,.18); text-align: center;
 }
-.login-logo { width: 60px; height: 60px; margin: 0 auto 14px; display: grid; place-items: center; background: var(--marron); color: #fff; font-size: 30px; border-radius: 18px; }
+.login-logo { width: 60px; height: 60px; margin: 0 auto 14px; display: grid; place-items: center; background: var(--marron); color: #fff; font-size: 30px; border-radius: 18px; text-decoration: none; transition: transform .2s; }
+.login-logo:hover { transform: scale(1.06); }
+.login-check { display: flex; align-items: center; gap: 8px; font-size: .85rem; color: var(--marron-osc); font-weight: 600; text-align: left; margin-bottom: 12px; cursor: pointer; }
+.login-check input { width: auto !important; margin: 0 !important; accent-color: var(--marron); }
 .login-card h1 { margin: 0; color: var(--marron-osc); }
 .login-sub { color: var(--muted); margin: 4px 0 20px; }
 .login-card label { display: block; text-align: left; font-size: .82rem; font-weight: 600; color: var(--marron-osc); margin-bottom: 12px; }

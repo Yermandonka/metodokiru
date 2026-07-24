@@ -4,7 +4,7 @@
  * El acceso a la aplicación (campus) está en el Área de Familias / login.php.
  */
 require_once __DIR__ . '/includes/web_layout.php';
-web_head('Método Kiru');
+web_head('Método Kiru', 'pagina-inicio');
 web_menu();
 ?>
 
@@ -12,10 +12,10 @@ web_menu();
   <header class="hero">
 
     <nav>
-      <div class="logo">Método Kiru</div>
+      <?php web_brand() ?>
       <div class="nav-actions">
         <a href="<?= url('login.php') ?>" class="btn-accede">ACCEDE</a>
-        <button class="menu-btn">☰</button>
+        <?php web_menu_btn() ?>
       </div>
     </nav>
 
