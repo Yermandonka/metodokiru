@@ -58,7 +58,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Inicia sesión automáticamente y la mantiene iniciada.
         session_regenerate_id(true);
         $_SESSION['user_id'] = $uid;
-        remember_crear($uid);
+        if (!empty($_POST['recuerdame'])) {
+            remember_crear($uid);
+        }
         redirect('dashboard.php');
     }
 }
@@ -73,7 +75,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </head>
 <body class="login-body">
     <div class="login-card">
-        <div class="login-logo">狐</div>
+        <a class="login-logo" href="<?= url('index.php') ?>" title="Ir a la página principal">狐</a>
         <h1>Crear cuenta</h1>
         <p class="login-sub">Únete a Método Kiru</p>
 
@@ -102,6 +104,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </label>
             <label>Repite la contraseña
                 <input type="password" name="password2" required>
+            </label>
+            <label class="login-check">
+                <input type="checkbox" name="recuerdame" checked>
+                Mantener la sesión iniciada
             </label>
             <button type="submit">Crear cuenta</button>
         </form>

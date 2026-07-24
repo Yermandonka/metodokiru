@@ -17,7 +17,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         session_regenerate_id(true);
         $_SESSION['user_id'] = $user['id'];
         // Mantiene la sesión iniciada aunque se cierre el navegador.
-        remember_crear((int) $user['id']);
+        if (!empty($_POST['recuerdame'])) {
+            remember_crear((int) $user['id']);
+        }
         redirect('dashboard.php');
     }
     $error = 'Usuario o contraseña incorrectos.';
@@ -33,7 +35,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </head>
 <body class="login-body">
     <div class="login-card">
-        <div class="login-logo">狐</div>
+        <a class="login-logo" href="<?= url('index.php') ?>" title="Ir a la página principal">狐</a>
         <h1>Método Kiru</h1>
         <p class="login-sub">Entra en tu mundo</p>
         <?php if ($error): ?><div class="login-error"><?= e($error) ?></div><?php endif; ?>
@@ -43,6 +45,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </label>
             <label>Contraseña
                 <input type="password" name="password" required>
+            </label>
+            <label class="login-check">
+                <input type="checkbox" name="recuerdame" checked>
+                Mantener la sesión iniciada
             </label>
             <button type="submit">Entrar</button>
         </form>
