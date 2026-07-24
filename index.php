@@ -13,7 +13,10 @@ web_menu();
 
     <nav>
       <div class="logo">Método Kiru</div>
-      <button class="menu-btn">☰</button>
+      <div class="nav-actions">
+        <a href="<?= url('login.php') ?>" class="btn-accede">ACCEDE</a>
+        <button class="menu-btn">☰</button>
+      </div>
     </nav>
 
     <div class="hero-content">

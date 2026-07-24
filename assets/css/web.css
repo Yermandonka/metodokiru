@@ -26,6 +26,26 @@ nav{
   font-weight:400;
 }
 
+.nav-actions{
+  display:flex;
+  align-items:center;
+  gap:16px;
+}
+
+.btn-accede{
+  background:#111;
+  color:white !important;
+  padding:10px 22px;
+  border-radius:999px;
+  font-size:14px;
+  letter-spacing:1px;
+  transition:.25s;
+}
+
+.btn-accede:hover{
+  opacity:.85;
+}
+
 .menu-btn,
 .close-menu{
   border:none;
