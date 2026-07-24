@@ -1049,3 +1049,267 @@ h1{
   }
 
 }
+/* =========================
+   MENÚ ABIERTO: sin scroll de fondo
+   (evita el rayado del desenfoque en móvil)
+========================= */
+
+body.menu-abierto{
+  overflow:hidden;
+}
+
+.menu-panel{
+  overscroll-behavior:contain;
+}
+
+/* =========================
+   AJUSTES MÓVIL DE LA WEB PÚBLICA
+   (elementos más pequeños y con aire)
+========================= */
+
+@media(max-width:900px){
+
+  nav{
+    gap:10px;
+  }
+
+  .nav-actions{
+    gap:10px;
+  }
+
+  .brand-kiru{
+    gap:8px;
+  }
+
+  .brand-kiru .brand-mark{
+    width:34px;
+    height:34px;
+    font-size:17px;
+  }
+
+  .brand-kiru .logo{
+    font-size:17px;
+  }
+
+  .menu-btn{
+    width:44px;
+    height:44px;
+    gap:4px;
+  }
+
+  .menu-btn span{
+    width:17px;
+  }
+
+  .close-menu{
+    width:40px;
+    height:40px;
+  }
+
+  .mini-btn{
+    padding:8px 14px;
+    font-size:13px;
+  }
+
+  .btn-accede{
+    padding:11px 18px;
+    font-size:13px;
+    letter-spacing:1px;
+  }
+
+  /* Separa el contenido de la cabecera */
+  .hero-content,
+  .subpage-content{
+    margin-top:36px;
+  }
+
+  .subpage-hero{
+    padding:20px 6% 40px;
+  }
+
+  h1{
+    font-size:40px;
+    letter-spacing:-1px;
+  }
+
+  .subtitle{
+    font-size:17px;
+  }
+
+  .hero-buttons{
+    gap:10px;
+    margin-top:6px;
+  }
+
+  .hero-buttons a{
+    padding:14px 24px;
+    font-size:15px;
+  }
+
+  .programas-comparacion{
+    margin:32px auto;
+    gap:18px;
+    padding:0 4px;
+  }
+
+  .programa-card{
+    padding:24px;
+  }
+
+  .programa-card.destacado{
+    transform:none;
+  }
+
+  .programa-header h3{
+    font-size:1.4rem;
+  }
+
+  .programa-card li{
+    padding:10px 0;
+    font-size:.95rem;
+  }
+
+  .tarifas-grid{
+    margin:28px auto;
+    gap:18px;
+    padding:0 16px;
+  }
+
+  .tarifa-card{
+    padding:24px;
+  }
+
+  .tarifa-card h3{
+    font-size:1.4rem;
+    margin-bottom:16px;
+  }
+
+  .precio-item{
+    padding:14px 0;
+  }
+
+  .precio-item strong{
+    font-size:1.05rem;
+  }
+
+  .program-note{
+    font-size:.9rem;
+    padding:0 16px;
+  }
+
+  .family-dashboard{
+    padding:24px 6% 60px;
+    gap:16px;
+  }
+
+  .family-card{
+    padding:24px;
+  }
+
+  .family-card h2{
+    font-size:24px;
+    margin-bottom:10px;
+  }
+
+  .family-card span{
+    font-size:.95rem;
+  }
+
+  .faq-section{
+    padding:20px 6% 60px;
+  }
+
+  .faq-item{
+    padding:4px 20px;
+    border-radius:18px;
+    margin-bottom:12px;
+  }
+
+  .faq-question{
+    font-size:17px;
+    padding:18px 0;
+  }
+
+  .faq-answer p{
+    font-size:15px;
+    padding-bottom:18px;
+  }
+
+  .menu-panel{
+    padding:20px 24px 28px;
+  }
+
+  .menu-top{
+    margin-bottom:28px;
+  }
+
+  .menu-links a{
+    font-size:22px;
+    padding:12px 0;
+  }
+
+  .quote h2{
+    font-size:30px;
+  }
+
+  .testimonials h2{
+    font-size:28px;
+    margin-bottom:36px;
+  }
+
+  blockquote{
+    font-size:20px;
+    margin-bottom:32px;
+  }
+}
+
+@media(max-width:640px){
+
+  h1,
+  .pagina-inicio h1{
+    font-size:33px;
+  }
+
+  .subtitle,
+  .pagina-inicio .subtitle{
+    font-size:16px;
+  }
+
+  .eyebrow{
+    margin-bottom:12px;
+  }
+
+  .quote h2,
+  .pagina-inicio .quote h2{
+    font-size:24px;
+  }
+
+  .testimonials h2,
+  .pagina-inicio .testimonials h2{
+    font-size:24px;
+  }
+
+  blockquote,
+  .pagina-inicio blockquote{
+    font-size:17px;
+    margin-bottom:26px;
+  }
+
+  blockquote span{
+    font-size:14px;
+  }
+
+  .brand-kiru .logo{
+    font-size:15px;
+  }
+
+  .hero-buttons a{
+    width:100%;
+    text-align:center;
+  }
+
+  .hero-content,
+  .subpage-content{
+    margin-top:28px;
+  }
+}

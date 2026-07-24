@@ -9,12 +9,15 @@ document.addEventListener("DOMContentLoaded", () => {
     menuBtn.addEventListener("click", () => {
       overlay.classList.add("active");
       menuBtn.classList.add("abierto");
+      // Bloquea el scroll de la página mientras el menú está abierto.
+      document.body.classList.add("menu-abierto");
     });
   }
   if (closeBtn && overlay) {
     const cerrar = () => {
       overlay.classList.remove("active");
       if (menuBtn) menuBtn.classList.remove("abierto");
+      document.body.classList.remove("menu-abierto");
     };
     closeBtn.addEventListener("click", cerrar);
     // También se cierra pulsando fuera del panel o con Escape.
