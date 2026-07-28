@@ -486,6 +486,7 @@
        se ocultan las barras de la app y el juego ocupa toda la pantalla. */
     function pantallaCompletaMovil() {
         if (!window.matchMedia('(max-width: 820px)').matches) return;
+        document.body.classList.add('ingles-jugando');
         document.body.classList.add('ingles-inmersivo');
         var raiz = document.documentElement;
         var pedir = raiz.requestFullscreen || raiz.webkitRequestFullscreen;
@@ -505,6 +506,9 @@
     }
     var btnSalir = $('inglesSalir');
     if (btnSalir) btnSalir.addEventListener('click', salirPantallaCompleta);
+    // Botón ⛶: vuelve a la pantalla completa después de haber salido.
+    var btnEntrar = $('inglesEntrar');
+    if (btnEntrar) btnEntrar.addEventListener('click', pantallaCompletaMovil);
 
     function empezar(boton) {
         pantallaCompletaMovil(); // dentro del toque del usuario

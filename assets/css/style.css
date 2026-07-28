@@ -523,6 +523,11 @@ img { max-width: 100%; height: auto; }
 .ingles-cuerdas { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 2; overflow: visible; }
 .cuerda { fill: none; stroke-width: 4; stroke-linecap: round; opacity: .95; transition: stroke-dashoffset .5s ease; }
 
+/* La zona de resultado + botón se queda pegada abajo: nunca hay que
+   hacer scroll para pulsar «Continue». */
+.ingles-pie { position: sticky; bottom: 0; z-index: 5; background: var(--crema2); padding: 8px 0 12px; border-radius: 12px 12px 0 0; }
+body.ingles-inmersivo .ingles-pie { padding-bottom: calc(12px + env(safe-area-inset-bottom)); }
+
 .ingles-feedback { display: flex; align-items: center; gap: 12px; padding: 14px 18px; border-radius: 16px; margin-bottom: 14px; font-weight: 800; font-size: 1.05rem; animation: kiru-sube .3s ease; }
 .ingles-feedback.ok { background: #d7ffb8; color: #3f9302; }
 .ingles-feedback.mal { background: #ffdfe0; color: #ea2b2b; }
@@ -557,9 +562,19 @@ img { max-width: 100%; height: auto; }
 /* ---------- Modo inmersivo en móvil ----------
    Alternativa al fullscreen nativo (iPhone no lo permite): se ocultan las
    barras de la app y el juego ocupa toda la pantalla, con botón ✕ para salir. */
-.ingles-salir { display: none; }
+.ingles-salir, .ingles-entrar { display: none; }
 
 @media (max-width: 820px) {
+    /* Botón ⛶ para VOLVER a pantalla completa tras salir (mientras se juega) */
+    body.ingles-jugando:not(.ingles-inmersivo) .ingles-entrar {
+        display: grid; place-items: center;
+        position: fixed; bottom: 16px; right: 12px; z-index: 95;
+        width: 46px; height: 46px; border-radius: 999px; border: none;
+        background: #58cc02; color: #fff; box-shadow: 0 3px 0 #46a302;
+        font-size: 19px; cursor: pointer;
+    }
+    body.ingles-jugando:not(.ingles-inmersivo) .ingles-entrar:active { transform: translateY(2px); box-shadow: 0 1px 0 #46a302; }
+
     body.ingles-inmersivo { overflow: hidden; }
     body.ingles-inmersivo .topbar,
     body.ingles-inmersivo .foot,
@@ -584,15 +599,23 @@ img { max-width: 100%; height: auto; }
 @media (max-width: 640px) {
     .ingles-banner { flex-wrap: wrap; }
     .ingles-hero { flex-direction: column; align-items: center; text-align: center; }
-    .ingles-top { flex-wrap: wrap; gap: 8px; }
+    .ingles-top { flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
     .ingles-top .progress { flex: 1 1 100%; }
-    .ingles-opciones { grid-template-columns: 1fr; }
-    .ingles-opcion { padding: 14px; font-size: 1rem; }
-    .ingles-enunciado { font-size: 1.1rem; }
-    .ingles-parejas { gap: 10px 34px; }
-    .ingles-emoji { font-size: 3.2rem; }
+    /* Compacto: el ejercicio entero debe caber en la pantalla */
+    .ingles-opciones { grid-template-columns: 1fr; gap: 8px; }
+    .ingles-opcion { padding: 12px 14px; font-size: 1rem; }
+    .ingles-enunciado { font-size: 1.05rem; margin: 2px 0 12px; }
+    .ingles-tipo { margin-bottom: 6px; }
+    .ingles-audio { padding: 10px 16px; margin-bottom: 12px; }
+    .ingles-zona { min-height: 48px; margin-bottom: 10px; }
+    .ingles-banco { min-height: 40px; margin-bottom: 10px; }
+    .ingles-chip { padding: 9px 15px; }
+    .ingles-parejas { gap: 8px 34px; }
+    .ingles-col { gap: 8px; }
+    .ingles-emoji { font-size: 3rem; margin-bottom: 10px; }
     .ingles-leccion { font-size: 1.05rem; padding: 14px 16px; }
-    .ingles-feedback { font-size: .95rem; padding: 12px 14px; }
+    .ingles-feedback { font-size: .95rem; padding: 10px 14px; margin-bottom: 10px; }
+    #inglesAccion { padding: 13px; }
     .ingles-fin-ico { font-size: 3.2rem; }
 }
 

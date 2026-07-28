@@ -36,8 +36,10 @@ render_header('Inglés', 'alumno', $mundo, nav_alumno('ingles'));
         <span class="muted" id="inglesPaso"></span>
     </div>
     <div id="ejercicio"></div>
-    <div class="ingles-feedback" id="inglesFeedback" hidden></div>
-    <button class="btn" id="inglesAccion" type="button" hidden>Continue</button>
+    <div class="ingles-pie">
+        <div class="ingles-feedback" id="inglesFeedback" hidden></div>
+        <button class="btn" id="inglesAccion" type="button" hidden>Continue</button>
+    </div>
 </div>
 
 <!-- Resultado -->
@@ -50,8 +52,9 @@ render_header('Inglés', 'alumno', $mundo, nav_alumno('ingles'));
     </div>
 </div>
 
-<!-- Sale del modo pantalla completa / inmersivo (solo visible en móvil jugando) -->
+<!-- Salir / volver al modo pantalla completa (solo visibles en móvil jugando) -->
 <button class="ingles-salir" id="inglesSalir" type="button" aria-label="Exit full screen">✕</button>
+<button class="ingles-entrar" id="inglesEntrar" type="button" aria-label="Full screen">⛶</button>
 
 <script>
     window.KIRU_INGLES = { api: <?= json_encode(url('alumno/ingles_api.php')) ?> };
