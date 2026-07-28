@@ -18,12 +18,18 @@
 }
 
 * { box-sizing: border-box; }
+html { min-height: 100%; }
 body {
     margin: 0;
     font-family: -apple-system, "Segoe UI", system-ui, sans-serif;
     color: var(--texto);
     background: var(--crema);
     line-height: 1.5;
+    /* Columna a pantalla completa: el pie queda abajo del todo aunque haya poco contenido */
+    min-height: 100vh;
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
 }
 a { color: var(--marron); }
 h1, h2, h3, h4 { margin: 0 0 .4em; font-weight: 600; letter-spacing: -.01em; }
@@ -64,7 +70,7 @@ code { background: #efe7d8; padding: 1px 6px; border-radius: 6px; font-size: .85
 .btn-logout:hover { background: var(--arena); }
 
 /* ---------- Estructura ---------- */
-.wrap { max-width: 1080px; margin: 0 auto; padding: 28px 22px 60px; }
+.wrap { max-width: 1080px; width: 100%; flex: 1; margin: 0 auto; padding: 28px 22px 60px; }
 .page-head { margin-bottom: 18px; }
 .page-title { margin-bottom: 18px; }
 .section-title { margin: 4px 0 14px; color: var(--marron-osc); }
@@ -220,13 +226,21 @@ code { background: #efe7d8; padding: 1px 6px; border-radius: 6px; font-size: .85
 .tema-alumno .card { background: rgba(255,255,255,.92); color: var(--texto); border: none; box-shadow: 0 10px 30px rgba(0,0,0,.25); }
 .tema-alumno .page-title { color: #fff; text-shadow: 0 2px 8px rgba(0,0,0,.4); }
 
+/* El degradado del mundo va en una capa FIJA del tamaño de la ventana:
+   así cubre siempre toda la pantalla (sin cortes ni repeticiones en páginas
+   cortas) y no se desplaza al hacer scroll. El body lleva un color liso de
+   respaldo para el rebote del scroll en móvil. */
 .tema-alumno::before {
     content: ""; position: fixed; inset: 0; z-index: -2; background-size: cover; background-position: center;
 }
-.mundo-bosque  { background: linear-gradient(160deg, #1f3d2b, #3a6b41 55%, #6f9c5a); }
-.mundo-ciudad  { background: linear-gradient(160deg, #2a3340, #4a5a70 55%, #8a97a8); }
-.mundo-montana { background: linear-gradient(160deg, #2c2740, #5b4a7a 55%, #b79fd0); }
-.mundo-cielo   { background: radial-gradient(circle at 50% 20%, #2a3a66, #0d1330 70%); }
+.mundo-bosque  { background: #1f3d2b; }
+.mundo-ciudad  { background: #2a3340; }
+.mundo-montana { background: #2c2740; }
+.mundo-cielo   { background: #0d1330; }
+.mundo-bosque::before  { background: linear-gradient(160deg, #1f3d2b, #3a6b41 55%, #6f9c5a); }
+.mundo-ciudad::before  { background: linear-gradient(160deg, #2a3340, #4a5a70 55%, #8a97a8); }
+.mundo-montana::before { background: linear-gradient(160deg, #2c2740, #5b4a7a 55%, #b79fd0); }
+.mundo-cielo::before   { background: radial-gradient(circle at 50% 20%, #2a3a66, #0d1330 70%); }
 /* estrellas para el mundo cielo */
 .mundo-cielo::after {
     content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
