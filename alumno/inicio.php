@@ -2,7 +2,40 @@
 require_once __DIR__ . '/../includes/alumno_ctx.php';
 require_once __DIR__ . '/../includes/layout.php';
 
-$aid       = (int) $alumno['id'];
+$aid = (int) $alumno['id'];
+
+// El alumno puede cambiar su animal y su nombre de usuario desde aquí.
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['accion'] ?? '') === 'mi_perfil') {
+    $avatar   = $_POST['avatar'] ?? '';
+    $username = trim($_POST['username'] ?? '');
+    $errores  = [];
+
+    if (!isset(avatares()[$avatar])) {
+        $avatar = $alumno['avatar'];
+    }
+    if ($username !== $user['username']) {
+        if (!preg_match('/^[a-zA-Z0-9_.]{3,30}$/', $username)) {
+            $errores[] = 'El usuario debe tener 3-30 caracteres (letras, números, _ o .).';
+        } else {
+            $chk = db()->prepare('SELECT COUNT(*) FROM usuarios WHERE username = ? AND id <> ?');
+            $chk->execute([$username, (int) $user['id']]);
+            if ($chk->fetchColumn()) {
+                $errores[] = 'Ese nombre de usuario ya está en uso.';
+            }
+        }
+    }
+
+    if (!$errores) {
+        db()->prepare('UPDATE alumnos SET avatar = ? WHERE id = ?')->execute([$avatar, $aid]);
+        if ($username !== $user['username']) {
+            db()->prepare('UPDATE usuarios SET username = ? WHERE id = ?')->execute([$username, (int) $user['id']]);
+        }
+        flash('¡Perfil actualizado! ✨');
+    } else {
+        flash(implode(' ', $errores));
+    }
+    redirect('alumno/inicio.php');
+}
 $total     = sc_total($aid);
 $semana    = sc_semana($aid);
 $racha     = racha_dias($aid);
@@ -41,8 +74,9 @@ render_header('Inicio', 'alumno', $mundo, nav_alumno('index'));
 ?>
 <div class="hero">
     <div class="hero-avatar">
-        <div class="avatar avatar-<?= e($alumno['avatar']) ?>">🦊</div>
+        <div class="avatar avatar-<?= e($alumno['avatar']) ?>"><?= avatar_emoji($alumno['avatar']) ?></div>
         <span class="nivel-badge"><?= e($nivel['nombre']) ?></span>
+        <button class="btn-editar-perfil" id="btnEditarPerfil" type="button">✏️ Cambiar</button>
     </div>
     <div class="hero-info">
         <h1><?= e($alumno['nombre']) ?></h1>
@@ -75,6 +109,39 @@ render_header('Inicio', 'alumno', $mundo, nav_alumno('index'));
         <?php endif; ?>
     </div>
 </div>
+
+<!-- Editor de perfil (animal + usuario) -->
+<div class="card" id="editorPerfil" hidden>
+    <h3>Tu perfil</h3>
+    <form method="post" class="form">
+        <input type="hidden" name="accion" value="mi_perfil">
+        <label>Elige tu animal</label>
+        <div class="avatar-grid">
+            <?php foreach (avatares() as $k => $emo): ?>
+            <label class="avatar-op">
+                <input type="radio" name="avatar" value="<?= $k ?>" <?= $alumno['avatar'] === $k ? 'checked' : '' ?>>
+                <span class="avatar-emoji"><?= $emo ?></span>
+                <span class="avatar-nombre"><?= ucfirst($k) ?></span>
+            </label>
+            <?php endforeach; ?>
+        </div>
+        <label>Nombre de usuario
+            <input type="text" name="username" value="<?= e($alumno['username']) ?>"
+                   pattern="[a-zA-Z0-9_.]{3,30}" title="3-30 caracteres: letras, números, _ o ." required>
+        </label>
+        <button class="btn">Guardar</button>
+    </form>
+</div>
+
+<!-- Inglés de verano -->
+<a class="card ingles-banner" href="<?= url('alumno/ingles.php') ?>">
+    <span class="ingles-banner-ico">🇬🇧</span>
+    <div>
+        <h3>Inglés de verano</h3>
+        <p class="muted">Mini-juegos tipo Duolingo: traduce, ordena, escucha… y gana SkillCoins.</p>
+    </div>
+    <span class="ingles-banner-go">Jugar →</span>
+</a>
 
 <!-- Recordatorio diario -->
 <?php if (!empty($alumno['mensaje_diario'])): ?>
@@ -124,6 +191,17 @@ render_header('Inicio', 'alumno', $mundo, nav_alumno('index'));
     </div>
 </div>
 
+<script>
+    // Muestra/oculta el editor de perfil.
+    var btnPerfil = document.getElementById('btnEditarPerfil');
+    var editor = document.getElementById('editorPerfil');
+    if (btnPerfil && editor) {
+        btnPerfil.addEventListener('click', function () {
+            editor.hidden = !editor.hidden;
+            if (!editor.hidden) editor.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        });
+    }
+</script>
 <?php
 render_footer();
 ?>

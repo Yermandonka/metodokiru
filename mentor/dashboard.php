@@ -51,7 +51,7 @@ render_header('Panel del mentor', 'panel', '', $nav);
                 $dias = $a['ultima_conexion'] ? (int)((time() - strtotime($a['ultima_conexion'])) / 86400) : null;
             ?>
             <a class="alumno-card" href="<?= url('mentor/alumno.php?id=' . $aid) ?>">
-                <div class="ac-avatar">🦊</div>
+                <div class="ac-avatar"><?= avatar_emoji($a['avatar']) ?></div>
                 <div class="ac-body">
                     <div class="ac-name"><?= e($a['nombre']) ?> <span class="muted">· <?= (int)$a['edad'] ?> años</span></div>
                     <div class="ac-tags">

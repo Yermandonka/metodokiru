@@ -89,7 +89,7 @@ $conexiones = (int) db()->query("SELECT COUNT(*) FROM conexiones WHERE alumno_id
 $minTotal   = (int) db()->query("SELECT COALESCE(SUM(minutos),0) FROM uso_diario WHERE alumno_id=$aid")->fetchColumn();
 $objOk      = (int) db()->query("SELECT COUNT(*) FROM objetivos WHERE alumno_id=$aid AND completado=1")->fetchColumn();
 
-$avatares = ['zorro' => '🦊', 'buho' => '🦉', 'lobo' => '🐺', 'dragon' => '🐉', 'tigre' => '🐯', 'aguila' => '🦅'];
+$avatares = avatares();
 
 render_header('Perfil de ' . $alumno['nombre'], 'panel', '', [['← Volver', $volver, false]]);
 ?>

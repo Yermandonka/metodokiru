@@ -396,3 +396,75 @@ img { max-width: 100%; height: auto; }
     .reward-grid, .alumno-cards { grid-template-columns: 1fr; }
     .hero-meta { gap: 8px 14px; font-size: .82rem; }
 }
+
+/* =========================================================
+   EDITOR DE PERFIL DEL ALUMNO (animal + usuario)
+   ========================================================= */
+.btn-editar-perfil {
+    display: block; margin: 8px auto 0; background: rgba(255,255,255,.85); border: none;
+    border-radius: 999px; padding: 6px 14px; font-size: .8rem; font-weight: 600;
+    color: var(--marron-osc); cursor: pointer;
+}
+.btn-editar-perfil:hover { background: #fff; }
+.avatar-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(86px, 1fr)); gap: 10px; margin: 6px 0 14px; }
+.avatar-op {
+    display: flex; flex-direction: column; align-items: center; gap: 2px;
+    padding: 10px 6px; border: 2px solid var(--linea); border-radius: 14px; cursor: pointer;
+}
+.avatar-op input { display: none; }
+.avatar-op:has(input:checked) { border-color: var(--marron); background: var(--arena); }
+.avatar-emoji { font-size: 1.8rem; }
+.avatar-nombre { font-size: .72rem; color: var(--muted); font-weight: 600; }
+
+/* =========================================================
+   INGLÉS DE VERANO (mini-juegos)
+   ========================================================= */
+.ingles-banner { display: flex; align-items: center; gap: 16px; text-decoration: none; color: var(--texto); border-left: 5px solid var(--oliva); transition: transform .15s; }
+.ingles-banner:hover { transform: translateY(-2px); }
+.ingles-banner h3 { margin: 0; }
+.ingles-banner p { margin: 2px 0 0; }
+.ingles-banner-ico { font-size: 2rem; }
+.ingles-banner-go { margin-left: auto; color: var(--oliva); font-weight: 700; white-space: nowrap; }
+
+.ingles-hero { display: flex; gap: 16px; align-items: flex-start; margin-bottom: 10px; }
+.ingles-ico { font-size: 2.4rem; }
+.ingles-top { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; }
+.ingles-top .progress { flex: 1; margin: 0; }
+.ingles-enunciado { font-size: 1.12rem; font-weight: 600; margin: 4px 0 16px; }
+.ingles-opciones { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+.ingles-opcion {
+    padding: 13px 15px; border: 2px solid var(--linea); border-radius: 12px; background: #fff;
+    color: var(--texto); font: inherit; cursor: pointer; text-align: left;
+    transition: border-color .15s, background .15s;
+}
+.ingles-opcion:hover { border-color: var(--marron); }
+.ingles-opcion.sel { border-color: var(--marron); background: var(--arena); }
+.ingles-opcion.ok { border-color: #4f6b2f; background: #eaf3df; }
+.ingles-opcion.mal { border-color: #b23b3b; background: #f3d6d0; }
+.ingles-audio {
+    display: block; margin: 0 0 16px; background: var(--arena); border: 1px solid var(--linea);
+    border-radius: 14px; padding: 12px 20px; font: inherit; font-size: 1.05rem; cursor: pointer;
+}
+.ingles-audio:hover { background: var(--crema); }
+.ingles-zona {
+    min-height: 54px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+    padding: 8px 2px; border-bottom: 2px dashed var(--linea); margin-bottom: 16px;
+}
+.ingles-banco { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; min-height: 42px; }
+.ingles-chip {
+    padding: 9px 16px; border: 2px solid var(--linea); border-radius: 999px; background: #fff;
+    color: var(--texto); font: inherit; font-weight: 600; cursor: pointer;
+}
+.ingles-chip:hover { border-color: var(--marron); }
+.ingles-parejas { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 22px; margin-bottom: 16px; }
+.ingles-col { display: flex; flex-direction: column; gap: 10px; }
+.ingles-feedback { padding: 12px 16px; border-radius: 12px; margin-bottom: 14px; font-weight: 600; }
+.ingles-feedback.ok { background: #eaf3df; color: #4f6b2f; }
+.ingles-feedback.mal { background: #f3d6d0; color: #a5432f; }
+.ingles-fin { text-align: center; padding: 8px 0 4px; }
+.ingles-fin-ico { font-size: 3.6rem; margin-bottom: 6px; }
+
+@media (max-width: 640px) {
+    .ingles-opciones { grid-template-columns: 1fr; }
+    .ingles-banner { flex-wrap: wrap; }
+}

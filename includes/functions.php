@@ -224,6 +224,22 @@ function sc_add(int $alumnoId, int $cantidad, string $motivo): void
     $stmt->execute([$alumnoId, $cantidad, $motivo]);
 }
 
+/* ---------- Avatares ---------- */
+
+/** Animales disponibles como avatar (clave => emoji). */
+function avatares(): array
+{
+    return [
+        'zorro' => '🦊', 'buho' => '🦉', 'lobo' => '🐺', 'dragon' => '🐉',
+        'tigre' => '🐯', 'aguila' => '🦅', 'panda' => '🐼', 'gato' => '🐱',
+    ];
+}
+
+function avatar_emoji(?string $clave): string
+{
+    return avatares()[$clave] ?? '🦊';
+}
+
 /* ---------- Niveles / Mundos ---------- */
 
 function niveles_todos(): array
@@ -284,37 +300,19 @@ function uso_hoy(int $alumnoId): int
 
 /* ---------- IA (Fase 2) ---------- */
 
-/**
- * Llama a la API de Google Gemini para generar contenido académico.
- * Devuelve el texto o lanza RuntimeException si algo falla / no hay clave.
- */
-function ai_generar(string $tema, int $edad = 12): string
+/** POST a la API de Gemini; devuelve la respuesta decodificada o lanza RuntimeException. */
+function gemini_request(array $payload): array
 {
     if (!GEMINI_API_KEY) {
         throw new RuntimeException('No hay clave de Gemini configurada. Añádela en la variable GEMINI_API_KEY (Railway) o en config/gemini_key.txt (local).');
     }
-    $prompt = "Sobre el tema: \"$tema\", crea contenido educativo en español para un niño de $edad años, "
-        . "claro y motivador, en formato Markdown con estas secciones exactas:\n"
-        . "## Teoría (breve)\n## Ejemplos\n## Ejercicios (5, estilo Duolingo)\n## Soluciones\n"
-        . "Adáptalo a 10-13 años.";
-
-    $payload = json_encode([
-        'system_instruction' => [
-            'parts' => [['text' => 'Eres un tutor del Método Kiru para niños. Explicas de forma sencilla, amena y positiva.']],
-        ],
-        'contents' => [
-            ['parts' => [['text' => $prompt]]],
-        ],
-        'generationConfig' => ['temperature' => 0.7],
-    ]);
-
     $url = 'https://generativelanguage.googleapis.com/v1beta/models/' . GEMINI_MODEL . ':generateContent';
 
     $ch = curl_init($url);
     curl_setopt_array($ch, [
         CURLOPT_RETURNTRANSFER => true,
         CURLOPT_POST => true,
-        CURLOPT_POSTFIELDS => $payload,
+        CURLOPT_POSTFIELDS => json_encode($payload),
         CURLOPT_HTTPHEADER => [
             'Content-Type: application/json',
             'x-goog-api-key: ' . GEMINI_API_KEY,
@@ -332,11 +330,81 @@ function ai_generar(string $tema, int $edad = 12): string
     if (isset($data['error'])) {
         throw new RuntimeException('Gemini: ' . ($data['error']['message'] ?? 'error desconocido'));
     }
+    return is_array($data) ? $data : [];
+}
+
+/**
+ * Llama a la API de Google Gemini para generar contenido académico.
+ * Devuelve el texto o lanza RuntimeException si algo falla / no hay clave.
+ */
+function ai_generar(string $tema, int $edad = 12): string
+{
+    $prompt = "Sobre el tema: \"$tema\", crea contenido educativo en español para un niño de $edad años, "
+        . "claro y motivador, en formato Markdown con estas secciones exactas:\n"
+        . "## Teoría (breve)\n## Ejemplos\n## Ejercicios (5, estilo Duolingo)\n## Soluciones\n"
+        . "Adáptalo a 10-13 años.";
+
+    $data = gemini_request([
+        'system_instruction' => [
+            'parts' => [['text' => 'Eres un tutor del Método Kiru para niños. Explicas de forma sencilla, amena y positiva.']],
+        ],
+        'contents' => [
+            ['parts' => [['text' => $prompt]]],
+        ],
+        'generationConfig' => ['temperature' => 0.7],
+    ]);
     $texto = $data['candidates'][0]['content']['parts'][0]['text'] ?? '';
     if ($texto === '') {
         throw new RuntimeException('Gemini no devolvió contenido (posible bloqueo de seguridad o modelo no disponible).');
     }
     return $texto;
+}
+
+/**
+ * Genera una lección de inglés (ejercicios tipo Duolingo) con Gemini.
+ * $evitar: contenidos ya usados que no deben repetirse.
+ * Devuelve la lista de ejercicios sin validar; lanza RuntimeException si falla.
+ */
+function ai_ingles(int $edad, int $cantidad, array $evitar = []): array
+{
+    $temas = ['los animales', 'la comida', 'la familia', 'el colegio', 'los deportes',
+        'el verano y la playa', 'los viajes', 'la ropa', 'la casa', 'el cuerpo',
+        'los colores y los números', 'las rutinas diarias', 'los hobbies', 'la ciudad',
+        'el tiempo y las estaciones', 'las emociones', 'la naturaleza', 'las fiestas'];
+    $tema = $temas[array_rand($temas)];
+
+    $prompt = "Crea exactamente $cantidad ejercicios de inglés básico (nivel A1-A2, estilo Duolingo) "
+        . "para un niño hispanohablante de $edad años. Tema principal: $tema (puedes mezclar con vocabulario general).\n"
+        . "Mezcla los 5 tipos (al menos uno de cada). Formato exacto de cada tipo:\n"
+        . '- {"tipo":"eleccion","pregunta":"¿Cómo se dice «perro» en inglés?","opciones":["dog","cat","bird","fish"],"correcta":0}' . "\n"
+        . '- {"tipo":"hueco","frase":"I ___ football on Sundays.","opciones":["play","plays","playing","played"],"correcta":0}' . "\n"
+        . '- {"tipo":"ordenar","es":"Me gusta la pizza","palabras":["I","like","pizza"],"solucion":"I like pizza"}' . "\n"
+        . '- {"tipo":"parejas","pares":[{"es":"rojo","en":"red"},{"es":"azul","en":"blue"},{"es":"verde","en":"green"},{"es":"negro","en":"black"}]}' . "\n"
+        . '- {"tipo":"escucha","texto":"apple","opciones":["apple","orange","table","chair"],"correcta":0}' . "\n"
+        . "Reglas: \"correcta\" es el índice (0-3) de la respuesta correcta dentro de \"opciones\"; "
+        . "exactamente 4 opciones; frases cortas y vocabulario cotidiano; "
+        . "en \"ordenar\" la solución usa todas las palabras; en \"parejas\" exactamente 4 pares; "
+        . "en \"escucha\" el texto debe estar entre las opciones.\n";
+    if ($evitar) {
+        $prompt .= 'NO repitas estos contenidos ya usados: ' . implode(' | ', array_slice($evitar, -40)) . "\n";
+    }
+    $prompt .= 'Devuelve SOLO este JSON: {"ejercicios":[...]}';
+
+    $data = gemini_request([
+        'system_instruction' => [
+            'parts' => [['text' => 'Eres un profesor de inglés del Método Kiru para niños. Creas ejercicios variados, divertidos y correctos.']],
+        ],
+        'contents' => [
+            ['parts' => [['text' => $prompt]]],
+        ],
+        'generationConfig' => ['temperature' => 1.0, 'responseMimeType' => 'application/json'],
+    ]);
+    $texto = $data['candidates'][0]['content']['parts'][0]['text'] ?? '';
+    $json = json_decode($texto, true);
+    if (!is_array($json) || empty($json['ejercicios']) || !is_array($json['ejercicios'])) {
+        throw new RuntimeException('Gemini no devolvió ejercicios válidos.');
+    }
+    return $json['ejercicios'];
 }
 
 /* ---------- Markdown ---------- */
