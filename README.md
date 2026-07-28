@@ -44,15 +44,16 @@ Stack: **PHP 8 + MySQL/MariaDB** (pensado para **XAMPP**). Sin dependencias exte
 - Pantalla de SkillCoins (total, semana, mes, faltan para el premio, histórico).
 - Estadísticas con gráficos (SkillCoins por semana/mes, racha, hábitos, objetivos).
 - Recompensas con barra de progreso.
-- **Inglés de verano**: mini-juegos tipo Duolingo (traducir, completar, ordenar, parejas y escucha).
+- **Summer English**: mini-juegos tipo Duolingo con 8 tipos de reto (traducir, completar, ordenar,
+  parejas con cuerdas, escucha, verdadero/falso, escribir y emoji), corrección instantánea,
+  mini-lecciones en inglés sencillo y toda la interfaz del juego en inglés.
   Las lecciones se generan con IA (Gemini) para que no se repitan; sin clave usa un banco local.
-  Cada acierto da 1 SkillCoin (máx. 50/día).
-- El alumno puede cambiar su animal (avatar) y su nombre de usuario desde la pantalla de inicio.
-- **Tiempo de uso** configurable (30 min por defecto): al agotarse muestra “La sesión de hoy ha terminado”.
+  Cada acierto da 1 SkillCoin (máx. 50/día). En móvil se juega a pantalla completa.
+- El alumno puede cambiar su animal (avatar) y su nombre de perfil desde la pantalla de inicio.
 
 **Mentor**
-- Dashboard con tarjetas de alumnos (nombre, nivel, SkillCoins, última conexión, tiempo semanal).
-- Perfil del alumno: editar objetivos, hábitos, mensaje diario, premios, nivel, avatar, tiempo máximo, ajustar SkillCoins.
+- Dashboard con tarjetas de alumnos (nombre, nivel, SkillCoins, última conexión, SkillCoins de la semana).
+- Perfil del alumno: editar objetivos, hábitos, mensaje diario, premios, nivel, avatar, ajustar SkillCoins.
 - Estadísticas por alumno.
 - Notificaciones.
 

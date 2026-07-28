@@ -54,7 +54,6 @@ try {
             nivel_id INT NULL,
             avatar VARCHAR(40) DEFAULT 'zorro',
             mensaje_diario TEXT,
-            tiempo_maximo INT DEFAULT 0,
             ultima_conexion DATETIME NULL,
             FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE
         ) ENGINE=InnoDB",
@@ -95,14 +94,6 @@ try {
             costo INT NOT NULL,
             activa TINYINT(1) DEFAULT 1,
             conseguida TINYINT(1) DEFAULT 0
-        ) ENGINE=InnoDB",
-
-        'uso_diario' => "CREATE TABLE IF NOT EXISTS uso_diario (
-            id INT AUTO_INCREMENT PRIMARY KEY,
-            alumno_id INT NOT NULL,
-            fecha DATE NOT NULL,
-            minutos INT DEFAULT 0,
-            UNIQUE KEY uniq_alumno_fecha (alumno_id, fecha)
         ) ENGINE=InnoDB",
 
         'conexiones' => "CREATE TABLE IF NOT EXISTS conexiones (
@@ -171,8 +162,8 @@ try {
 
         // Alumnos de ejemplo
         $mkAlumno = function (PDO $pdo, int $uid, int $edad, int $mentorId, string $msg) {
-            $st = $pdo->prepare('INSERT INTO alumnos (usuario_id, edad, mentor_id, mensaje_diario, tiempo_maximo)
-                                 VALUES (?,?,?,?,0)');
+            $st = $pdo->prepare('INSERT INTO alumnos (usuario_id, edad, mentor_id, mensaje_diario)
+                                 VALUES (?,?,?,?)');
             $st->execute([$uid, $edad, $mentorId, $msg]);
             return (int) $pdo->lastInsertId();
         };
@@ -220,13 +211,11 @@ try {
         $rc->execute([$aMar, 'Nueva libreta Kiru', 100]);
         $rc->execute([$aIzan, 'Excursión especial', 400]);
 
-        // Conexiones (racha) + uso
+        // Conexiones (racha)
         $cx = $pdo->prepare('INSERT INTO conexiones (alumno_id, fecha) VALUES (?,?)');
-        $ud = $pdo->prepare('INSERT INTO uso_diario (alumno_id, fecha, minutos) VALUES (?,?,?)');
         foreach ([0, 1, 2, 3, 4] as $d) {
             $f = (new DateTime("-$d days"))->format('Y-m-d');
             $cx->execute([$aLeo, $f]);
-            $ud->execute([$aLeo, $f, 15 + $d * 3]);
         }
 
         // Materias (Fase 2)

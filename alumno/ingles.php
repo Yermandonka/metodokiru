@@ -11,21 +11,21 @@ $hoyIngles = (int) $st->fetchColumn();
 
 render_header('Inglés', 'alumno', $mundo, nav_alumno('ingles'));
 ?>
-<h1 class="page-title">Inglés de verano 🇬🇧</h1>
+<h1 class="page-title">Summer English 🇬🇧</h1>
 
 <!-- Portada -->
 <div class="card" id="pantallaInicio">
     <div class="ingles-hero">
         <div class="ingles-ico">🎮</div>
         <div>
-            <h3>Mini-juegos para aprender inglés</h3>
-            <p class="muted">Cada lección tiene 10 retos distintos: traducir, completar frases,
-                ordenar palabras, unir parejas y escuchar. Cada acierto vale <strong>1 SkillCoin</strong>
-                (máximo 50 al día). ¡Cada lección es diferente!</p>
-            <p class="muted">Hoy has ganado <strong><?= $hoyIngles ?></strong> 🪙 con el inglés.</p>
+            <h3>Play mini-games and learn English!</h3>
+            <p class="muted">Each lesson has 10 fun games: translate, complete, order,
+                match and listen. One win = <strong>1 SkillCoin</strong> (max 50 a day).
+                Every lesson is new!</p>
+            <p class="muted">Today you have <strong><?= $hoyIngles ?></strong> 🪙 from English.</p>
         </div>
     </div>
-    <button class="btn" id="inglesEmpezar" type="button">Empezar lección</button>
+    <button class="btn" id="inglesEmpezar" type="button">Start lesson</button>
 </div>
 
 <!-- Juego -->
@@ -37,7 +37,7 @@ render_header('Inglés', 'alumno', $mundo, nav_alumno('ingles'));
     </div>
     <div id="ejercicio"></div>
     <div class="ingles-feedback" id="inglesFeedback" hidden></div>
-    <button class="btn" id="inglesAccion" type="button" disabled>Comprobar</button>
+    <button class="btn" id="inglesAccion" type="button" hidden>Continue</button>
 </div>
 
 <!-- Resultado -->
@@ -46,7 +46,7 @@ render_header('Inglés', 'alumno', $mundo, nav_alumno('ingles'));
         <div class="ingles-fin-ico" id="finIco">🏆</div>
         <h3 id="finTitulo"></h3>
         <p class="muted" id="finDetalle"></p>
-        <button class="btn" id="inglesOtra" type="button">Otra lección</button>
+        <button class="btn" id="inglesOtra" type="button">Play again</button>
     </div>
 </div>
 

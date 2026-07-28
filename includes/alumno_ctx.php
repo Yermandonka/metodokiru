@@ -1,7 +1,7 @@
 <?php
 /**
  * Contexto compartido de las páginas del alumno.
- * Deja disponibles: $user, $alumno, $nivel, $mundo, $navAlumno, $usoHoy, $tiempoMax.
+ * Deja disponibles: $user, $alumno, $nivel, $mundo, $navAlumno.
  * Registra la conexión y calcula el nivel/mundo actual.
  */
 require_once __DIR__ . '/functions.php';
@@ -19,13 +19,6 @@ registrar_conexion((int) $alumno['id']);
 
 $nivel = nivel_actual($alumno);
 $mundo = $nivel['mundo'];
-
-$usoHoy = uso_hoy((int) $alumno['id']);
-// Si el límite global está desactivado, max = 0 (sin límite) pase lo que pase en la BD.
-$tiempoMax = (TIEMPO_LIMITE_ACTIVO ? (int) $alumno['tiempo_maximo'] : 0);
-
-// Datos para el widget de tiempo de uso (lo pinta render_footer).
-$GLOBALS['KIRU_USO'] = ['uso' => $usoHoy, 'max' => $tiempoMax];
 
 function nav_alumno(string $activo): array
 {

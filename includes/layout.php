@@ -54,32 +54,6 @@ function render_footer(): void
     ?>
 </main>
 <footer class="foot">Método Kiru · MVP web · <?= date('Y') ?></footer>
-<?php if (!empty($GLOBALS['KIRU_USO'])):
-    $uso = (int) $GLOBALS['KIRU_USO']['uso'];
-    $max = (int) $GLOBALS['KIRU_USO']['max'];
-    $ilim = $max <= 0; ?>
-    <div class="uso-chip" id="usoChip" title="Tiempo de uso de hoy">
-        ⏳ <span id="usoTexto"><?= $uso ?></span><?= $ilim ? ' min' : '/' . $max . ' min' ?>
-    </div>
-    <?php if (!$ilim): ?>
-    <div class="uso-overlay" id="usoOverlay" hidden>
-        <div class="uso-msg">
-            <div class="uso-ico">🌙</div>
-            <h2>La sesión de hoy ha terminado.</h2>
-            <p>Nos vemos mañana.</p>
-            <a class="btn-logout" href="<?= url('logout.php') ?>">Salir</a>
-        </div>
-    </div>
-    <?php endif; ?>
-    <script>
-        window.KIRU = {
-            base: <?= json_encode(BASE_URL) ?>,
-            uso: <?= $uso ?>,
-            max: <?= $max ?>
-        };
-    </script>
-<?php endif; ?>
-<script src="<?= asset('assets/js/app.js') ?>"></script>
 </body>
 </html>
 <?php

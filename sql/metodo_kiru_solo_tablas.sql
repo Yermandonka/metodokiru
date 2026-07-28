@@ -20,7 +20,6 @@ CREATE TABLE `alumnos` (
   `nivel_id` int(11) DEFAULT NULL,
   `avatar` varchar(40) DEFAULT 'zorro',
   `mensaje_diario` text DEFAULT NULL,
-  `tiempo_maximo` int(11) DEFAULT 30,
   `ultima_conexion` datetime DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `usuario_id` (`usuario_id`),
@@ -30,7 +29,7 @@ CREATE TABLE `alumnos` (
 
 LOCK TABLES `alumnos` WRITE;
 /*!40000 ALTER TABLE `alumnos` DISABLE KEYS */;
-INSERT INTO `alumnos` VALUES (1,3,12,2,NULL,'zorro','Hoy recuerda preparar la mochila antes de dormir.',30,NULL),(2,4,11,2,NULL,'zorro','Solo te faltan unas monedas para tu recompensa.',30,NULL),(3,5,13,2,NULL,'zorro','Esta semana tu objetivo es llegar puntual todos los días.',30,NULL);
+INSERT INTO `alumnos` VALUES (1,3,12,2,NULL,'zorro','Hoy recuerda preparar la mochila antes de dormir.',NULL),(2,4,11,2,NULL,'zorro','Solo te faltan unas monedas para tu recompensa.',NULL),(3,5,13,2,NULL,'zorro','Esta semana tu objetivo es llegar puntual todos los días.',NULL);
 /*!40000 ALTER TABLE `alumnos` ENABLE KEYS */;
 UNLOCK TABLES;
 DROP TABLE IF EXISTS `conexiones`;
@@ -181,24 +180,6 @@ LOCK TABLES `skillcoins_log` WRITE;
 /*!40000 ALTER TABLE `skillcoins_log` DISABLE KEYS */;
 INSERT INTO `skillcoins_log` VALUES (1,1,30,'Objetivo cumplido','2026-06-19 02:59:47'),(2,1,20,'Hábito: leer','2026-06-26 02:59:47'),(3,1,25,'Puntualidad','2026-07-02 02:59:47'),(4,1,15,'Objetivo cumplido','2026-07-08 02:59:47'),(5,1,20,'Racha','2026-07-11 02:59:47'),(6,1,15,'Hábito','2026-07-13 02:59:47'),(7,1,10,'Entrada diaria','2026-07-14 02:59:47'),(8,2,40,'Objetivos','2026-07-04 02:59:47'),(9,2,30,'Hábitos','2026-07-10 02:59:47'),(10,2,15,'Racha','2026-07-13 02:59:47'),(11,3,120,'Reto mensual','2026-06-24 02:59:47'),(12,3,90,'Objetivos','2026-07-05 02:59:47'),(13,3,130,'Constancia','2026-07-12 02:59:47');
 /*!40000 ALTER TABLE `skillcoins_log` ENABLE KEYS */;
-UNLOCK TABLES;
-DROP TABLE IF EXISTS `uso_diario`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `uso_diario` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `alumno_id` int(11) NOT NULL,
-  `fecha` date NOT NULL,
-  `minutos` int(11) DEFAULT 0,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `uniq_alumno_fecha` (`alumno_id`,`fecha`)
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
-LOCK TABLES `uso_diario` WRITE;
-/*!40000 ALTER TABLE `uso_diario` DISABLE KEYS */;
-INSERT INTO `uso_diario` VALUES (1,1,'2026-07-14',15),(2,1,'2026-07-13',18),(3,1,'2026-07-12',21),(4,1,'2026-07-11',24),(5,1,'2026-07-10',27);
-/*!40000 ALTER TABLE `uso_diario` ENABLE KEYS */;
 UNLOCK TABLES;
 DROP TABLE IF EXISTS `usuarios`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;

@@ -30,29 +30,37 @@ $aid = (int) $alumno['id'];
 function ingles_banco(): array
 {
     return [
-        ['tipo' => 'eleccion', 'pregunta' => '¿Cómo se dice «perro» en inglés?', 'opciones' => ['dog', 'cat', 'horse', 'bird'], 'correcta' => 0],
-        ['tipo' => 'eleccion', 'pregunta' => '¿Cómo se dice «casa» en inglés?', 'opciones' => ['house', 'mouse', 'horse', 'hostel'], 'correcta' => 0],
-        ['tipo' => 'eleccion', 'pregunta' => '¿Qué significa "summer"?', 'opciones' => ['verano', 'invierno', 'sombrero', 'siempre'], 'correcta' => 0],
-        ['tipo' => 'eleccion', 'pregunta' => '¿Cómo se dice «playa» en inglés?', 'opciones' => ['beach', 'peach', 'bench', 'branch'], 'correcta' => 0],
-        ['tipo' => 'eleccion', 'pregunta' => '¿Qué significa "ice cream"?', 'opciones' => ['helado', 'hielo', 'crema', 'iceberg'], 'correcta' => 0],
-        ['tipo' => 'eleccion', 'pregunta' => '¿Cómo se dice «amigo» en inglés?', 'opciones' => ['friend', 'family', 'fried', 'trend'], 'correcta' => 0],
-        ['tipo' => 'eleccion', 'pregunta' => '¿Qué significa "book"?', 'opciones' => ['libro', 'bota', 'banco', 'bosque'], 'correcta' => 0],
-        ['tipo' => 'eleccion', 'pregunta' => '¿Cómo se dice «sol» en inglés?', 'opciones' => ['sun', 'son', 'soon', 'sand'], 'correcta' => 0],
+        ['tipo' => 'eleccion', 'pregunta' => 'How do you say «perro» in English?', 'opciones' => ['dog', 'cat', 'horse', 'bird'], 'correcta' => 0,
+         'leccion' => 'A dog is a pet. 🐶 Dogs say woof woof!'],
+        ['tipo' => 'eleccion', 'pregunta' => 'How do you say «casa» in English?', 'opciones' => ['house', 'mouse', 'horse', 'hostel'], 'correcta' => 0],
+        ['tipo' => 'eleccion', 'pregunta' => 'What does "summer" mean?', 'opciones' => ['verano', 'invierno', 'sombrero', 'siempre'], 'correcta' => 0,
+         'leccion' => 'Summer is hot. ☀️ In summer we go to the beach!'],
+        ['tipo' => 'eleccion', 'pregunta' => 'How do you say «playa» in English?', 'opciones' => ['beach', 'peach', 'bench', 'branch'], 'correcta' => 0],
+        ['tipo' => 'eleccion', 'pregunta' => 'What does "ice cream" mean?', 'opciones' => ['helado', 'hielo', 'crema', 'iceberg'], 'correcta' => 0],
+        ['tipo' => 'eleccion', 'pregunta' => 'How do you say «amigo» in English?', 'opciones' => ['friend', 'family', 'fried', 'trend'], 'correcta' => 0],
+        ['tipo' => 'eleccion', 'pregunta' => 'What does "book" mean?', 'opciones' => ['libro', 'bota', 'banco', 'bosque'], 'correcta' => 0],
+        ['tipo' => 'eleccion', 'pregunta' => 'How do you say «sol» in English?', 'opciones' => ['sun', 'son', 'soon', 'sand'], 'correcta' => 0],
 
-        ['tipo' => 'hueco', 'frase' => 'I ___ eleven years old.', 'opciones' => ['am', 'is', 'are', 'be'], 'correcta' => 0],
-        ['tipo' => 'hueco', 'frase' => 'She ___ tennis on Saturdays.', 'opciones' => ['plays', 'play', 'playing', 'played'], 'correcta' => 0],
+        ['tipo' => 'hueco', 'frase' => 'I ___ eleven years old.', 'opciones' => ['am', 'is', 'are', 'be'], 'correcta' => 0,
+         'leccion' => 'We use AM with I. 🧒 I am 11. You are 12.'],
+        ['tipo' => 'hueco', 'frase' => 'She ___ tennis on Saturdays.', 'opciones' => ['plays', 'play', 'playing', 'played'], 'correcta' => 0,
+         'leccion' => 'With he and she, the verb gets an S. 🎾 She plays. He plays.'],
         ['tipo' => 'hueco', 'frase' => 'We ___ to the beach in summer.', 'opciones' => ['go', 'goes', 'going', 'gone'], 'correcta' => 0],
-        ['tipo' => 'hueco', 'frase' => 'There ___ a cat on the sofa.', 'opciones' => ['is', 'are', 'am', 'be'], 'correcta' => 0],
-        ['tipo' => 'hueco', 'frase' => '___ you like pizza?', 'opciones' => ['Do', 'Does', 'Is', 'Are'], 'correcta' => 0],
+        ['tipo' => 'hueco', 'frase' => 'There ___ a cat on the sofa.', 'opciones' => ['is', 'are', 'am', 'be'], 'correcta' => 0,
+         'leccion' => 'One thing → there IS. Many things → there ARE. 🐱 There is a cat.'],
+        ['tipo' => 'hueco', 'frase' => '___ you like pizza?', 'opciones' => ['Do', 'Does', 'Is', 'Are'], 'correcta' => 0,
+         'leccion' => 'Questions with "like" start with DO. 🍕 Do you like pizza?'],
         ['tipo' => 'hueco', 'frase' => 'My brother ___ two dogs.', 'opciones' => ['has', 'have', 'is', 'do'], 'correcta' => 0],
 
         ['tipo' => 'ordenar', 'es' => 'Me gusta el chocolate', 'palabras' => ['I', 'like', 'chocolate'], 'solucion' => 'I like chocolate'],
         ['tipo' => 'ordenar', 'es' => 'El gato es negro', 'palabras' => ['The', 'cat', 'is', 'black'], 'solucion' => 'The cat is black'],
         ['tipo' => 'ordenar', 'es' => 'Yo juego al fútbol', 'palabras' => ['I', 'play', 'football'], 'solucion' => 'I play football'],
-        ['tipo' => 'ordenar', 'es' => '¿Cuántos años tienes?', 'palabras' => ['How', 'old', 'are', 'you'], 'solucion' => 'How old are you'],
+        ['tipo' => 'ordenar', 'es' => '¿Cuántos años tienes?', 'palabras' => ['How', 'old', 'are', 'you'], 'solucion' => 'How old are you',
+         'leccion' => 'To ask the age we say: How old are you? 🎂'],
         ['tipo' => 'ordenar', 'es' => 'Hoy hace sol', 'palabras' => ['It', 'is', 'sunny', 'today'], 'solucion' => 'It is sunny today'],
 
-        ['tipo' => 'parejas', 'pares' => [['es' => 'rojo', 'en' => 'red'], ['es' => 'azul', 'en' => 'blue'], ['es' => 'verde', 'en' => 'green'], ['es' => 'amarillo', 'en' => 'yellow']]],
+        ['tipo' => 'parejas', 'pares' => [['es' => 'rojo', 'en' => 'red'], ['es' => 'azul', 'en' => 'blue'], ['es' => 'verde', 'en' => 'green'], ['es' => 'amarillo', 'en' => 'yellow']],
+         'leccion' => 'Colors! ❤️ red, 💙 blue, 💚 green, 💛 yellow.'],
         ['tipo' => 'parejas', 'pares' => [['es' => 'gato', 'en' => 'cat'], ['es' => 'perro', 'en' => 'dog'], ['es' => 'pájaro', 'en' => 'bird'], ['es' => 'pez', 'en' => 'fish']]],
         ['tipo' => 'parejas', 'pares' => [['es' => 'manzana', 'en' => 'apple'], ['es' => 'pan', 'en' => 'bread'], ['es' => 'leche', 'en' => 'milk'], ['es' => 'queso', 'en' => 'cheese']]],
         ['tipo' => 'parejas', 'pares' => [['es' => 'madre', 'en' => 'mother'], ['es' => 'padre', 'en' => 'father'], ['es' => 'hermano', 'en' => 'brother'], ['es' => 'abuela', 'en' => 'grandmother']]],
@@ -62,6 +70,21 @@ function ingles_banco(): array
         ['tipo' => 'escucha', 'texto' => 'school', 'opciones' => ['school', 'cool', 'spoon', 'skirt'], 'correcta' => 0],
         ['tipo' => 'escucha', 'texto' => 'yellow', 'opciones' => ['yellow', 'hello', 'pillow', 'follow'], 'correcta' => 0],
         ['tipo' => 'escucha', 'texto' => 'birthday', 'opciones' => ['birthday', 'birds', 'Thursday', 'bakery'], 'correcta' => 0],
+
+        ['tipo' => 'verdadero', 'afirmacion' => '"Cat" means «perro».', 'correcta' => false],
+        ['tipo' => 'verdadero', 'afirmacion' => '"Blue" means «azul».', 'correcta' => true],
+        ['tipo' => 'verdadero', 'afirmacion' => 'We say "good morning" at night.', 'correcta' => false],
+        ['tipo' => 'verdadero', 'afirmacion' => '"Water" means «agua».', 'correcta' => true],
+
+        ['tipo' => 'escribir', 'pregunta' => 'Write «gato» in English', 'solucion' => 'cat'],
+        ['tipo' => 'escribir', 'pregunta' => 'Write «rojo» in English', 'solucion' => 'red'],
+        ['tipo' => 'escribir', 'pregunta' => 'Write «uno» in English', 'solucion' => 'one'],
+        ['tipo' => 'escribir', 'pregunta' => 'Write «leche» in English', 'solucion' => 'milk'],
+
+        ['tipo' => 'emoji', 'emoji' => '🍎', 'opciones' => ['apple', 'bread', 'egg', 'cheese'], 'correcta' => 0],
+        ['tipo' => 'emoji', 'emoji' => '🐟', 'opciones' => ['fish', 'dog', 'bird', 'horse'], 'correcta' => 0],
+        ['tipo' => 'emoji', 'emoji' => '☀️', 'opciones' => ['sun', 'moon', 'star', 'rain'], 'correcta' => 0],
+        ['tipo' => 'emoji', 'emoji' => '🏠', 'opciones' => ['house', 'school', 'car', 'tree'], 'correcta' => 0],
     ];
 }
 
@@ -70,7 +93,17 @@ function ingles_valido(array $e): ?array
 {
     $tipo = $e['tipo'] ?? '';
 
-    if (in_array($tipo, ['eleccion', 'hueco', 'escucha'], true)) {
+    // Mini-lección opcional (texto sencillo en inglés que se muestra antes del reto).
+    if (isset($e['leccion'])) {
+        $leccion = is_string($e['leccion']) ? mb_substr(trim($e['leccion']), 0, 250) : '';
+        if ($leccion === '') {
+            unset($e['leccion']);
+        } else {
+            $e['leccion'] = $leccion;
+        }
+    }
+
+    if (in_array($tipo, ['eleccion', 'hueco', 'escucha', 'emoji'], true)) {
         $ops = array_values(array_filter($e['opciones'] ?? [], fn($o) => is_string($o) && $o !== ''));
         $i = (int) ($e['correcta'] ?? -1);
         if (count($ops) < 3 || !isset($ops[$i])) {
@@ -79,10 +112,26 @@ function ingles_valido(array $e): ?array
         if ($tipo === 'eleccion' && empty($e['pregunta'])) return null;
         if ($tipo === 'hueco' && (empty($e['frase']) || !str_contains($e['frase'], '___'))) return null;
         if ($tipo === 'escucha' && empty($e['texto'])) return null;
+        if ($tipo === 'emoji' && empty($e['emoji'])) return null;
         $correctaTxt = $ops[$i];
         shuffle($ops);
         $e['opciones'] = $ops;
         $e['correcta'] = array_search($correctaTxt, $ops, true);
+        return $e;
+    }
+
+    if ($tipo === 'verdadero') {
+        if (empty($e['afirmacion']) || !isset($e['correcta'])) {
+            return null;
+        }
+        $e['correcta'] = filter_var($e['correcta'], FILTER_VALIDATE_BOOLEAN);
+        return $e;
+    }
+
+    if ($tipo === 'escribir') {
+        if (empty($e['pregunta']) || empty($e['solucion']) || !is_string($e['solucion'])) {
+            return null;
+        }
         return $e;
     }
 
@@ -117,12 +166,15 @@ function ingles_valido(array $e): ?array
 function ingles_clave(array $e): string
 {
     return match ($e['tipo']) {
-        'eleccion' => $e['pregunta'],
-        'hueco'    => $e['frase'],
-        'ordenar'  => $e['solucion'],
-        'escucha'  => $e['texto'],
-        'parejas'  => implode(',', array_column($e['pares'], 'en')),
-        default    => json_encode($e),
+        'eleccion'  => $e['pregunta'],
+        'hueco'     => $e['frase'],
+        'ordenar'   => $e['solucion'],
+        'escucha'   => $e['texto'],
+        'parejas'   => implode(',', array_column($e['pares'], 'en')),
+        'verdadero' => $e['afirmacion'],
+        'escribir'  => 'w:' . $e['solucion'],
+        'emoji'     => $e['emoji'],
+        default     => json_encode($e),
     };
 }
 
@@ -162,6 +214,18 @@ if ($accion === 'nueva') {
     }
     $leccion = array_slice($leccion, 0, INGLES_EJERCICIOS);
     shuffle($leccion);
+
+    // Evita dos retos del mismo tipo seguidos (cuando hay variedad suficiente).
+    for ($i = 1, $n = count($leccion); $i < $n; $i++) {
+        if ($leccion[$i]['tipo'] === $leccion[$i - 1]['tipo']) {
+            for ($j = $i + 1; $j < $n; $j++) {
+                if ($leccion[$j]['tipo'] !== $leccion[$i - 1]['tipo']) {
+                    [$leccion[$i], $leccion[$j]] = [$leccion[$j], $leccion[$i]];
+                    break;
+                }
+            }
+        }
+    }
 
     foreach ($leccion as $e) {
         $vistos[] = ingles_clave($e);

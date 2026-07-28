@@ -279,21 +279,6 @@ code { background: #efe7d8; padding: 1px 6px; border-radius: 6px; font-size: .85
 .reward-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }
 .reward-card.won { outline: 2px solid var(--dorado); }
 
-/* ---------- Tiempo de uso ---------- */
-.uso-chip {
-    position: fixed; bottom: 16px; right: 16px; z-index: 40;
-    background: rgba(20,18,14,.8); color: #fff; padding: 8px 14px; border-radius: 999px; font-size: .82rem;
-}
-.uso-overlay {
-    position: fixed; inset: 0; z-index: 100; display: grid; place-items: center;
-    background: rgba(10,8,6,.92); color: #fff; text-align: center;
-}
-.uso-msg { max-width: 360px; padding: 20px; }
-.uso-ico { font-size: 4rem; margin-bottom: 10px; }
-.uso-msg h2 { color: #fff; }
-.uso-msg .btn-logout { margin-top: 18px; display: inline-block; }
-body.bloqueado { overflow: hidden; }
-
 /* =========================================================
    CONTENIDO IA (Markdown) + herramientas
    ========================================================= */
@@ -319,7 +304,6 @@ body.bloqueado { overflow: hidden; }
 @media print {
     body:has(#genContent) .topbar,
     body:has(#genContent) .foot,
-    body:has(#genContent) .uso-chip,
     body:has(#genContent) .md-tools,
     body:has(#genContent) main > *:not(:has(#genContent)) { display: none !important; }
     body:has(#genContent) .card { box-shadow: none; border: none; padding: 0; margin: 0; }
@@ -453,6 +437,35 @@ img { max-width: 100%; height: auto; }
 .ingles-tipo.t-ordenar { background: #ffc800; color: #7a5b00; }
 .ingles-tipo.t-parejas { background: #ff9600; }
 .ingles-tipo.t-escucha { background: #58cc02; }
+.ingles-tipo.t-verdadero { background: #ff5f8f; }
+.ingles-tipo.t-escribir { background: #00b8a9; }
+.ingles-tipo.t-emoji { background: #f97316; }
+.ingles-tipo.t-leccion { background: #00b8d4; }
+
+/* Mini-lección antes de un reto */
+.ingles-leccion {
+    background: #fff9e6; border: 2px solid #ffc800; border-radius: 16px; padding: 18px 20px;
+    font-size: 1.2rem; font-weight: 600; line-height: 1.6; margin-bottom: 18px;
+    animation: kiru-pop .3s ease;
+}
+
+/* Emoji gigante del reto "What is it?" */
+.ingles-emoji { font-size: 4rem; text-align: center; margin: 0 0 16px; animation: kiru-flota 2.2s ease-in-out infinite; }
+
+/* Escribir la palabra */
+.ingles-escribir { display: flex; gap: 10px; margin-bottom: 18px; }
+.ingles-input {
+    flex: 1; min-width: 0; padding: 14px 16px; border: 2px solid var(--linea); border-bottom-width: 4px;
+    border-radius: 14px; font: inherit; font-weight: 700; font-size: 1.05rem; background: #fff; color: var(--texto);
+}
+.ingles-input:focus { outline: none; border-color: #1cb0f6; }
+.ingles-input.ok { border-color: #58cc02; background: #e8ffd6; color: #3f9302; }
+.ingles-input.mal { border-color: #ff4b4b; background: #ffe3e3; color: #ea2b2b; animation: kiru-tiembla .45s ease; }
+.ingles-check {
+    background: #58cc02; color: #fff; border: none; box-shadow: 0 4px 0 #46a302; border-radius: 14px;
+    padding: 0 20px; font-size: 1.2rem; font-weight: 800; cursor: pointer;
+}
+.ingles-check:active { transform: translateY(3px); box-shadow: 0 1px 0 #46a302; }
 
 .ingles-enunciado { font-size: 1.25rem; font-weight: 700; margin: 4px 0 18px; }
 
@@ -489,8 +502,12 @@ img { max-width: 100%; height: auto; }
 .ingles-chip:hover { border-color: #ce82ff; transform: translateY(-2px); }
 .ingles-chip.pop { animation: kiru-pop .25s ease; }
 
-.ingles-parejas { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 22px; margin-bottom: 16px; }
-.ingles-col { display: flex; flex-direction: column; gap: 10px; }
+/* Parejas unidas con cuerdas (SVG por encima de las cajas) */
+.ingles-parejas-wrap { position: relative; margin-bottom: 16px; }
+.ingles-parejas { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 56px; }
+.ingles-col { display: flex; flex-direction: column; gap: 12px; }
+.ingles-cuerdas { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 2; overflow: visible; }
+.cuerda { fill: none; stroke-width: 4; stroke-linecap: round; opacity: .95; transition: stroke-dashoffset .5s ease; }
 
 .ingles-feedback { display: flex; align-items: center; gap: 12px; padding: 14px 18px; border-radius: 16px; margin-bottom: 14px; font-weight: 800; font-size: 1.05rem; animation: kiru-sube .3s ease; }
 .ingles-feedback.ok { background: #d7ffb8; color: #3f9302; }
@@ -532,7 +549,9 @@ img { max-width: 100%; height: auto; }
     .ingles-opciones { grid-template-columns: 1fr; }
     .ingles-opcion { padding: 14px; font-size: 1rem; }
     .ingles-enunciado { font-size: 1.1rem; }
-    .ingles-parejas { gap: 8px 10px; }
+    .ingles-parejas { gap: 10px 34px; }
+    .ingles-emoji { font-size: 3.2rem; }
+    .ingles-leccion { font-size: 1.05rem; padding: 14px 16px; }
     .ingles-feedback { font-size: .95rem; padding: 12px 14px; }
     .ingles-fin-ico { font-size: 3.2rem; }
 }
@@ -541,7 +560,9 @@ img { max-width: 100%; height: auto; }
 @media (prefers-reduced-motion: reduce) {
     .ingles-banner-ico, .ingles-ico, .ingles-audio, .ingles-fin-ico,
     .ingles-tipo, .ingles-opcion, .ingles-chip, .ingles-racha,
-    .ingles-feedback, .ingles-feedback .fb-ico,
+    .ingles-feedback, .ingles-feedback .fb-ico, .ingles-leccion,
+    .ingles-emoji, .ingles-input.mal,
     #ejercicio.entrada, #ejercicio.tiembla, .ingles-top .progress-fill::after { animation: none !important; }
+    .cuerda { transition: none; }
     .confeti { display: none; }
 }

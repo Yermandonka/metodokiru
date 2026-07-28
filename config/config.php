@@ -55,11 +55,6 @@ define('APP_NAME', 'Método Kiru');
 define('REMEMBER_DIAS', 90);
 define('REMEMBER_COOKIE', 'kiru_recuerdame');
 
-// Límite de tiempo diario del alumno.
-// false = DESACTIVADO globalmente (nunca aparece "La sesión de hoy ha terminado").
-// true  = se respeta el "tiempo máximo" de cada alumno (0 en ese alumno = sin límite).
-define('TIEMPO_LIMITE_ACTIVO', false);
-
 // --- IA (Fase 2) · Google Gemini (tiene nivel gratuito) ---
 // La clave se busca en 2 sitios (por este orden):
 //   1) Variable de entorno GEMINI_API_KEY  (recomendado en Railway)

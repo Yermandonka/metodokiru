@@ -278,7 +278,7 @@ function nivel_siguiente(array $nivelActual): ?array
     return null;
 }
 
-/* ---------- Uso diario / conexiones ---------- */
+/* ---------- Conexiones ---------- */
 
 function registrar_conexion(int $alumnoId): void
 {
@@ -289,13 +289,6 @@ function registrar_conexion(int $alumnoId): void
     if (!$stmt->fetchColumn()) {
         db()->prepare('INSERT INTO conexiones (alumno_id, fecha) VALUES (?,?)')->execute([$alumnoId, $hoy]);
     }
-}
-
-function uso_hoy(int $alumnoId): int
-{
-    $stmt = db()->prepare('SELECT minutos FROM uso_diario WHERE alumno_id = ? AND fecha = ?');
-    $stmt->execute([$alumnoId, date('Y-m-d')]);
-    return (int) ($stmt->fetchColumn() ?: 0);
 }
 
 /* ---------- IA (Fase 2) ---------- */
@@ -375,16 +368,26 @@ function ai_ingles(int $edad, int $cantidad, array $evitar = []): array
 
     $prompt = "Crea exactamente $cantidad ejercicios de inglés básico (nivel A1-A2, estilo Duolingo) "
         . "para un niño hispanohablante de $edad años. Tema principal: $tema (puedes mezclar con vocabulario general).\n"
-        . "Mezcla los 5 tipos (al menos uno de cada). Formato exacto de cada tipo:\n"
-        . '- {"tipo":"eleccion","pregunta":"¿Cómo se dice «perro» en inglés?","opciones":["dog","cat","bird","fish"],"correcta":0}' . "\n"
+        . "Hay 8 tipos de ejercicio; usa al menos 6 distintos en cada lección y mézclalos. Formato exacto:\n"
+        . '- {"tipo":"eleccion","pregunta":"How do you say «perro» in English?","opciones":["dog","cat","bird","fish"],"correcta":0}' . "\n"
         . '- {"tipo":"hueco","frase":"I ___ football on Sundays.","opciones":["play","plays","playing","played"],"correcta":0}' . "\n"
         . '- {"tipo":"ordenar","es":"Me gusta la pizza","palabras":["I","like","pizza"],"solucion":"I like pizza"}' . "\n"
         . '- {"tipo":"parejas","pares":[{"es":"rojo","en":"red"},{"es":"azul","en":"blue"},{"es":"verde","en":"green"},{"es":"negro","en":"black"}]}' . "\n"
         . '- {"tipo":"escucha","texto":"apple","opciones":["apple","orange","table","chair"],"correcta":0}' . "\n"
+        . '- {"tipo":"verdadero","afirmacion":"\"Dog\" means «perro».","correcta":true}' . "\n"
+        . '- {"tipo":"escribir","pregunta":"Write «gato» in English","solucion":"cat"}' . "\n"
+        . '- {"tipo":"emoji","emoji":"🍎","opciones":["apple","bread","egg","cheese"],"correcta":0}' . "\n"
         . "Reglas: \"correcta\" es el índice (0-3) de la respuesta correcta dentro de \"opciones\"; "
         . "exactamente 4 opciones; frases cortas y vocabulario cotidiano; "
         . "en \"ordenar\" la solución usa todas las palabras; en \"parejas\" exactamente 4 pares; "
-        . "en \"escucha\" el texto debe estar entre las opciones.\n";
+        . "en \"escucha\" el texto debe estar entre las opciones; "
+        . "en \"verdadero\" mezcla afirmaciones verdaderas y falsas; "
+        . "en \"escribir\" la solución es UNA palabra sencilla; "
+        . "en \"emoji\" las opciones son palabras en inglés y una corresponde al emoji.\n"
+        . "Los enunciados (\"pregunta\") van en inglés MUY sencillo (nivel A1).\n"
+        . "Añade a unos 3 ejercicios un campo extra \"leccion\": 1-2 frases MUY cortas y sencillas "
+        . "en inglés (nivel A1, con un emoji) que enseñen justo lo que practica ese ejercicio. "
+        . 'Ejemplo: "We use AM with I. 🧒 I am 11 years old."' . "\n";
     if ($evitar) {
         $prompt .= 'NO repitas estos contenidos ya usados: ' . implode(' | ', array_slice($evitar, -40)) . "\n";
     }

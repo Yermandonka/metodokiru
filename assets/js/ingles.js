@@ -1,4 +1,4 @@
-/* Método Kiru — Inglés de verano: mini-juegos tipo Duolingo */
+/* Método Kiru — Summer English: mini-juegos tipo Duolingo (interfaz en inglés sencillo) */
 (function () {
     if (!window.KIRU_INGLES) return;
 
@@ -9,18 +9,22 @@
     var btnEmpezar = $('inglesEmpezar'), btnOtra = $('inglesOtra'), chipRacha = $('inglesRacha');
 
     var ejercicios = [], idx = 0, aciertos = 0, racha = 0;
-    var evaluar = null;      // función del ejercicio actual → {ok, solucion}
+    var evaluar = null;          // función del ejercicio actual → {ok, solucion}
     var resuelto = false;
+    var redibujarParejas = null; // para redibujar las cuerdas al girar el móvil
 
     var TIPOS = {
-        eleccion: { txt: '🎯 Traduce', clase: 't-eleccion' },
-        hueco:    { txt: '✏️ Completa', clase: 't-hueco' },
-        ordenar:  { txt: '🧩 Ordena', clase: 't-ordenar' },
-        parejas:  { txt: '🔗 Parejas', clase: 't-parejas' },
-        escucha:  { txt: '👂 Escucha', clase: 't-escucha' },
+        eleccion:  { txt: '🎯 Translate', clase: 't-eleccion' },
+        hueco:     { txt: '✏️ Complete', clase: 't-hueco' },
+        ordenar:   { txt: '🧩 Order', clase: 't-ordenar' },
+        parejas:   { txt: '🔗 Match', clase: 't-parejas' },
+        escucha:   { txt: '👂 Listen', clase: 't-escucha' },
+        verdadero: { txt: '🤔 True or false?', clase: 't-verdadero' },
+        escribir:  { txt: '⌨️ Write', clase: 't-escribir' },
+        emoji:     { txt: '🖼️ What is it?', clase: 't-emoji' },
     };
-    var FRASES_OK  = ['¡Genial!', '¡Increíble!', '¡Eso es!', '¡Sigue así!', '¡Perfecto!', '¡Toma ya!'];
-    var FRASES_MAL = ['¡Casi!', '¡Uy!', 'No pasa nada…', '¡A por la siguiente!'];
+    var FRASES_OK  = ['Great job!', 'Awesome!', 'You got it!', 'Perfect!', 'Super!', 'Way to go!'];
+    var FRASES_MAL = ['Almost!', 'Oops!', 'Good try!', 'Next time!'];
     var ICONOS_OK  = ['🎉', '🌟', '🦊', '🚀', '💚', '🏅'];
     var ICONOS_MAL = ['🙈', '💪', '😅', '🤏'];
 
@@ -130,10 +134,12 @@
     }
 
     /* ---------- Tipos con opciones (elección, hueco, escucha) ---------- */
-    function pintarOpciones(enunciado, opciones, correcta, audioTexto) {
+    /* Se corrige solo al tocar una opción: sin botón de comprobar. */
+    function pintarOpciones(enunciado, opciones, correcta, audioTexto, extra) {
         cont.appendChild(el('p', 'ingles-enunciado', enunciado));
+        if (extra) cont.appendChild(extra);
         if (audioTexto) {
-            var play = el('button', 'ingles-audio', '🔊 Escuchar otra vez');
+            var play = el('button', 'ingles-audio', '🔊 Listen again');
             play.type = 'button';
             play.addEventListener('click', function () { hablar(audioTexto); });
             cont.appendChild(play);
@@ -147,9 +153,8 @@
             b.addEventListener('click', function () {
                 if (resuelto) return;
                 sel = i;
-                grid.querySelectorAll('.sel').forEach(function (x) { x.classList.remove('sel'); });
                 anima(b, 'sel');
-                btnAccion.disabled = false;
+                setTimeout(resolver, 250); // se ve la selección y se corrige sola
             });
             grid.appendChild(b);
         });
@@ -162,8 +167,9 @@
     }
 
     /* ---------- Ordenar palabras ---------- */
+    /* Se corrige sola al colocar la última palabra. */
     function pintarOrdenar(e) {
-        cont.appendChild(el('p', 'ingles-enunciado', 'Traduce al inglés: «' + e.es + '»'));
+        cont.appendChild(el('p', 'ingles-enunciado', 'Say it in English: «' + e.es + '»'));
         var zona = el('div', 'ingles-zona');
         var banco = el('div', 'ingles-banco');
         cont.appendChild(zona);
@@ -175,7 +181,11 @@
                 if (resuelto) return;
                 (chip.parentNode === banco ? zona : banco).appendChild(chip);
                 anima(chip, 'pop');
-                btnAccion.disabled = zona.children.length === 0;
+                if (banco.children.length === 0) {
+                    setTimeout(function () {
+                        if (!resuelto && banco.children.length === 0) resolver();
+                    }, 350);
+                }
             });
             banco.appendChild(chip);
         });
@@ -185,19 +195,60 @@
         };
     }
 
-    /* ---------- Unir parejas ---------- */
+    /* ---------- Unir parejas con cuerdas ---------- */
+    var SVG_NS = 'http://www.w3.org/2000/svg';
     function pintarParejas(e) {
-        cont.appendChild(el('p', 'ingles-enunciado', 'Une cada palabra con su traducción'));
+        cont.appendChild(el('p', 'ingles-enunciado', 'Match the pairs! Tap a word, then its friend.'));
+        var wrap = el('div', 'ingles-parejas-wrap');
         var grid = el('div', 'ingles-parejas');
-        cont.appendChild(grid);
+        var svg = document.createElementNS(SVG_NS, 'svg');
+        svg.setAttribute('class', 'ingles-cuerdas');
+        wrap.appendChild(grid);
+        wrap.appendChild(svg);
+        cont.appendChild(wrap);
         var colEs = el('div', 'ingles-col'), colEn = el('div', 'ingles-col');
         grid.appendChild(colEs);
         grid.appendChild(colEn);
 
+        var COLORES = ['#58cc02', '#1cb0f6', '#ff9600', '#ce82ff'];
         var fallos = 0, unidas = 0, selEs = null;
+        var uniones = [];
         var izq = e.pares.slice(), der = e.pares.map(function (p) { return p.en; });
         barajar(izq);
         barajar(der);
+
+        /* Dibuja una cuerda (curva que cuelga) de la caja a a la caja b. */
+        function dibujarCuerda(a, b, color) {
+            var w = wrap.getBoundingClientRect();
+            var ra = a.getBoundingClientRect(), rb = b.getBoundingClientRect();
+            var x1 = ra.right - w.left - 4, y1 = ra.top - w.top + ra.height / 2;
+            var x2 = rb.left - w.left + 4, y2 = rb.top - w.top + rb.height / 2;
+            var dx = Math.max(24, (x2 - x1) / 3);
+            var path = document.createElementNS(SVG_NS, 'path');
+            path.setAttribute('d', 'M' + x1 + ' ' + y1
+                + ' C' + (x1 + dx) + ' ' + (y1 + 16) + ', ' + (x2 - dx) + ' ' + (y2 + 16)
+                + ', ' + x2 + ' ' + y2);
+            path.setAttribute('class', 'cuerda');
+            path.setAttribute('stroke', color);
+            svg.appendChild(path);
+            var largo = path.getTotalLength();
+            path.style.strokeDasharray = largo;
+            path.style.strokeDashoffset = largo;
+            requestAnimationFrame(function () { path.style.strokeDashoffset = '0'; });
+            [[x1, y1], [x2, y2]].forEach(function (p) {
+                var nudo = document.createElementNS(SVG_NS, 'circle');
+                nudo.setAttribute('cx', p[0]);
+                nudo.setAttribute('cy', p[1]);
+                nudo.setAttribute('r', '5');
+                nudo.setAttribute('fill', color);
+                svg.appendChild(nudo);
+            });
+        }
+        function redibujar() {
+            svg.innerHTML = '';
+            uniones.forEach(function (u) { dibujarCuerda(u.a, u.b, u.color); });
+        }
+        redibujarParejas = redibujar;
 
         izq.forEach(function (p) {
             var b = el('button', 'ingles-opcion', p.es);
@@ -217,9 +268,14 @@
             b.addEventListener('click', function () {
                 if (resuelto || b.classList.contains('ok') || !selEs) return;
                 if (selEs.dataset.en === en) {
+                    var color = COLORES[unidas % COLORES.length];
                     anima(b, 'ok');
                     selEs.classList.remove('sel');
                     anima(selEs, 'ok');
+                    b.style.borderColor = color;
+                    selEs.style.borderColor = color;
+                    uniones.push({ a: selEs, b: b, color: color });
+                    dibujarCuerda(selEs, b, color);
                     selEs = null;
                     unidas++;
                     nota(440 + unidas * 110, 0, 0.12);
@@ -237,6 +293,37 @@
         };
     }
 
+    /* ---------- Escribir la palabra ---------- */
+    function pintarEscribir(e) {
+        cont.appendChild(el('p', 'ingles-enunciado', e.pregunta));
+        var fila = el('div', 'ingles-escribir');
+        var input = document.createElement('input');
+        input.type = 'text';
+        input.className = 'ingles-input';
+        input.placeholder = 'Type here…';
+        input.autocapitalize = 'off';
+        input.autocomplete = 'off';
+        input.spellcheck = false;
+        var ok = el('button', 'ingles-check', '✔');
+        ok.type = 'button';
+        function comprobar() {
+            if (resuelto || normalizar(input.value) === '') return;
+            resolver();
+        }
+        input.addEventListener('keydown', function (ev) { if (ev.key === 'Enter') comprobar(); });
+        ok.addEventListener('click', comprobar);
+        fila.appendChild(input);
+        fila.appendChild(ok);
+        cont.appendChild(fila);
+        setTimeout(function () { input.focus(); }, 250);
+        evaluar = function () {
+            var bien = normalizar(input.value) === normalizar(e.solucion);
+            input.classList.add(bien ? 'ok' : 'mal');
+            input.disabled = true;
+            return { ok: bien, solucion: e.solucion };
+        };
+    }
+
     /* Si la voz no funciona en este dispositivo, se saltan los retos de escucha. */
     function saltarEscucha() {
         if (resuelto) return;
@@ -250,7 +337,7 @@
         pintar();
         feedback.innerHTML = '';
         feedback.appendChild(el('span', 'fb-ico', '🔇'));
-        feedback.appendChild(el('span', '', 'El audio no funciona en este dispositivo: saltamos los retos de escucha.'));
+        feedback.appendChild(el('span', '', 'No audio on this device. We skip the listening games!'));
         feedback.classList.add('info');
         feedback.hidden = false;
     }
@@ -260,24 +347,40 @@
         var e = ejercicios[idx];
         resuelto = false;
         evaluar = null;
+        redibujarParejas = null;
         paso.textContent = (idx + 1) + ' / ' + ejercicios.length;
         barra.style.width = (idx / ejercicios.length * 100) + '%';
         feedback.hidden = true;
         feedback.className = 'ingles-feedback';
-        btnAccion.textContent = 'Comprobar';
-        btnAccion.disabled = true;
+        btnAccion.hidden = true;
+        btnAccion.disabled = false;
         btnAccion.classList.remove('mal');
-        btnAccion.dataset.modo = 'comprobar';
         cont.innerHTML = '';
+
+        // Mini-lección antes del reto (si la trae y aún no se ha visto).
+        if (e.leccion && !e.leccionVista) {
+            e.leccionVista = true;
+            cont.appendChild(el('span', 'ingles-tipo t-leccion', '📖 Lesson'));
+            cont.appendChild(el('div', 'ingles-leccion', e.leccion));
+            btnAccion.textContent = 'Got it!';
+            btnAccion.hidden = false;
+            btnAccion.dataset.modo = 'leccion';
+            anima(cont, 'entrada');
+            return;
+        }
+        btnAccion.dataset.modo = 'continuar';
 
         var tipo = TIPOS[e.tipo];
         if (tipo) cont.appendChild(el('span', 'ingles-tipo ' + tipo.clase, tipo.txt));
 
         if (e.tipo === 'eleccion') pintarOpciones(e.pregunta, e.opciones, e.correcta);
-        else if (e.tipo === 'hueco') pintarOpciones('Completa la frase: ' + e.frase, e.opciones, e.correcta);
-        else if (e.tipo === 'escucha') pintarOpciones('Escucha y elige lo que oyes', e.opciones, e.correcta, e.texto);
+        else if (e.tipo === 'hueco') pintarOpciones('Complete the sentence: ' + e.frase, e.opciones, e.correcta);
+        else if (e.tipo === 'escucha') pintarOpciones('Listen and choose what you hear', e.opciones, e.correcta, e.texto);
         else if (e.tipo === 'ordenar') pintarOrdenar(e);
         else if (e.tipo === 'parejas') pintarParejas(e);
+        else if (e.tipo === 'verdadero') pintarOpciones(e.afirmacion, ['✅ True', '❌ False'], e.correcta ? 0 : 1);
+        else if (e.tipo === 'escribir') pintarEscribir(e);
+        else if (e.tipo === 'emoji') pintarOpciones('What is this?', e.opciones, e.correcta, null, el('div', 'ingles-emoji', e.emoji));
 
         anima(cont, 'entrada');
     }
@@ -302,14 +405,14 @@
         var texto;
         if (r.parejas) {
             texto = r.ok
-                ? azar(FRASES_OK) + ' Todas a la primera +1 🪙'
-                : azar(FRASES_MAL) + ' Completado con ' + r.fallos + ' fallo(s).';
+                ? azar(FRASES_OK) + ' All pairs, no mistakes! +1 🪙'
+                : azar(FRASES_MAL) + ' You made ' + r.fallos + ' mistake(s).';
         } else {
             texto = r.ok
                 ? azar(FRASES_OK) + ' +1 🪙'
-                : azar(FRASES_MAL) + ' La respuesta era: «' + r.solucion + '»';
+                : azar(FRASES_MAL) + ' The answer was: «' + r.solucion + '»';
         }
-        if (r.ok && racha >= 3) texto += ' 🔥 ¡Racha de ' + racha + '!';
+        if (r.ok && racha >= 3) texto += ' 🔥 Streak: ' + racha + '!';
 
         feedback.innerHTML = '';
         feedback.appendChild(el('span', 'fb-ico', r.ok ? azar(ICONOS_OK) : azar(ICONOS_MAL)));
@@ -326,9 +429,8 @@
             anima(cont, 'tiembla');
         }
 
-        btnAccion.textContent = idx + 1 >= ejercicios.length ? 'Ver resultado' : 'Continuar';
-        btnAccion.disabled = false;
-        btnAccion.dataset.modo = 'continuar';
+        btnAccion.textContent = idx + 1 >= ejercicios.length ? 'See result' : 'Continue';
+        btnAccion.hidden = false;
     }
 
     function terminarLeccion() {
@@ -342,9 +444,9 @@
             .then(function (d) {
                 pJuego.hidden = true;
                 pFin.hidden = false;
-                var pct = aciertos / ejercicios.length;
+                var pct = ejercicios.length ? aciertos / ejercicios.length : 0;
                 $('finIco').textContent = pct >= 0.9 ? '🏆' : pct >= 0.6 ? '🌟' : '💪';
-                $('finTitulo').textContent = aciertos + ' de ' + ejercicios.length + ' aciertos';
+                $('finTitulo').textContent = aciertos + ' of ' + ejercicios.length + ' correct!';
                 sonidoFinal();
                 confeti(pct >= 0.6 ? 40 : 16);
 
@@ -354,11 +456,11 @@
                     var v = 0;
                     var timer = setInterval(function () {
                         v++;
-                        detalle.textContent = 'Has ganado +' + v + ' SkillCoins 🪙';
+                        detalle.textContent = 'You won +' + v + ' SkillCoins 🪙';
                         if (v >= d.coins) clearInterval(timer);
                     }, 700 / d.coins);
                 } else if (typeof d.coins === 'number') {
-                    detalle.textContent = 'Hoy ya tienes el máximo de SkillCoins de inglés. ¡Sigue jugando por diversión!';
+                    detalle.textContent = "You have today's maximum of SkillCoins. Keep playing for fun!";
                 } else {
                     detalle.textContent = '';
                 }
@@ -366,8 +468,8 @@
     }
 
     btnAccion.addEventListener('click', function () {
-        if (btnAccion.dataset.modo === 'comprobar') {
-            resolver();
+        if (btnAccion.dataset.modo === 'leccion') {
+            pintar(); // ahora sí, el reto de esa lección
             return;
         }
         idx++;
@@ -375,10 +477,27 @@
         else pintar();
     });
 
+    window.addEventListener('resize', function () {
+        if (redibujarParejas) redibujarParejas();
+    });
+
+    /* En móvil, el juego se abre a pantalla completa (donde el navegador lo permita). */
+    function pantallaCompletaMovil() {
+        if (!window.matchMedia('(max-width: 820px)').matches) return;
+        var raiz = document.documentElement;
+        var pedir = raiz.requestFullscreen || raiz.webkitRequestFullscreen;
+        if (!pedir) return;
+        try {
+            var p = pedir.call(raiz);
+            if (p && p.catch) p.catch(function () {});
+        } catch (e) { /* iPhone no lo permite: se juega normal */ }
+    }
+
     function empezar(boton) {
+        pantallaCompletaMovil(); // dentro del toque del usuario
         boton.disabled = true;
         var txt = boton.textContent;
-        boton.textContent = 'Preparando lección…';
+        boton.textContent = 'Loading…';
         var fd = new FormData();
         fd.append('accion', 'nueva');
         fetch(KIRU_INGLES.api, { method: 'POST', body: fd })
@@ -401,7 +520,7 @@
                 pintar();
             })
             .catch(function () {
-                alert('No se pudo preparar la lección. Vuelve a intentarlo.');
+                alert('Oops! The lesson did not load. Try again!');
             })
             .finally(function () {
                 boton.disabled = false;

@@ -4,35 +4,22 @@ require_once __DIR__ . '/../includes/layout.php';
 
 $aid = (int) $alumno['id'];
 
-// El alumno puede cambiar su animal y su nombre de usuario desde aquí.
+// El alumno puede cambiar su animal y su nombre de perfil desde aquí.
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['accion'] ?? '') === 'mi_perfil') {
-    $avatar   = $_POST['avatar'] ?? '';
-    $username = trim($_POST['username'] ?? '');
-    $errores  = [];
+    $avatar = $_POST['avatar'] ?? '';
+    $nombre = trim($_POST['nombre'] ?? '');
 
     if (!isset(avatares()[$avatar])) {
         $avatar = $alumno['avatar'];
     }
-    if ($username !== $user['username']) {
-        if (!preg_match('/^[a-zA-Z0-9_.]{3,30}$/', $username)) {
-            $errores[] = 'El usuario debe tener 3-30 caracteres (letras, números, _ o .).';
-        } else {
-            $chk = db()->prepare('SELECT COUNT(*) FROM usuarios WHERE username = ? AND id <> ?');
-            $chk->execute([$username, (int) $user['id']]);
-            if ($chk->fetchColumn()) {
-                $errores[] = 'Ese nombre de usuario ya está en uso.';
-            }
-        }
-    }
-
-    if (!$errores) {
+    if ($nombre === '' || mb_strlen($nombre) > 50) {
+        flash('Escribe un nombre de 1 a 50 caracteres.');
+    } else {
         db()->prepare('UPDATE alumnos SET avatar = ? WHERE id = ?')->execute([$avatar, $aid]);
-        if ($username !== $user['username']) {
-            db()->prepare('UPDATE usuarios SET username = ? WHERE id = ?')->execute([$username, (int) $user['id']]);
+        if ($nombre !== $user['nombre']) {
+            db()->prepare('UPDATE usuarios SET nombre = ? WHERE id = ?')->execute([$nombre, (int) $user['id']]);
         }
         flash('¡Perfil actualizado! ✨');
-    } else {
-        flash(implode(' ', $errores));
     }
     redirect('alumno/inicio.php');
 }
@@ -125,9 +112,8 @@ render_header('Inicio', 'alumno', $mundo, nav_alumno('index'));
             </label>
             <?php endforeach; ?>
         </div>
-        <label>Nombre de usuario
-            <input type="text" name="username" value="<?= e($alumno['username']) ?>"
-                   pattern="[a-zA-Z0-9_.]{3,30}" title="3-30 caracteres: letras, números, _ o ." required>
+        <label>Tu nombre
+            <input type="text" name="nombre" value="<?= e($alumno['nombre']) ?>" maxlength="50" required>
         </label>
         <button class="btn">Guardar</button>
     </form>

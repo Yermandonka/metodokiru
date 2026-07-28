@@ -20,11 +20,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $accion = $_POST['accion'] ?? '';
     switch ($accion) {
         case 'perfil':
-            db()->prepare('UPDATE alumnos SET edad=?, mensaje_diario=?, tiempo_maximo=?, avatar=?, nivel_id=? WHERE id=?')
+            db()->prepare('UPDATE alumnos SET edad=?, mensaje_diario=?, avatar=?, nivel_id=? WHERE id=?')
                 ->execute([
                     (int) $_POST['edad'],
                     trim($_POST['mensaje_diario']),
-                    max(0, (int) $_POST['tiempo_maximo']),   // 0 = sin límite
                     $_POST['avatar'] ?: 'zorro',
                     ($_POST['nivel_id'] === '' ? null : (int) $_POST['nivel_id']),
                     $aid,
@@ -86,7 +85,6 @@ $recompensas->execute([$aid]);
 $recompensas = $recompensas->fetchAll();
 
 $conexiones = (int) db()->query("SELECT COUNT(*) FROM conexiones WHERE alumno_id=$aid")->fetchColumn();
-$minTotal   = (int) db()->query("SELECT COALESCE(SUM(minutos),0) FROM uso_diario WHERE alumno_id=$aid")->fetchColumn();
 $objOk      = (int) db()->query("SELECT COUNT(*) FROM objetivos WHERE alumno_id=$aid AND completado=1")->fetchColumn();
 
 $avatares = avatares();
@@ -102,7 +100,7 @@ render_header('Perfil de ' . $alumno['nombre'], 'panel', '', [['← Volver', $vo
 <!-- Estadísticas -->
 <div class="stat-row">
     <div class="stat-card"><span class="stat-num"><?= $conexiones ?></span><span>Conexiones</span></div>
-    <div class="stat-card"><span class="stat-num"><?= $minTotal ?> min</span><span>Tiempo total</span></div>
+    <div class="stat-card"><span class="stat-num"><?= $semana ?></span><span>SkillCoins esta semana</span></div>
     <div class="stat-card"><span class="stat-num"><?= $total ?></span><span>SkillCoins</span></div>
     <div class="stat-card"><span class="stat-num"><?= $objOk ?></span><span>Objetivos cumplidos</span></div>
 </div>
@@ -116,9 +114,6 @@ render_header('Perfil de ' . $alumno['nombre'], 'panel', '', [['← Volver', $vo
             <label>Edad <input type="number" name="edad" value="<?= (int)$alumno['edad'] ?>" min="5" max="18"></label>
             <label>Mensaje diario (recordatorio)
                 <textarea name="mensaje_diario" rows="2"><?= e($alumno['mensaje_diario']) ?></textarea>
-            </label>
-            <label>Tiempo máximo diario (min) · <small class="muted">0 = sin límite</small>
-                <input type="number" name="tiempo_maximo" value="<?= (int)$alumno['tiempo_maximo'] ?>" min="0" max="240">
             </label>
             <label>Avatar
                 <select name="avatar">

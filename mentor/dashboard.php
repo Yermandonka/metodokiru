@@ -45,8 +45,6 @@ render_header('Panel del mentor', 'panel', '', $nav);
                 $aid = (int) $a['id'];
                 $nivel = nivel_actual($a);
                 $sc = sc_total($aid);
-                $semanaMin = (int) db()->query("SELECT COALESCE(SUM(minutos),0) FROM uso_diario
-                    WHERE alumno_id=$aid AND YEARWEEK(fecha,1)=YEARWEEK(CURDATE(),1)")->fetchColumn();
                 $ultima = $a['ultima_conexion'] ? date('d/m/Y H:i', strtotime($a['ultima_conexion'])) : 'Nunca';
                 $dias = $a['ultima_conexion'] ? (int)((time() - strtotime($a['ultima_conexion'])) / 86400) : null;
             ?>
@@ -60,7 +58,7 @@ render_header('Panel del mentor', 'panel', '', $nav);
                     </div>
                     <div class="ac-meta">
                         <span>Última: <?= e($ultima) ?><?= $dias !== null && $dias >= 5 ? ' ⚠️' : '' ?></span>
-                        <span>Esta semana: <?= $semanaMin ?> min</span>
+                        <span>Esta semana: <?= sc_semana($aid) ?> 🪙</span>
                     </div>
                 </div>
             </a>
