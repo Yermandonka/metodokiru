@@ -5,7 +5,7 @@
     function $(id) { return document.getElementById(id); }
     var pInicio = $('pantallaInicio'), pJuego = $('pantallaJuego'), pFin = $('pantallaFin');
     var cont = $('ejercicio'), barra = $('inglesBarra'), paso = $('inglesPaso');
-    var feedback = $('inglesFeedback'), btnAccion = $('inglesAccion');
+    var feedback = $('inglesFeedback'), btnAccion = $('inglesAccion'), pie = $('inglesPie');
     var btnEmpezar = $('inglesEmpezar'), btnOtra = $('inglesOtra'), chipRacha = $('inglesRacha');
 
     var ejercicios = [], idx = 0, aciertos = 0, racha = 0;
@@ -340,6 +340,7 @@
         feedback.appendChild(el('span', '', 'No audio on this device. We skip the listening games!'));
         feedback.classList.add('info');
         feedback.hidden = false;
+        pie.hidden = false;
     }
 
     /* ---------- Flujo de la lección ---------- */
@@ -355,6 +356,7 @@
         btnAccion.hidden = true;
         btnAccion.disabled = false;
         btnAccion.classList.remove('mal');
+        pie.hidden = true; // sin caja blanca hasta que haya resultado
         cont.innerHTML = '';
 
         // Mini-lección antes del reto (si la trae y aún no se ha visto).
@@ -365,6 +367,7 @@
             btnAccion.textContent = 'Got it!';
             btnAccion.hidden = false;
             btnAccion.dataset.modo = 'leccion';
+            pie.hidden = false;
             anima(cont, 'entrada');
             return;
         }
@@ -431,6 +434,7 @@
 
         btnAccion.textContent = idx + 1 >= ejercicios.length ? 'See result' : 'Continue';
         btnAccion.hidden = false;
+        pie.hidden = false;
     }
 
     function terminarLeccion() {

@@ -36,7 +36,7 @@ render_header('Inglés', 'alumno', $mundo, nav_alumno('ingles'));
         <span class="muted" id="inglesPaso"></span>
     </div>
     <div id="ejercicio"></div>
-    <div class="ingles-pie">
+    <div class="ingles-pie" id="inglesPie" hidden>
         <div class="ingles-feedback" id="inglesFeedback" hidden></div>
         <button class="btn" id="inglesAccion" type="button" hidden>Continue</button>
     </div>
