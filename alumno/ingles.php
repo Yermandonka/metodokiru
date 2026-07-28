@@ -32,6 +32,7 @@ render_header('Inglés', 'alumno', $mundo, nav_alumno('ingles'));
 <div class="card" id="pantallaJuego" hidden>
     <div class="ingles-top">
         <div class="progress"><div class="progress-fill" id="inglesBarra" style="width:0%"></div></div>
+        <span class="ingles-racha" id="inglesRacha" hidden></span>
         <span class="muted" id="inglesPaso"></span>
     </div>
     <div id="ejercicio"></div>

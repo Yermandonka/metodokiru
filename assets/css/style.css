@@ -418,53 +418,130 @@ img { max-width: 100%; height: auto; }
 
 /* =========================================================
    INGLÉS DE VERANO (mini-juegos)
+   Paleta viva tipo Duolingo: verde / azul / amarillo / rojo
    ========================================================= */
-.ingles-banner { display: flex; align-items: center; gap: 16px; text-decoration: none; color: var(--texto); border-left: 5px solid var(--oliva); transition: transform .15s; }
+.ingles-banner { display: flex; align-items: center; gap: 16px; text-decoration: none; color: var(--texto); border-left: 5px solid #58cc02; transition: transform .15s; }
 .ingles-banner:hover { transform: translateY(-2px); }
 .ingles-banner h3 { margin: 0; }
 .ingles-banner p { margin: 2px 0 0; }
-.ingles-banner-ico { font-size: 2rem; }
-.ingles-banner-go { margin-left: auto; color: var(--oliva); font-weight: 700; white-space: nowrap; }
+.ingles-banner-ico { font-size: 2rem; animation: kiru-flota 2.4s ease-in-out infinite; }
+.ingles-banner-go { margin-left: auto; color: #58cc02; font-weight: 800; white-space: nowrap; transition: transform .15s; }
+.ingles-banner:hover .ingles-banner-go { transform: translateX(4px); }
 
 .ingles-hero { display: flex; gap: 16px; align-items: flex-start; margin-bottom: 10px; }
-.ingles-ico { font-size: 2.4rem; }
+.ingles-ico { font-size: 2.6rem; animation: kiru-flota 2.4s ease-in-out infinite; }
+
+/* Barra de progreso animada */
 .ingles-top { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; }
-.ingles-top .progress { flex: 1; margin: 0; }
-.ingles-enunciado { font-size: 1.12rem; font-weight: 600; margin: 4px 0 16px; }
-.ingles-opciones { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+.ingles-top .progress { flex: 1; margin: 0; height: 16px; }
+.ingles-top .progress-fill { position: relative; background: linear-gradient(90deg, #58cc02, #8ae32d); }
+.ingles-top .progress-fill::after {
+    content: ""; position: absolute; inset: 0; border-radius: 999px;
+    background-image: linear-gradient(45deg, rgba(255,255,255,.3) 25%, transparent 25%, transparent 50%, rgba(255,255,255,.3) 50%, rgba(255,255,255,.3) 75%, transparent 75%);
+    background-size: 24px 24px; animation: kiru-rayas 1s linear infinite;
+}
+.ingles-racha { background: linear-gradient(135deg, #ff9600, #ffc800); color: #7a4b00; font-weight: 800; padding: 6px 12px; border-radius: 999px; font-size: .85rem; white-space: nowrap; }
+.ingles-racha.pop { animation: kiru-pop .35s ease; }
+
+#ejercicio.entrada { animation: kiru-sube .35s ease; }
+#ejercicio.tiembla { animation: kiru-tiembla .5s ease; }
+
+/* Etiqueta de tipo de reto, cada uno con su color */
+.ingles-tipo { display: inline-block; padding: 5px 14px; border-radius: 999px; color: #fff; font-weight: 800; font-size: .78rem; letter-spacing: .04em; margin-bottom: 10px; animation: kiru-pop .35s ease; }
+.ingles-tipo.t-eleccion { background: #1cb0f6; }
+.ingles-tipo.t-hueco { background: #ce82ff; }
+.ingles-tipo.t-ordenar { background: #ffc800; color: #7a5b00; }
+.ingles-tipo.t-parejas { background: #ff9600; }
+.ingles-tipo.t-escucha { background: #58cc02; }
+
+.ingles-enunciado { font-size: 1.25rem; font-weight: 700; margin: 4px 0 18px; }
+
+/* Opciones con borde 3D que se hunden al pulsar */
+.ingles-opciones { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 18px; }
 .ingles-opcion {
-    padding: 13px 15px; border: 2px solid var(--linea); border-radius: 12px; background: #fff;
-    color: var(--texto); font: inherit; cursor: pointer; text-align: left;
-    transition: border-color .15s, background .15s;
+    padding: 15px 16px; border: 2px solid var(--linea); border-bottom-width: 4px; border-radius: 14px; background: #fff;
+    color: var(--texto); font: inherit; font-weight: 700; font-size: 1.02rem; cursor: pointer; text-align: left;
+    transition: transform .12s, border-color .15s, background .15s, color .15s;
 }
-.ingles-opcion:hover { border-color: var(--marron); }
-.ingles-opcion.sel { border-color: var(--marron); background: var(--arena); }
-.ingles-opcion.ok { border-color: #4f6b2f; background: #eaf3df; }
-.ingles-opcion.mal { border-color: #b23b3b; background: #f3d6d0; }
+.ingles-opcion:hover { transform: translateY(-2px); border-color: #1cb0f6; }
+.ingles-opcion:active { transform: translateY(2px); }
+.ingles-opcion.sel { border-color: #1cb0f6; background: #e5f6fd; color: #1899d6; animation: kiru-pop .25s ease; }
+.ingles-opcion.ok { border-color: #58cc02; background: #e8ffd6; color: #3f9302; animation: kiru-pop .4s ease; }
+.ingles-opcion.mal { border-color: #ff4b4b; background: #ffe3e3; color: #ea2b2b; animation: kiru-tiembla .45s ease; }
+
 .ingles-audio {
-    display: block; margin: 0 0 16px; background: var(--arena); border: 1px solid var(--linea);
-    border-radius: 14px; padding: 12px 20px; font: inherit; font-size: 1.05rem; cursor: pointer;
+    display: block; margin: 0 0 18px; background: #1cb0f6; color: #fff; border: none; box-shadow: 0 4px 0 #1899d6;
+    border-radius: 16px; padding: 14px 22px; font: inherit; font-size: 1.05rem; font-weight: 800; cursor: pointer;
+    animation: kiru-flota 2s ease-in-out infinite;
 }
-.ingles-audio:hover { background: var(--crema); }
+.ingles-audio:active { transform: translateY(3px); box-shadow: 0 1px 0 #1899d6; }
+
 .ingles-zona {
-    min-height: 54px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+    min-height: 56px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
     padding: 8px 2px; border-bottom: 2px dashed var(--linea); margin-bottom: 16px;
 }
-.ingles-banco { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; min-height: 42px; }
+.ingles-banco { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; min-height: 46px; }
 .ingles-chip {
-    padding: 9px 16px; border: 2px solid var(--linea); border-radius: 999px; background: #fff;
-    color: var(--texto); font: inherit; font-weight: 600; cursor: pointer;
+    padding: 11px 18px; border: 2px solid var(--linea); border-bottom-width: 4px; border-radius: 999px; background: #fff;
+    color: var(--texto); font: inherit; font-weight: 700; cursor: pointer;
+    transition: transform .12s, border-color .15s;
 }
-.ingles-chip:hover { border-color: var(--marron); }
+.ingles-chip:hover { border-color: #ce82ff; transform: translateY(-2px); }
+.ingles-chip.pop { animation: kiru-pop .25s ease; }
+
 .ingles-parejas { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 22px; margin-bottom: 16px; }
 .ingles-col { display: flex; flex-direction: column; gap: 10px; }
-.ingles-feedback { padding: 12px 16px; border-radius: 12px; margin-bottom: 14px; font-weight: 600; }
-.ingles-feedback.ok { background: #eaf3df; color: #4f6b2f; }
-.ingles-feedback.mal { background: #f3d6d0; color: #a5432f; }
-.ingles-fin { text-align: center; padding: 8px 0 4px; }
-.ingles-fin-ico { font-size: 3.6rem; margin-bottom: 6px; }
 
+.ingles-feedback { display: flex; align-items: center; gap: 12px; padding: 14px 18px; border-radius: 16px; margin-bottom: 14px; font-weight: 800; font-size: 1.05rem; animation: kiru-sube .3s ease; }
+.ingles-feedback.ok { background: #d7ffb8; color: #3f9302; }
+.ingles-feedback.mal { background: #ffdfe0; color: #ea2b2b; }
+.ingles-feedback.info { background: #e5f6fd; color: #1899d6; }
+.ingles-feedback .fb-ico { font-size: 1.9rem; animation: kiru-bota .6s ease; }
+
+/* Botones grandes verdes estilo Duolingo */
+#inglesAccion, #inglesEmpezar, #inglesOtra {
+    width: 100%; background: #58cc02; box-shadow: 0 4px 0 #46a302; border-radius: 16px;
+    font-weight: 800; letter-spacing: .05em; text-transform: uppercase; padding: 15px; font-size: 1rem;
+    transition: transform .1s, filter .15s;
+}
+#inglesAccion:hover, #inglesEmpezar:hover, #inglesOtra:hover { background: #58cc02; filter: brightness(1.07); }
+#inglesAccion:active, #inglesEmpezar:active, #inglesOtra:active { transform: translateY(3px); box-shadow: 0 1px 0 #46a302; }
+#inglesAccion:disabled { background: #d8d2c4; box-shadow: 0 4px 0 #c2bbaa; cursor: not-allowed; }
+#inglesAccion.mal { background: #ff4b4b; box-shadow: 0 4px 0 #ea2b2b; }
+#inglesAccion.mal:hover { background: #ff4b4b; }
+
+.ingles-fin { text-align: center; padding: 8px 0 4px; }
+.ingles-fin-ico { font-size: 4rem; margin-bottom: 6px; animation: kiru-bota 1s ease infinite; }
+
+.confeti { position: fixed; top: -20px; width: 10px; height: 16px; border-radius: 3px; z-index: 300; pointer-events: none; animation: kiru-confeti 2s linear forwards; }
+
+@keyframes kiru-pop { 0% { transform: scale(.6); } 70% { transform: scale(1.08); } 100% { transform: scale(1); } }
+@keyframes kiru-tiembla { 10%, 90% { transform: translateX(-2px); } 20%, 80% { transform: translateX(4px); } 30%, 50%, 70% { transform: translateX(-6px); } 40%, 60% { transform: translateX(6px); } }
+@keyframes kiru-bota { 0%, 100% { transform: translateY(0); } 40% { transform: translateY(-12px); } 60% { transform: translateY(-6px); } }
+@keyframes kiru-sube { from { transform: translateY(16px); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes kiru-flota { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+@keyframes kiru-rayas { from { background-position: 0 0; } to { background-position: 24px 0; } }
+@keyframes kiru-confeti { to { transform: translateY(105vh) rotate(720deg); } }
+
+/* ---------- Móvil: táctil y a una columna ---------- */
 @media (max-width: 640px) {
-    .ingles-opciones { grid-template-columns: 1fr; }
     .ingles-banner { flex-wrap: wrap; }
+    .ingles-hero { flex-direction: column; align-items: center; text-align: center; }
+    .ingles-top { flex-wrap: wrap; gap: 8px; }
+    .ingles-top .progress { flex: 1 1 100%; }
+    .ingles-opciones { grid-template-columns: 1fr; }
+    .ingles-opcion { padding: 14px; font-size: 1rem; }
+    .ingles-enunciado { font-size: 1.1rem; }
+    .ingles-parejas { gap: 8px 10px; }
+    .ingles-feedback { font-size: .95rem; padding: 12px 14px; }
+    .ingles-fin-ico { font-size: 3.2rem; }
+}
+
+/* Menos animaciones si el sistema lo pide */
+@media (prefers-reduced-motion: reduce) {
+    .ingles-banner-ico, .ingles-ico, .ingles-audio, .ingles-fin-ico,
+    .ingles-tipo, .ingles-opcion, .ingles-chip, .ingles-racha,
+    .ingles-feedback, .ingles-feedback .fb-ico,
+    #ejercicio.entrada, #ejercicio.tiembla, .ingles-top .progress-fill::after { animation: none !important; }
+    .confeti { display: none; }
 }
