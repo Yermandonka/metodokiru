@@ -481,17 +481,30 @@
         if (redibujarParejas) redibujarParejas();
     });
 
-    /* En móvil, el juego se abre a pantalla completa (donde el navegador lo permita). */
+    /* En móvil, el juego se abre a pantalla completa.
+       En iPhone (sin API de fullscreen) se usa un modo inmersivo por CSS:
+       se ocultan las barras de la app y el juego ocupa toda la pantalla. */
     function pantallaCompletaMovil() {
         if (!window.matchMedia('(max-width: 820px)').matches) return;
+        document.body.classList.add('ingles-inmersivo');
         var raiz = document.documentElement;
         var pedir = raiz.requestFullscreen || raiz.webkitRequestFullscreen;
         if (!pedir) return;
         try {
             var p = pedir.call(raiz);
             if (p && p.catch) p.catch(function () {});
-        } catch (e) { /* iPhone no lo permite: se juega normal */ }
+        } catch (e) { /* sin fullscreen nativo: basta el modo inmersivo */ }
     }
+
+    function salirPantallaCompleta() {
+        document.body.classList.remove('ingles-inmersivo');
+        var salir = document.exitFullscreen || document.webkitExitFullscreen;
+        if ((document.fullscreenElement || document.webkitFullscreenElement) && salir) {
+            try { salir.call(document); } catch (e) { /* nada */ }
+        }
+    }
+    var btnSalir = $('inglesSalir');
+    if (btnSalir) btnSalir.addEventListener('click', salirPantallaCompleta);
 
     function empezar(boton) {
         pantallaCompletaMovil(); // dentro del toque del usuario

@@ -50,6 +50,9 @@ render_header('Inglés', 'alumno', $mundo, nav_alumno('ingles'));
     </div>
 </div>
 
+<!-- Sale del modo pantalla completa / inmersivo (solo visible en móvil jugando) -->
+<button class="ingles-salir" id="inglesSalir" type="button" aria-label="Exit full screen">✕</button>
+
 <script>
     window.KIRU_INGLES = { api: <?= json_encode(url('alumno/ingles_api.php')) ?> };
 </script>
