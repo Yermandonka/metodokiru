@@ -21,14 +21,31 @@ function web_paginas(): array
     ];
 }
 
-function web_head(string $title, string $bodyClass = ''): void
+function web_head(string $title, string $bodyClass = '', string $desc = ''): void
 {
+    $desc = $desc ?: 'Mentoría educativa a domicilio: acompañamos a tu hijo en casa, a su ritmo, con un mentor de confianza.';
+    // URL absoluta (las previews de WhatsApp/Telegram exigen rutas completas).
+    $abs = (es_https() ? 'https' : 'http') . '://' . ($_SERVER['HTTP_HOST'] ?? 'www.metodokiru.es');
     ?><!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title><?= e($title) ?></title>
+  <meta name="description" content="<?= e($desc) ?>">
+
+  <!-- Preview al compartir el enlace (WhatsApp, Telegram, redes) -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Método Kiru">
+  <meta property="og:locale" content="es_ES">
+  <meta property="og:title" content="<?= e($title) ?>">
+  <meta property="og:description" content="<?= e($desc) ?>">
+  <meta property="og:url" content="<?= e($abs . ($_SERVER['REQUEST_URI'] ?? '/')) ?>">
+  <meta property="og:image" content="<?= e($abs . url('assets/img/og.png')) ?>">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+
   <link rel="icon" type="image/svg+xml" href="<?= asset('assets/img/favicon.svg') ?>">
   <link rel="icon" type="image/png" sizes="64x64" href="<?= asset('assets/img/favicon.png') ?>">
   <link rel="stylesheet" href="<?= asset('assets/css/web.css') ?>">
