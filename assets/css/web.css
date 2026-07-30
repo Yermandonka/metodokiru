@@ -40,7 +40,7 @@ img{ max-width:100%; height:auto; }
 a{ text-decoration:none; color:inherit; }
 
 /* Los titulares conservan la serifa de la marca */
-h1,h2,h3,blockquote,.logo{
+h1,h2,h3,blockquote{
   font-family:var(--serif);
   font-weight:400;
 }
@@ -117,28 +117,37 @@ h1{
   gap:12px;
 }
 
-/* Marca 狐 (misma que el campus): vuelve a la portada al pulsarla */
+/* Marca KIRU (el logo, recreado en CSS): vuelve a la portada al pulsarla */
 .brand-kiru{
-  display:flex;
-  align-items:center;
-  gap:10px;
+  display:inline-flex;
   color:var(--texto);
 }
 
-.brand-kiru .brand-mark{
-  width:38px;
-  height:38px;
-  display:grid;
-  place-items:center;
-  border-radius:10px;
-  background:var(--marron);
-  color:#fff;
-  font-size:20px;
-  font-family:-apple-system,"Segoe UI",system-ui,sans-serif;
+.brand-logo{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:3px;
+  border:1.5px solid currentColor;
+  padding:7px 16px 6px;
 }
 
-.brand-kiru .logo{
-  font-size:20px;
+.brand-logo-kiru{
+  font-family:var(--serif);
+  font-weight:400;
+  font-size:21px;
+  line-height:1;
+  letter-spacing:5px;
+  text-indent:5px; /* compensa el hueco final del letter-spacing */
+}
+
+.brand-logo-sub{
+  font-size:7px;
+  font-weight:600;
+  letter-spacing:2.2px;
+  text-indent:2.2px;
+  text-transform:uppercase;
+  white-space:nowrap;
 }
 
 /* =========================
@@ -813,15 +822,19 @@ a.family-card:hover{
     font-size:15px;
   }
 
-  .brand-kiru{ gap:8px; }
+  .brand-logo{ padding:5px 12px 4px; }
 
-  .brand-kiru .brand-mark{
-    width:34px;
-    height:34px;
+  .brand-logo-kiru{
     font-size:17px;
+    letter-spacing:4px;
+    text-indent:4px;
   }
 
-  .brand-kiru .logo{ font-size:17px; }
+  .brand-logo-sub{
+    font-size:6px;
+    letter-spacing:1.8px;
+    text-indent:1.8px;
+  }
 
   .menu-btn{ width:44px; height:44px; }
   .close-menu{ width:40px; height:40px; }

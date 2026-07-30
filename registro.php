@@ -76,7 +76,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </head>
 <body class="login-body">
     <div class="login-card">
-        <a class="login-logo" href="<?= url('index.php') ?>" title="Ir a la página principal">狐</a>
+        <a class="login-logo" href="<?= url('index.php') ?>" title="Ir a la página principal">
+            <span class="brand-logo-kiru">KIRU</span>
+            <span class="brand-logo-sub">Mentoría a domicilio</span>
+        </a>
         <h1>Crear cuenta</h1>
         <p class="login-sub">Únete a Método Kiru</p>
 

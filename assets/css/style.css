@@ -48,12 +48,13 @@ code { background: #efe7d8; padding: 1px 6px; border-radius: 6px; font-size: .85
     padding: 12px 26px; background: var(--crema2);
     border-bottom: 1px solid var(--linea); position: sticky; top: 0; z-index: 20;
 }
-.brand { display: flex; align-items: center; gap: 10px; font-weight: 700; text-decoration: none; }
-.brand-mark {
-    width: 34px; height: 34px; display: grid; place-items: center; border-radius: 10px;
-    background: var(--marron); color: #fff; font-size: 18px;
+.brand { display: flex; align-items: center; text-decoration: none; color: var(--marron-osc); }
+.brand-logo { display: flex; flex-direction: column; align-items: center; gap: 2px; border: 1.5px solid currentColor; padding: 5px 13px 4px; }
+.brand-logo-kiru {
+    font-family: var(--serif); font-weight: 400; font-size: 17px; line-height: 1;
+    letter-spacing: 4px; text-indent: 4px; /* compensa el hueco final del letter-spacing */
 }
-.brand-name { color: var(--marron-osc); }
+.brand-logo-sub { font-size: 6px; font-weight: 600; letter-spacing: 1.8px; text-indent: 1.8px; text-transform: uppercase; white-space: nowrap; }
 .mainnav { display: flex; gap: 6px; margin-left: 8px; flex-wrap: wrap; }
 .mainnav a {
     text-decoration: none; color: var(--marron); padding: 7px 14px; border-radius: 999px; font-size: .92rem;
@@ -201,7 +202,13 @@ code { background: #efe7d8; padding: 1px 6px; border-radius: 6px; font-size: .85
     background: var(--crema2); border-radius: 22px; padding: 40px 38px; width: min(340px, 92vw);
     box-shadow: 0 20px 50px rgba(74,63,51,.18); text-align: center;
 }
-.login-logo { width: 60px; height: 60px; margin: 0 auto 14px; display: grid; place-items: center; background: var(--marron); color: #fff; font-size: 30px; border-radius: 18px; text-decoration: none; transition: transform .2s; }
+.login-logo {
+    display: inline-flex; flex-direction: column; align-items: center; gap: 5px;
+    margin: 0 auto 16px; padding: 12px 24px 10px; border: 2px solid var(--marron-osc);
+    color: var(--marron-osc); text-decoration: none; transition: transform .2s;
+}
+.login-logo .brand-logo-kiru { font-size: 30px; letter-spacing: 7px; text-indent: 7px; }
+.login-logo .brand-logo-sub { font-size: 8px; letter-spacing: 2.6px; text-indent: 2.6px; }
 .login-logo:hover { transform: scale(1.06); }
 .login-check { display: flex; align-items: center; gap: 8px; font-size: .85rem; color: var(--marron-osc); font-weight: 600; text-align: left; margin-bottom: 12px; cursor: pointer; }
 .login-check input { width: auto !important; margin: 0 !important; accent-color: var(--marron); }
@@ -220,7 +227,7 @@ code { background: #efe7d8; padding: 1px 6px; border-radius: 6px; font-size: .85
 .tema-alumno { color: #f4efe6; }
 .tema-alumno .wrap { max-width: 1000px; }
 .tema-alumno .topbar { background: rgba(20, 18, 14, .55); border-bottom: 1px solid rgba(255,255,255,.12); backdrop-filter: blur(8px); }
-.tema-alumno .brand-name, .tema-alumno .uname { color: #fff; }
+.tema-alumno .brand, .tema-alumno .uname { color: #fff; }
 .tema-alumno .mainnav a { color: #f4efe6; }
 .tema-alumno .mainnav a:hover { background: rgba(255,255,255,.15); }
 .tema-alumno .mainnav a.active { background: rgba(255,255,255,.9); color: var(--marron-osc); }
@@ -351,7 +358,9 @@ img { max-width: 100%; height: auto; }
 @media (max-width: 640px) {
     /* Barra superior: marca + usuario en la primera fila; navegación deslizable debajo */
     .topbar { flex-wrap: wrap; gap: 8px 12px; padding: 10px 14px; }
-    .brand-name { font-size: .95rem; }
+    .brand-logo { padding: 4px 10px 3px; }
+    .brand-logo-kiru { font-size: 14px; letter-spacing: 3px; text-indent: 3px; }
+    .brand-logo-sub { font-size: 5px; letter-spacing: 1.4px; text-indent: 1.4px; }
     .topbar-user { margin-left: auto; gap: 8px; }
     .uname { display: none; }
     .mainnav {

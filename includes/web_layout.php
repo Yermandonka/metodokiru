@@ -77,12 +77,14 @@ function web_menu(string $activo = ''): void
 <?php
 }
 
-/** Marca 狐 + nombre; al pulsarla vuelve a la portada. */
+/** Marca KIRU (el logo, recreado en CSS); al pulsarla vuelve a la portada. */
 function web_brand(): void
 {
-    ?><a href="<?= url('index.php') ?>" class="brand-kiru">
-      <span class="brand-mark">狐</span>
-      <span class="logo">Método Kiru</span>
+    ?><a href="<?= url('index.php') ?>" class="brand-kiru" title="Método Kiru">
+      <span class="brand-logo">
+        <span class="brand-logo-kiru">KIRU</span>
+        <span class="brand-logo-sub">Mentoría a domicilio</span>
+      </span>
     </a><?php
 }
 
