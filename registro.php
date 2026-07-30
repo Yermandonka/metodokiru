@@ -10,25 +10,26 @@ $errores = [];
 $datos = ['nombre' => '', 'username' => '', 'rol' => 'alumno', 'edad' => '12'];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $datos['nombre']   = trim($_POST['nombre'] ?? '');
-    $datos['username'] = trim($_POST['username'] ?? '');
-    $datos['rol']      = $_POST['rol'] ?? 'alumno';
-    $datos['edad']     = (int) ($_POST['edad'] ?? 0);
-    $pass  = $_POST['password'] ?? '';
-    $pass2 = $_POST['password2'] ?? '';
+    $datos['nombre']   = post_texto('nombre', 50);
+    $datos['username'] = post_texto('username', 30);
+    $datos['rol']      = post_opcion('rol', ['alumno', 'mentor'], ''); // nunca admin
+    $datos['edad']     = post_int('edad', 0, 120, 0);
+    $pass  = is_scalar($_POST['password'] ?? null) ? (string) $_POST['password'] : '';
+    $pass2 = is_scalar($_POST['password2'] ?? null) ? (string) $_POST['password2'] : '';
 
     // Solo se permite registrarse como alumno o mentor (nunca admin).
-    if (!in_array($datos['rol'], ['alumno', 'mentor'], true)) {
+    if ($datos['rol'] === '') {
+        $datos['rol'] = 'alumno';
         $errores[] = 'Rol no válido.';
     }
     if ($datos['nombre'] === '') {
         $errores[] = 'Escribe tu nombre.';
     }
-    if (!preg_match('/^[a-zA-Z0-9_.]{3,30}$/', $datos['username'])) {
+    if (!username_valido($datos['username'])) {
         $errores[] = 'El usuario debe tener 3-30 caracteres (letras, números, _ o .).';
     }
-    if (strlen($pass) < 4) {
-        $errores[] = 'La contraseña debe tener al menos 4 caracteres.';
+    if (strlen($pass) < 4 || strlen($pass) > 72) {
+        $errores[] = 'La contraseña debe tener entre 4 y 72 caracteres.';
     }
     if ($pass !== $pass2) {
         $errores[] = 'Las contraseñas no coinciden.';

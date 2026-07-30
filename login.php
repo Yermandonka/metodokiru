@@ -8,8 +8,8 @@ if ($u = current_user()) {
 
 $error = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $username = trim($_POST['username'] ?? '');
-    $password = $_POST['password'] ?? '';
+    $username = post_texto('username', 30);
+    $password = is_scalar($_POST['password'] ?? null) ? (string) $_POST['password'] : '';
     $stmt = db()->prepare('SELECT * FROM usuarios WHERE username = ?');
     $stmt->execute([$username]);
     $user = $stmt->fetch();

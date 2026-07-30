@@ -1,18 +1,13 @@
 <?php
 require_once __DIR__ . '/includes/web_layout.php';
 web_head('Programas | Método Kiru');
-web_menu();
+web_menu('programas');
 ?>
 
   <!-- HERO -->
   <header class="subpage-hero">
 
-    <nav>
-      <?php web_brand() ?>
-      <div class="nav-actions">
-        <?php web_menu_btn() ?>
-      </div>
-    </nav>
+    <?php web_nav() ?>
 
     <div class="hero-content">
 

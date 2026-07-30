@@ -20,45 +20,61 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $accion = $_POST['accion'] ?? '';
     switch ($accion) {
         case 'perfil':
+            $avatar = post_opcion('avatar', array_keys(avatares()), $alumno['avatar'] ?: 'zorro');
             db()->prepare('UPDATE alumnos SET edad=?, mensaje_diario=?, avatar=?, nivel_id=? WHERE id=?')
                 ->execute([
-                    (int) $_POST['edad'],
-                    trim($_POST['mensaje_diario']),
-                    $_POST['avatar'] ?: 'zorro',
-                    ($_POST['nivel_id'] === '' ? null : (int) $_POST['nivel_id']),
+                    post_int('edad', 5, 18, (int) $alumno['edad']),
+                    post_texto('mensaje_diario', 255),
+                    $avatar,
+                    (($_POST['nivel_id'] ?? '') === '' ? null : post_int('nivel_id', 1)),
                     $aid,
                 ]);
             flash('Perfil actualizado.');
             break;
         case 'add_objetivo':
+            $titulo = post_texto('titulo', 100);
+            if ($titulo === '') {
+                flash('El objetivo necesita un título.');
+                break;
+            }
             db()->prepare('INSERT INTO objetivos (alumno_id, titulo, descripcion, prioridad, fecha, recompensa, skillcoins) VALUES (?,?,?,?,?,?,?)')
-                ->execute([$aid, trim($_POST['titulo']), trim($_POST['descripcion']),
-                    $_POST['prioridad'], ($_POST['fecha'] ?: null), trim($_POST['recompensa']), (int) $_POST['skillcoins']]);
+                ->execute([$aid, $titulo, post_texto('descripcion', 255),
+                    post_opcion('prioridad', ['alta', 'media', 'baja'], 'media'),
+                    fecha_o_null($_POST['fecha'] ?? null), post_texto('recompensa', 100),
+                    post_int('skillcoins', 0, 1000, 0)]);
             flash('Objetivo añadido.');
             break;
         case 'del_objetivo':
-            db()->prepare('DELETE FROM objetivos WHERE id=? AND alumno_id=?')->execute([(int) $_POST['id'], $aid]);
+            db()->prepare('DELETE FROM objetivos WHERE id=? AND alumno_id=?')->execute([post_int('id', 1), $aid]);
             break;
         case 'add_habito':
+            $titulo = post_texto('titulo', 100);
+            if ($titulo === '') {
+                break;
+            }
             db()->prepare('INSERT INTO habitos (alumno_id, titulo, fecha) VALUES (?,?,CURDATE())')
-                ->execute([$aid, trim($_POST['titulo'])]);
+                ->execute([$aid, $titulo]);
             flash('Hábito asignado.');
             break;
         case 'del_habito':
-            db()->prepare('DELETE FROM habitos WHERE id=? AND alumno_id=?')->execute([(int) $_POST['id'], $aid]);
+            db()->prepare('DELETE FROM habitos WHERE id=? AND alumno_id=?')->execute([post_int('id', 1), $aid]);
             break;
         case 'add_recompensa':
+            $titulo = post_texto('titulo', 100);
+            if ($titulo === '') {
+                break;
+            }
             db()->prepare('INSERT INTO recompensas (alumno_id, titulo, costo, activa) VALUES (?,?,?,1)')
-                ->execute([$aid, trim($_POST['titulo']), (int) $_POST['costo']]);
+                ->execute([$aid, $titulo, post_int('costo', 0, 100000, 0)]);
             flash('Recompensa añadida.');
             break;
         case 'del_recompensa':
-            db()->prepare('DELETE FROM recompensas WHERE id=? AND alumno_id=?')->execute([(int) $_POST['id'], $aid]);
+            db()->prepare('DELETE FROM recompensas WHERE id=? AND alumno_id=?')->execute([post_int('id', 1), $aid]);
             break;
         case 'dar_sc':
-            $c = (int) $_POST['cantidad'];
+            $c = post_int('cantidad', -10000, 10000, 0);
             if ($c !== 0) {
-                sc_add($aid, $c, trim($_POST['motivo']) ?: 'Ajuste del mentor');
+                sc_add($aid, $c, post_texto('motivo', 100) ?: 'Ajuste del mentor');
                 flash("SkillCoins ajustados: " . ($c > 0 ? '+' : '') . $c);
             }
             break;

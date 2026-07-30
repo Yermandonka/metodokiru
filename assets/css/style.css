@@ -14,7 +14,8 @@
     --muted: #9a8d79;
     --linea: #e4d9c7;
     --sombra: 0 6px 20px rgba(74, 63, 51, .08);
-    --radio: 16px;
+    --serif: Georgia, "Times New Roman", serif;
+    --radio: 18px;
 }
 
 * { box-sizing: border-box; }
@@ -33,6 +34,8 @@ body {
 }
 a { color: var(--marron); }
 h1, h2, h3, h4 { margin: 0 0 .4em; font-weight: 600; letter-spacing: -.01em; }
+/* Los títulos de página usan la misma serifa que la web pública */
+h1, .page-title { font-family: var(--serif); font-weight: 500; letter-spacing: -.02em; }
 hr { border: none; border-top: 1px solid var(--linea); margin: 18px 0; }
 small { color: var(--muted); }
 code { background: #efe7d8; padding: 1px 6px; border-radius: 6px; font-size: .85em; }
@@ -94,8 +97,8 @@ code { background: #efe7d8; padding: 1px 6px; border-radius: 6px; font-size: .85
 
 /* ---------- Botones / formularios ---------- */
 .btn, .btn-sm, button.btn, button.btn-sm {
-    background: var(--marron); color: #fff; border: none; border-radius: 10px;
-    padding: 11px 18px; font-size: .95rem; cursor: pointer; font-weight: 600;
+    background: var(--marron); color: #fff; border: none; border-radius: 999px;
+    padding: 11px 20px; font-size: .95rem; cursor: pointer; font-weight: 600;
 }
 .btn-sm { padding: 8px 14px; font-size: .85rem; }
 .btn:hover, .btn-sm:hover { background: var(--marron-osc); }
@@ -206,7 +209,7 @@ code { background: #efe7d8; padding: 1px 6px; border-radius: 6px; font-size: .85
 .login-sub { color: var(--muted); margin: 4px 0 20px; }
 .login-card label { display: block; text-align: left; font-size: .82rem; font-weight: 600; color: var(--marron-osc); margin-bottom: 12px; }
 .login-card input { width: 100%; margin-top: 5px; padding: 11px 12px; border: 1px solid var(--linea); border-radius: 10px; font: inherit; }
-.login-card button { width: 100%; margin-top: 6px; background: var(--marron); color: #fff; border: none; padding: 12px; border-radius: 10px; font-size: 1rem; font-weight: 600; cursor: pointer; }
+.login-card button { width: 100%; margin-top: 6px; background: var(--marron); color: #fff; border: none; padding: 12px; border-radius: 999px; font-size: 1rem; font-weight: 600; cursor: pointer; }
 .login-card button:hover { background: var(--marron-osc); }
 .login-error { background: #f3d6d0; color: #a5432f; padding: 9px 12px; border-radius: 10px; margin-bottom: 14px; font-size: .88rem; }
 .login-hint { margin-top: 16px; font-size: .78rem; color: var(--muted); }

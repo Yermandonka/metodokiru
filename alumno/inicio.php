@@ -6,12 +6,9 @@ $aid = (int) $alumno['id'];
 
 // El alumno puede cambiar su animal y su nombre de perfil desde aquí.
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['accion'] ?? '') === 'mi_perfil') {
-    $avatar = $_POST['avatar'] ?? '';
-    $nombre = trim($_POST['nombre'] ?? '');
+    $avatar = post_opcion('avatar', array_keys(avatares()), $alumno['avatar']);
+    $nombre = post_texto('nombre', 60);
 
-    if (!isset(avatares()[$avatar])) {
-        $avatar = $alumno['avatar'];
-    }
     if ($nombre === '' || mb_strlen($nombre) > 50) {
         flash('Escribe un nombre de 1 a 50 caracteres.');
     } else {

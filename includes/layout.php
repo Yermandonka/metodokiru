@@ -53,7 +53,7 @@ function render_footer(): void
 {
     ?>
 </main>
-<footer class="foot">Método Kiru · MVP web · <?= date('Y') ?></footer>
+<footer class="foot">© <?= date('Y') ?> Método Kiru · Mentoría educativa a domicilio</footer>
 </body>
 </html>
 <?php

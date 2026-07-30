@@ -6,7 +6,7 @@ $aid = (int) $alumno['id'];
 // Acciones: completar objetivo / hábito (otorga SkillCoins una sola vez)
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (($_POST['accion'] ?? '') === 'objetivo') {
-        $id = (int) $_POST['id'];
+        $id = post_int('id', 1);
         $st = db()->prepare('SELECT * FROM objetivos WHERE id = ? AND alumno_id = ?');
         $st->execute([$id, $aid]);
         if (($o = $st->fetch()) && !$o['completado']) {
@@ -17,7 +17,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             flash('¡Objetivo completado! +' . (int) $o['skillcoins'] . ' SkillCoins');
         }
     } elseif (($_POST['accion'] ?? '') === 'habito') {
-        $id = (int) $_POST['id'];
+        $id = post_int('id', 1);
         $st = db()->prepare('SELECT * FROM habitos WHERE id = ? AND alumno_id = ?');
         $st->execute([$id, $aid]);
         if (($h = $st->fetch()) && !$h['completado']) {

@@ -41,6 +41,58 @@ function asset(string $path): string
     return url($path) . '?v=' . $v;
 }
 
+/* ---------- Saneado de entradas ---------- */
+
+/** Limpia un texto recibido: recorta, quita caracteres de control y limita la longitud. */
+function limpiar_texto(mixed $s, int $max = 255): string
+{
+    if (!is_scalar($s)) {
+        return '';
+    }
+    $s = trim((string) $s);
+    // Elimina caracteres de control (se conservan saltos de línea y tabulador).
+    $s = preg_replace('/[^\P{C}\n\t]/u', '', $s) ?? '';
+    return mb_substr($s, 0, $max);
+}
+
+/** Texto de $_POST ya saneado. */
+function post_texto(string $clave, int $max = 255): string
+{
+    return limpiar_texto($_POST[$clave] ?? '', $max);
+}
+
+/** Entero de $_POST acotado a [$min, $max]; $def si no es numérico. */
+function post_int(string $clave, int $min = PHP_INT_MIN, int $max = PHP_INT_MAX, int $def = 0): int
+{
+    $v = $_POST[$clave] ?? null;
+    $n = (is_scalar($v) && is_numeric(trim((string) $v))) ? (int) $v : $def;
+    return max($min, min($max, $n));
+}
+
+/** Valor de $_POST solo si está en la lista permitida; si no, $def. */
+function post_opcion(string $clave, array $permitidos, string $def): string
+{
+    $v = $_POST[$clave] ?? '';
+    return in_array($v, $permitidos, true) ? $v : $def;
+}
+
+/** Formato de nombre de usuario: 3-30 caracteres (letras, números, _ o .). */
+function username_valido(string $u): bool
+{
+    return (bool) preg_match('/^[a-zA-Z0-9_.]{3,30}$/', $u);
+}
+
+/** Devuelve la fecha si tiene formato AAAA-MM-DD real; si no, null. */
+function fecha_o_null(mixed $f): ?string
+{
+    $f = is_scalar($f) ? trim((string) $f) : '';
+    if ($f === '') {
+        return null;
+    }
+    $d = DateTime::createFromFormat('Y-m-d', $f);
+    return ($d && $d->format('Y-m-d') === $f) ? $f : null;
+}
+
 function redirect(string $path): void
 {
     header('Location: ' . url($path));

@@ -1,21 +1,11 @@
 <?php
 require_once __DIR__ . '/includes/web_layout.php';
 web_head('Conócenos — Método Kiru');
-web_menu();
+web_menu('conocenos');
 ?>
 
   <header class="subpage-hero">
-    <nav>
-      <?php web_brand() ?>
-      <div class="nav-actions">
-        <a href="<?= WHATSAPP_URL ?>"
-           target="_blank"
-           class="mini-btn">
-          WhatsApp
-        </a>
-        <?php web_menu_btn() ?>
-      </div>
-    </nav>
+    <?php web_nav() ?>
 
     <div class="subpage-content">
       <p class="eyebrow">Conócenos</p>

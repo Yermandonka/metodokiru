@@ -9,6 +9,7 @@ document.addEventListener("DOMContentLoaded", () => {
     menuBtn.addEventListener("click", () => {
       overlay.classList.add("active");
       menuBtn.classList.add("abierto");
+      menuBtn.setAttribute("aria-expanded", "true");
       // Bloquea el scroll de la página mientras el menú está abierto.
       document.body.classList.add("menu-abierto");
     });
@@ -16,7 +17,10 @@ document.addEventListener("DOMContentLoaded", () => {
   if (closeBtn && overlay) {
     const cerrar = () => {
       overlay.classList.remove("active");
-      if (menuBtn) menuBtn.classList.remove("abierto");
+      if (menuBtn) {
+        menuBtn.classList.remove("abierto");
+        menuBtn.setAttribute("aria-expanded", "false");
+      }
       document.body.classList.remove("menu-abierto");
     };
     closeBtn.addEventListener("click", cerrar);

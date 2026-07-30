@@ -5,19 +5,13 @@
  */
 require_once __DIR__ . '/includes/web_layout.php';
 web_head('Método Kiru', 'pagina-inicio');
-web_menu();
+web_menu('inicio');
 ?>
 
   <!-- HERO -->
   <header class="hero">
 
-    <nav>
-      <?php web_brand() ?>
-      <div class="nav-actions">
-        <a href="<?= url('login.php') ?>" class="btn-accede">ACCEDE</a>
-        <?php web_menu_btn() ?>
-      </div>
-    </nav>
+    <?php web_nav() ?>
 
     <div class="hero-content">
 
@@ -90,8 +84,7 @@ web_menu();
 
     <a href="<?= CALENDLY_URL ?>"
        target="_blank"
-       class="primary"
-       style="display:inline-block;padding:18px 32px;border-radius:999px;font-size:16px;">
+       class="primary btn-solo">
       Reservar llamada
     </a>
 

@@ -2,13 +2,24 @@
 require_once __DIR__ . '/_common.php';
 $user = require_login(['admin']);
 
+$mundos = ['bosque' => 'Bosque', 'ciudad' => 'Ciudad', 'montana' => 'Montaña', 'cielo' => 'Cielo'];
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    foreach ($_POST['nivel'] as $id => $datos) {
+    $filas = is_array($_POST['nivel'] ?? null) ? $_POST['nivel'] : [];
+    foreach ($filas as $id => $datos) {
+        if (!is_array($datos)) {
+            continue;
+        }
+        $nombre = limpiar_texto($datos['nombre'] ?? '', 40);
+        $mundo  = $datos['mundo'] ?? '';
+        if ($nombre === '' || !isset($mundos[$mundo])) {
+            continue;
+        }
         db()->prepare('UPDATE niveles SET nombre=?, skillcoins_necesarias=?, mundo=? WHERE id=?')
             ->execute([
-                trim($datos['nombre']),
-                max(0, (int) $datos['skillcoins_necesarias']),
-                $datos['mundo'],
+                $nombre,
+                max(0, (int) ($datos['skillcoins_necesarias'] ?? 0)),
+                $mundo,
                 (int) $id,
             ]);
     }
@@ -17,7 +28,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 $niveles = niveles_todos();
-$mundos = ['bosque' => 'Bosque', 'ciudad' => 'Ciudad', 'montana' => 'Montaña', 'cielo' => 'Cielo'];
 
 render_header('Niveles', 'panel', '', nav_admin('niveles'));
 ?>

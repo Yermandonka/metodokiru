@@ -1,21 +1,11 @@
 <?php
 require_once __DIR__ . '/includes/web_layout.php';
 web_head('Preguntas frecuentes — Método Kiru');
-web_menu();
+web_menu('faq');
 ?>
 
   <header class="subpage-hero">
-    <nav>
-      <?php web_brand() ?>
-      <div class="nav-actions">
-        <a href="<?= CALENDLY_URL ?>"
-           target="_blank"
-           class="mini-btn">
-          Reservar llamada
-        </a>
-        <?php web_menu_btn() ?>
-      </div>
-    </nav>
+    <?php web_nav() ?>
 
     <div class="subpage-content">
       <p class="eyebrow">Preguntas frecuentes</p>

@@ -20,18 +20,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $accion = $_POST['accion'] ?? '';
     if ($accion === 'toggle_materia') {
         db()->prepare('UPDATE materias SET activa = 1 - activa WHERE id=? AND alumno_id=?')
-            ->execute([(int) $_POST['materia_id'], $aid]);
+            ->execute([post_int('materia_id', 1), $aid]);
         redirect('mentor/academia.php?id=' . $aid);
     } elseif ($accion === 'add_materia') {
-        db()->prepare('INSERT INTO materias (alumno_id, nombre, activa) VALUES (?,?,1)')
-            ->execute([$aid, trim($_POST['nombre'])]);
+        $nombre = post_texto('nombre', 60);
+        if ($nombre !== '') {
+            db()->prepare('INSERT INTO materias (alumno_id, nombre, activa) VALUES (?,?,1)')
+                ->execute([$aid, $nombre]);
+        }
         redirect('mentor/academia.php?id=' . $aid);
     } elseif ($accion === 'generar') {
-        try {
-            $edad = (int) (db()->query("SELECT edad FROM alumnos WHERE id=$aid")->fetchColumn() ?: 12);
-            $generado = ai_generar(trim($_POST['tema']), $edad);
-        } catch (RuntimeException $ex) {
-            $errorIA = $ex->getMessage();
+        $tema = post_texto('tema', 150);
+        if ($tema === '') {
+            $errorIA = 'Escribe un tema a repasar.';
+        } else {
+            try {
+                $edad = (int) (db()->query("SELECT edad FROM alumnos WHERE id=$aid")->fetchColumn() ?: 12);
+                $generado = ai_generar($tema, $edad);
+            } catch (RuntimeException $ex) {
+                $errorIA = $ex->getMessage();
+            }
         }
     }
 }

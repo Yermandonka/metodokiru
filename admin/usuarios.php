@@ -7,11 +7,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $accion = $_POST['accion'] ?? '';
     try {
         if ($accion === 'crear_mentor' || $accion === 'crear_alumno') {
-            $username = trim($_POST['username']);
-            $nombre   = trim($_POST['nombre']);
-            $pass     = $_POST['password'];
-            if ($username === '' || $nombre === '' || strlen($pass) < 4) {
-                throw new RuntimeException('Completa nombre, usuario y contraseña (mín. 4 caracteres).');
+            $username = post_texto('username', 30);
+            $nombre   = post_texto('nombre', 50);
+            $pass     = is_scalar($_POST['password'] ?? null) ? (string) $_POST['password'] : '';
+            if ($nombre === '' || strlen($pass) < 4 || strlen($pass) > 72) {
+                throw new RuntimeException('Completa nombre, usuario y contraseña (4-72 caracteres).');
+            }
+            if (!username_valido($username)) {
+                throw new RuntimeException('El usuario debe tener 3-30 caracteres (letras, números, _ o .).');
             }
             $chk = db()->prepare('SELECT COUNT(*) FROM usuarios WHERE username=?');
             $chk->execute([$username]);
@@ -23,15 +26,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ->execute([$username, password_hash($pass, PASSWORD_DEFAULT), $rol, $nombre]);
             $uid = (int) db()->lastInsertId();
             if ($rol === 'alumno') {
-                $mentorId = ($_POST['mentor_id'] ?? '') !== '' ? (int) $_POST['mentor_id'] : null;
+                $mentorId = ($_POST['mentor_id'] ?? '') !== '' ? post_int('mentor_id', 1) : null;
                 db()->prepare('INSERT INTO alumnos (usuario_id, edad, mentor_id, mensaje_diario) VALUES (?,?,?,?)')
-                    ->execute([$uid, (int) $_POST['edad'], $mentorId, '¡Bienvenido a Método Kiru!']);
+                    ->execute([$uid, post_int('edad', 5, 18, 12), $mentorId, '¡Bienvenido a Método Kiru!']);
             }
             flash(ucfirst($rol) . ' «' . $nombre . '» creado.');
             redirect('admin/usuarios.php');
         } elseif ($accion === 'asignar') {
-            $mentorId = ($_POST['mentor_id'] ?? '') !== '' ? (int) $_POST['mentor_id'] : null;
-            db()->prepare('UPDATE alumnos SET mentor_id=? WHERE id=?')->execute([$mentorId, (int) $_POST['alumno_id']]);
+            $mentorId = ($_POST['mentor_id'] ?? '') !== '' ? post_int('mentor_id', 1) : null;
+            db()->prepare('UPDATE alumnos SET mentor_id=? WHERE id=?')->execute([$mentorId, post_int('alumno_id', 1)]);
             flash('Asignación actualizada.');
             redirect('admin/usuarios.php');
         }
