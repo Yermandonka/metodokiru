@@ -63,7 +63,7 @@ code { background: #efe7d8; padding: 1px 6px; border-radius: 6px; font-size: .85
     font-family: 'Italiana', var(--serif); font-weight: 400; font-size: 19px; line-height: 1;
     letter-spacing: 1px; text-indent: 1px; /* compensa el hueco final del letter-spacing */
 }
-.brand-logo-sub { font-size: 6px; font-weight: 500; letter-spacing: 1.8px; text-indent: 1.8px; text-transform: uppercase; white-space: nowrap; }
+.brand-logo-sub { font-size: 6px; font-weight: 500; letter-spacing: 1.8px; text-indent: 1.8px; text-transform: uppercase; text-align: center; line-height: 1.6; }
 .mainnav { display: flex; gap: 6px; margin-left: 8px; flex-wrap: wrap; }
 .mainnav a {
     text-decoration: none; color: var(--marron); padding: 7px 14px; border-radius: 999px; font-size: .92rem;

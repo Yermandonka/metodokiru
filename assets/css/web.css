@@ -156,7 +156,8 @@ h1{
   letter-spacing:2.2px;
   text-indent:2.2px;
   text-transform:uppercase;
-  white-space:nowrap;
+  text-align:center;
+  line-height:1.6;
 }
 
 /* =========================

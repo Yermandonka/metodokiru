@@ -26,7 +26,7 @@ function render_header(string $titulo, string $tema = 'panel', string $mundo = '
     <a class="brand" href="<?= url('index.php') ?>" title="Ir a la página principal">
         <span class="brand-logo">
             <span class="brand-logo-kiru">KIRU</span>
-            <span class="brand-logo-sub">Mentoría a domicilio</span>
+            <span class="brand-logo-sub">Mentoría a<br>domicilio</span>
         </span>
     </a>
     <?php if ($nav): ?>
