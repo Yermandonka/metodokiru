@@ -88,31 +88,7 @@ $cfg = $alumno ? ingles_config($aid) : null;
 $materiales = [];
 $resultados = [];
 $precisionMedia = null;
-
-/* Radar de destrezas: cada tipo de reto puntúa en una o dos destrezas del
-   idioma. Las lecciones recientes pesan más, así el radar refleja el nivel
-   actual y se mueve con cada lección que juega el alumno. */
-$DESTREZAS = [
-    'vocabulario' => '📚 Vocabulario',
-    'gramatica'   => '🧩 Gramática',
-    'lectura'     => '🧠 Comprensión',
-    'escucha'     => '👂 Escucha',
-    'escritura'   => '⌨️ Escritura',
-];
-$TIPO_DESTREZA = [
-    'eleccion'  => ['vocabulario' => 1.0, 'lectura' => 0.5],
-    'parejas'   => ['vocabulario' => 1.0],
-    'emoji'     => ['vocabulario' => 1.0],
-    'hueco'     => ['gramatica' => 1.0, 'lectura' => 0.5],
-    'ordenar'   => ['gramatica' => 1.0, 'escritura' => 0.5],
-    'verdadero' => ['lectura' => 1.0],
-    'escucha'   => ['escucha' => 1.0],
-    'escribir'  => ['escritura' => 1.0, 'vocabulario' => 0.5],
-];
 $radar = [];
-foreach ($DESTREZAS as $k => $nombre) {
-    $radar[$k] = ['nombre' => $nombre, 'ok' => 0.0, 'peso' => 0.0, 'n' => 0, 'pct' => null];
-}
 
 if ($alumno) {
     $st = db()->prepare('SELECT * FROM ingles_material WHERE alumno_id=? ORDER BY id DESC');
@@ -123,86 +99,13 @@ if ($alumno) {
     $st->execute([$aid]);
     $resultados = $st->fetchAll();
 
-    // Destrezas del radar y precisión media.
-    $sumAciertos = 0;
-    $sumTotal = 0;
-    foreach ($resultados as $i => $r) {
-        $sumAciertos += (int) $r['aciertos'];
-        $sumTotal    += (int) $r['total'];
-        $reciente = pow(0.93, $i); // $resultados va de la más nueva a la más vieja
-        foreach ((array) json_decode((string) $r['detalle'], true) as $d) {
-            if (!is_array($d) || empty($d['tipo'])) {
-                continue;
-            }
-            foreach ($TIPO_DESTREZA[$d['tipo']] ?? [] as $dk => $w) {
-                $radar[$dk]['peso'] += $w * $reciente;
-                $radar[$dk]['n']++;
-                if (!empty($d['ok'])) {
-                    $radar[$dk]['ok'] += $w * $reciente;
-                }
-            }
-        }
-    }
-    foreach ($radar as $k => $v) {
-        if ($v['peso'] > 0) {
-            $radar[$k]['pct'] = (int) round($v['ok'] / $v['peso'] * 100);
-        }
-    }
+    $radar = ingles_radar($aid);
+
+    $sumAciertos = array_sum(array_map(fn($r) => (int) $r['aciertos'], $resultados));
+    $sumTotal    = array_sum(array_map(fn($r) => (int) $r['total'], $resultados));
     $precisionMedia = $sumTotal ? round($sumAciertos / $sumTotal * 100) : null;
 }
 $hayRadar = (bool) array_filter($radar, fn($v) => $v['pct'] !== null);
-
-/** Dibuja el radar (SVG) con un eje por destreza; pct null = sin datos aún. */
-function radar_svg(array $ejes): string
-{
-    $n = count($ejes);
-    $cx = 240.0; $cy = 178.0; $R = 104.0;
-    $ang = fn(int $i) => -M_PI / 2 + $i * 2 * M_PI / $n;
-    $punto = function (int $i, float $r) use ($ang, $cx, $cy) {
-        return [round($cx + $r * cos($ang($i)), 1), round($cy + $r * sin($ang($i)), 1)];
-    };
-    $poligono = function (float $r) use ($n, $punto) {
-        $p = [];
-        for ($i = 0; $i < $n; $i++) { [$x, $y] = $punto($i, $r); $p[] = "$x,$y"; }
-        return implode(' ', $p);
-    };
-
-    $s = '<svg viewBox="0 0 480 336" role="img" aria-label="Radar de destrezas de inglés">';
-    // Rejilla: anillos al 25/50/75/100 % y radios hasta cada vértice.
-    foreach ([.25, .5, .75, 1] as $f) {
-        $s .= '<polygon points="' . $poligono($R * $f) . '" fill="none" stroke="var(--linea)" stroke-width="1"/>';
-    }
-    for ($i = 0; $i < $n; $i++) {
-        [$x, $y] = $punto($i, $R);
-        $s .= "<line x1=\"$cx\" y1=\"$cy\" x2=\"$x\" y2=\"$y\" stroke=\"var(--linea)\" stroke-width=\"1\"/>";
-    }
-    foreach ([25, 50, 75, 100] as $v) {
-        $s .= '<text x="' . ($cx + 5) . '" y="' . round($cy - $R * $v / 100 + 4, 1) . '" font-size="9" fill="var(--muted)">' . $v . '</text>';
-    }
-    // Polígono del alumno.
-    $p = [];
-    foreach (array_values($ejes) as $i => $e) {
-        [$x, $y] = $punto($i, $R * max(0, min(100, (int) ($e['pct'] ?? 0))) / 100);
-        $p[] = "$x,$y";
-    }
-    $s .= '<polygon points="' . implode(' ', $p) . '" fill="#7c8a5a" fill-opacity=".14" stroke="#7c8a5a" stroke-width="2" stroke-linejoin="round"/>';
-    // Puntos (huecos si esa destreza aún no tiene datos) y etiquetas.
-    foreach (array_values($ejes) as $i => $e) {
-        $con = $e['pct'] !== null;
-        [$x, $y] = $punto($i, $R * ($con ? max(0, min(100, (int) $e['pct'])) : 0) / 100);
-        $s .= $con
-            ? "<circle cx=\"$x\" cy=\"$y\" r=\"4.5\" fill=\"#7c8a5a\" stroke=\"var(--crema2)\" stroke-width=\"2\"/>"
-            : "<circle cx=\"$x\" cy=\"$y\" r=\"4\" fill=\"var(--crema2)\" stroke=\"var(--muted)\" stroke-width=\"1.5\"/>";
-        $cos = cos($ang($i)); $sin = sin($ang($i));
-        [$lx, $ly] = $punto($i, $R + 22);
-        $anchor = $cos > .15 ? 'start' : ($cos < -.15 ? 'end' : 'middle');
-        $sube = $sin < -.3 ? -12 : ($sin > .3 ? 12 : 0); // separa la etiqueta del vértice
-        $s .= '<text x="' . $lx . '" y="' . round($ly + $sube, 1) . '" text-anchor="' . $anchor . '" font-size="13" font-weight="700" fill="var(--texto)">' . e($e['nombre']) . '</text>';
-        $s .= '<text x="' . $lx . '" y="' . round($ly + $sube + 15, 1) . '" text-anchor="' . $anchor . '" font-size="12" fill="var(--muted)">'
-            . ($con ? (int) $e['pct'] . ' %' : 'sin datos') . '</text>';
-    }
-    return $s . '</svg>';
-}
 
 $nav = [
     ['Dashboard', 'mentor/dashboard.php', false],

@@ -4,5 +4,6 @@ $user = require_login();
 switch ($user['rol']) {
     case 'admin':  redirect('admin/resumen.php');
     case 'mentor': redirect('mentor/dashboard.php');
+    case 'padre':  redirect('padre/index.php');
     default:       redirect('alumno/inicio.php');
 }

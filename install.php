@@ -41,7 +41,7 @@ try {
             id INT AUTO_INCREMENT PRIMARY KEY,
             username VARCHAR(50) UNIQUE NOT NULL,
             password_hash VARCHAR(255) NOT NULL,
-            rol ENUM('alumno','mentor','admin') NOT NULL,
+            rol ENUM('alumno','mentor','admin','padre') NOT NULL,
             nombre VARCHAR(100) NOT NULL,
             creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         ) ENGINE=InnoDB",
@@ -51,6 +51,7 @@ try {
             usuario_id INT NOT NULL,
             edad INT,
             mentor_id INT NULL,
+            padre_id INT NULL,
             nivel_id INT NULL,
             avatar VARCHAR(40) DEFAULT 'zorro',
             mensaje_diario TEXT,

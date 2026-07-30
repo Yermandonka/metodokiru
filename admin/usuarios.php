@@ -1,12 +1,13 @@
 <?php
 require_once __DIR__ . '/_common.php';
 $user = require_login(['admin']);
+padres_migracion();
 
 $errores = [];
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $accion = $_POST['accion'] ?? '';
     try {
-        if ($accion === 'crear_mentor' || $accion === 'crear_alumno') {
+        if ($accion === 'crear_mentor' || $accion === 'crear_alumno' || $accion === 'crear_padre') {
             $username = post_texto('username', 30);
             $nombre   = post_texto('nombre', 50);
             $pass     = is_scalar($_POST['password'] ?? null) ? (string) $_POST['password'] : '';
@@ -21,7 +22,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($chk->fetchColumn()) {
                 throw new RuntimeException('Ese usuario ya existe.');
             }
-            $rol = $accion === 'crear_mentor' ? 'mentor' : 'alumno';
+            $rol = match ($accion) {
+                'crear_mentor' => 'mentor',
+                'crear_padre'  => 'padre',
+                default        => 'alumno',
+            };
             db()->prepare('INSERT INTO usuarios (username, password_hash, rol, nombre) VALUES (?,?,?,?)')
                 ->execute([$username, password_hash($pass, PASSWORD_DEFAULT), $rol, $nombre]);
             $uid = (int) db()->lastInsertId();
@@ -37,6 +42,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             db()->prepare('UPDATE alumnos SET mentor_id=? WHERE id=?')->execute([$mentorId, post_int('alumno_id', 1)]);
             flash('Asignación actualizada.');
             redirect('admin/usuarios.php');
+        } elseif ($accion === 'asignar_padre') {
+            $padreId = ($_POST['padre_id'] ?? '') !== '' ? post_int('padre_id', 1) : null;
+            db()->prepare('UPDATE alumnos SET padre_id=? WHERE id=?')->execute([$padreId, post_int('alumno_id', 1)]);
+            flash('Familia actualizada.');
+            redirect('admin/usuarios.php');
         }
     } catch (RuntimeException $ex) {
         $errores[] = $ex->getMessage();
@@ -44,8 +54,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 $mentores = db()->query("SELECT * FROM usuarios WHERE rol='mentor' ORDER BY nombre")->fetchAll();
+$padres   = db()->query("SELECT * FROM usuarios WHERE rol='padre' ORDER BY nombre")->fetchAll();
 $alumnos  = db()->query(
-    "SELECT a.id, a.mentor_id, a.edad, u.nombre, u.username
+    "SELECT a.id, a.mentor_id, a.padre_id, a.edad, u.nombre, u.username
      FROM alumnos a JOIN usuarios u ON u.id=a.usuario_id ORDER BY u.nombre"
 )->fetchAll();
 
@@ -90,9 +101,23 @@ render_header('Usuarios', 'panel', '', nav_admin('usuarios'));
 </div>
 
 <div class="card">
-    <h3>Asignar alumnos a mentores</h3>
+    <h3>Crear padre/madre</h3>
+    <p class="muted">Las cuentas de familia solo ven el progreso de sus hijos (sin editar nada). Vincula los hijos en la tabla de abajo.</p>
+    <form method="post" class="form">
+        <input type="hidden" name="accion" value="crear_padre">
+        <div class="row">
+            <label>Nombre <input type="text" name="nombre" required></label>
+            <label>Usuario <input type="text" name="username" required></label>
+            <label>Contraseña <input type="text" name="password" required></label>
+        </div>
+        <button class="btn">Crear padre/madre</button>
+    </form>
+</div>
+
+<div class="card">
+    <h3>Asignar mentor y familia a cada alumno</h3>
     <table class="tabla">
-        <thead><tr><th>Alumno</th><th>Usuario</th><th>Mentor</th></tr></thead>
+        <thead><tr><th>Alumno</th><th>Usuario</th><th>Mentor</th><th>Familia</th></tr></thead>
         <tbody>
         <?php foreach ($alumnos as $a): ?>
             <tr>
@@ -107,6 +132,20 @@ render_header('Usuarios', 'panel', '', nav_admin('usuarios'));
                             <?php foreach ($mentores as $m): ?>
                                 <option value="<?= (int)$m['id'] ?>" <?= (int)$a['mentor_id'] === (int)$m['id'] ? 'selected' : '' ?>>
                                     <?= e($m['nombre']) ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </form>
+                </td>
+                <td>
+                    <form method="post" class="form-inline">
+                        <input type="hidden" name="accion" value="asignar_padre">
+                        <input type="hidden" name="alumno_id" value="<?= (int)$a['id'] ?>">
+                        <select name="padre_id" onchange="this.form.submit()">
+                            <option value="">— sin familia —</option>
+                            <?php foreach ($padres as $p): ?>
+                                <option value="<?= (int)$p['id'] ?>" <?= (int)$a['padre_id'] === (int)$p['id'] ? 'selected' : '' ?>>
+                                    <?= e($p['nombre']) ?>
                                 </option>
                             <?php endforeach; ?>
                         </select>

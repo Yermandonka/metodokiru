@@ -67,6 +67,12 @@ define('GEMINI_API_KEY', $geminiKey);
 // Modelo gratuito por defecto (se puede cambiar con la variable GEMINI_MODEL).
 define('GEMINI_MODEL', getenv('GEMINI_MODEL') ?: 'gemini-2.5-flash');
 
+// --- Pagos (área de familias) ---
+// Enlaces que ven los padres en su panel. Se configuran por variable de
+// entorno (recomendado en Railway) o editando estos valores por defecto.
+define('PAGO_URL', getenv('PAGO_URL') ?: '');     // enlace de pago online (Stripe, PayPal…)
+define('PAGO_BIZUM', getenv('PAGO_BIZUM') ?: ''); // texto con el Bizum (número y concepto)
+
 // Zona horaria
 date_default_timezone_set('Europe/Madrid');
 

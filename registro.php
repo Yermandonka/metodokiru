@@ -12,12 +12,12 @@ $datos = ['nombre' => '', 'username' => '', 'rol' => 'alumno', 'edad' => '12'];
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $datos['nombre']   = post_texto('nombre', 50);
     $datos['username'] = post_texto('username', 30);
-    $datos['rol']      = post_opcion('rol', ['alumno', 'mentor'], ''); // nunca admin
+    $datos['rol']      = post_opcion('rol', ['alumno', 'mentor', 'padre'], ''); // nunca admin
     $datos['edad']     = post_int('edad', 0, 120, 0);
     $pass  = is_scalar($_POST['password'] ?? null) ? (string) $_POST['password'] : '';
     $pass2 = is_scalar($_POST['password2'] ?? null) ? (string) $_POST['password2'] : '';
 
-    // Solo se permite registrarse como alumno o mentor (nunca admin).
+    // Solo se permite registrarse como alumno, mentor o padre (nunca admin).
     if ($datos['rol'] === '') {
         $datos['rol'] = 'alumno';
         $errores[] = 'Rol no válido.';
@@ -46,6 +46,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     if (!$errores) {
+        if ($datos['rol'] === 'padre') {
+            padres_migracion(); // asegura que el enum de roles admite 'padre'
+        }
         db()->prepare('INSERT INTO usuarios (username, password_hash, rol, nombre) VALUES (?,?,?,?)')
             ->execute([$datos['username'], password_hash($pass, PASSWORD_DEFAULT), $datos['rol'], $datos['nombre']]);
         $uid = (int) db()->lastInsertId();
@@ -97,6 +100,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <select name="rol" id="rolSelect">
                     <option value="alumno" <?= $datos['rol'] === 'alumno' ? 'selected' : '' ?>>Alumno</option>
                     <option value="mentor" <?= $datos['rol'] === 'mentor' ? 'selected' : '' ?>>Mentor</option>
+                    <option value="padre" <?= $datos['rol'] === 'padre' ? 'selected' : '' ?>>Padre/Madre</option>
                 </select>
             </label>
             <label id="edadCampo">Edad
