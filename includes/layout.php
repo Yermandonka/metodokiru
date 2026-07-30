@@ -28,7 +28,6 @@ function render_header(string $titulo, string $tema = 'panel', string $mundo = '
             <span class="brand-logo-kiru">KIRU</span>
             <span class="brand-logo-sub">Mentoría a<br>domicilio</span>
         </span>
-        <span class="brand-name"><?= e(APP_NAME) ?></span>
     </a>
     <?php if ($nav): ?>
     <nav class="mainnav">
