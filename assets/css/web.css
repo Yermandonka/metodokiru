@@ -823,7 +823,7 @@ a.family-card:hover{
 
   :root{ --nav-alto:68px; --nav-sep:10px; }
 
-  .web-nav{ padding:0 8px 0 22px; }
+  .web-nav{ padding:0 8px 0 34px; }
 
   /* La portada sigue ocupando toda la pantalla también en móvil */
   .hero{ padding:24px 6% 20px; }
