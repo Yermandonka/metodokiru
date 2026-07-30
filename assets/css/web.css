@@ -49,7 +49,7 @@ img{ max-width:100%; height:auto; }
 a{ text-decoration:none; color:inherit; }
 
 /* Los titulares conservan la serifa de la marca */
-h1,h2,h3,blockquote{
+h1,h2,h3,blockquote,.logo{
   font-family:var(--serif);
   font-weight:400;
 }
@@ -110,7 +110,7 @@ h1{
   height:var(--nav-alto);
   margin:var(--nav-sep) auto 0;
   width:min(1200px, 94%);
-  padding:0 14px 0 38px;
+  padding:0 14px 0 56px;
 
   background:rgba(255,253,248,.92);
   backdrop-filter:blur(8px);
@@ -126,10 +126,16 @@ h1{
   gap:12px;
 }
 
-/* Marca KIRU (el logo, recreado en CSS): vuelve a la portada al pulsarla */
+/* Marca KIRU (el logo, recreado en CSS) + nombre: vuelve a la portada al pulsarla */
 .brand-kiru{
-  display:inline-flex;
+  display:flex;
+  align-items:center;
+  gap:12px;
   color:var(--texto);
+}
+
+.brand-kiru .logo{
+  font-size:20px;
 }
 
 .brand-logo{
@@ -845,6 +851,9 @@ a.family-card:hover{
     letter-spacing:1.8px;
     text-indent:1.8px;
   }
+
+  /* En móvil se queda solo el logo, sin el nombre al lado */
+  .brand-kiru .logo{ display:none; }
 
 
   .menu-btn{ width:44px; height:44px; }
