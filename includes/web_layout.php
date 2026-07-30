@@ -85,6 +85,7 @@ function web_brand(): void
         <span class="brand-logo-kiru">KIRU</span>
         <span class="brand-logo-sub">Mentoría a domicilio</span>
       </span>
+      <span class="logo">Método Kiru</span>
     </a><?php
 }
 

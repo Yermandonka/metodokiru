@@ -42,19 +42,29 @@ code { background: #efe7d8; padding: 1px 6px; border-radius: 6px; font-size: .85
 .muted { color: var(--muted); }
 .right { text-align: right; }
 
+/* Tipografía del logo (autoalojada, assets/fonts) */
+@font-face {
+    font-family: 'Italiana';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url('../fonts/italiana.woff2') format('woff2');
+}
+
 /* ---------- Topbar ---------- */
 .topbar {
     display: flex; align-items: center; gap: 22px;
     padding: 12px 26px; background: var(--crema2);
     border-bottom: 1px solid var(--linea); position: sticky; top: 0; z-index: 20;
 }
-.brand { display: flex; align-items: center; text-decoration: none; color: var(--marron-osc); }
+.brand { display: flex; align-items: center; gap: 10px; font-weight: 700; text-decoration: none; color: var(--marron-osc); }
+.brand-name { font-family: var(--serif); font-weight: 400; font-size: 1.05rem; }
 .brand-logo { display: flex; flex-direction: column; align-items: center; gap: 2px; border: 1.5px solid currentColor; padding: 5px 13px 4px; }
 .brand-logo-kiru {
-    font-family: var(--serif); font-weight: 400; font-size: 17px; line-height: 1;
-    letter-spacing: 4px; text-indent: 4px; /* compensa el hueco final del letter-spacing */
+    font-family: 'Italiana', var(--serif); font-weight: 400; font-size: 19px; line-height: 1;
+    letter-spacing: 1px; text-indent: 1px; /* compensa el hueco final del letter-spacing */
 }
-.brand-logo-sub { font-size: 6px; font-weight: 600; letter-spacing: 1.8px; text-indent: 1.8px; text-transform: uppercase; white-space: nowrap; }
+.brand-logo-sub { font-size: 6px; font-weight: 500; letter-spacing: 1.8px; text-indent: 1.8px; text-transform: uppercase; white-space: nowrap; }
 .mainnav { display: flex; gap: 6px; margin-left: 8px; flex-wrap: wrap; }
 .mainnav a {
     text-decoration: none; color: var(--marron); padding: 7px 14px; border-radius: 999px; font-size: .92rem;
@@ -207,7 +217,7 @@ code { background: #efe7d8; padding: 1px 6px; border-radius: 6px; font-size: .85
     margin: 0 auto 16px; padding: 12px 24px 10px; border: 2px solid var(--marron-osc);
     color: var(--marron-osc); text-decoration: none; transition: transform .2s;
 }
-.login-logo .brand-logo-kiru { font-size: 30px; letter-spacing: 7px; text-indent: 7px; }
+.login-logo .brand-logo-kiru { font-size: 36px; letter-spacing: 2.5px; text-indent: 2.5px; }
 .login-logo .brand-logo-sub { font-size: 8px; letter-spacing: 2.6px; text-indent: 2.6px; }
 .login-logo:hover { transform: scale(1.06); }
 .login-check { display: flex; align-items: center; gap: 8px; font-size: .85rem; color: var(--marron-osc); font-weight: 600; text-align: left; margin-bottom: 12px; cursor: pointer; }
@@ -359,8 +369,9 @@ img { max-width: 100%; height: auto; }
     /* Barra superior: marca + usuario en la primera fila; navegación deslizable debajo */
     .topbar { flex-wrap: wrap; gap: 8px 12px; padding: 10px 14px; }
     .brand-logo { padding: 4px 10px 3px; }
-    .brand-logo-kiru { font-size: 14px; letter-spacing: 3px; text-indent: 3px; }
+    .brand-logo-kiru { font-size: 16px; letter-spacing: 1px; text-indent: 1px; }
     .brand-logo-sub { font-size: 5px; letter-spacing: 1.4px; text-indent: 1.4px; }
+    .brand-name { display: none; } /* en móvil, solo el logo */
     .topbar-user { margin-left: auto; gap: 8px; }
     .uname { display: none; }
     .mainnav {
