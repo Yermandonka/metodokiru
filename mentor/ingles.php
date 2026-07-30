@@ -2,7 +2,7 @@
 /**
  * Inglés (mentor): configura el juego de cada alumno (cantidad, SkillCoins,
  * tiempo, temas), sube PDFs para generar ejercicios con su contenido y ve
- * el feedback del alumno: lecciones jugadas, radar de destrezas y fallos comunes.
+ * el feedback del alumno: lecciones jugadas y radar de destrezas.
  */
 require_once __DIR__ . '/../includes/functions.php';
 require_once __DIR__ . '/../includes/layout.php';
@@ -87,7 +87,6 @@ $cfg = $alumno ? ingles_config($aid) : null;
 
 $materiales = [];
 $resultados = [];
-$topFallos = [];
 $precisionMedia = null;
 
 /* Radar de destrezas: cada tipo de reto puntúa en una o dos destrezas del
@@ -124,8 +123,7 @@ if ($alumno) {
     $st->execute([$aid]);
     $resultados = $st->fetchAll();
 
-    // Patrones: destrezas del radar y fallos más repetidos.
-    $fallos = [];
+    // Destrezas del radar y precisión media.
     $sumAciertos = 0;
     $sumTotal = 0;
     foreach ($resultados as $i => $r) {
@@ -143,9 +141,6 @@ if ($alumno) {
                     $radar[$dk]['ok'] += $w * $reciente;
                 }
             }
-            if (empty($d['ok']) && ($d['clave'] ?? '') !== '') {
-                $fallos[$d['clave']] = ($fallos[$d['clave']] ?? 0) + 1;
-            }
         }
     }
     foreach ($radar as $k => $v) {
@@ -153,8 +148,6 @@ if ($alumno) {
             $radar[$k]['pct'] = (int) round($v['ok'] / $v['peso'] * 100);
         }
     }
-    arsort($fallos);
-    $topFallos = array_slice($fallos, 0, 8, true);
     $precisionMedia = $sumTotal ? round($sumAciertos / $sumTotal * 100) : null;
 }
 $hayRadar = (bool) array_filter($radar, fn($v) => $v['pct'] !== null);
@@ -324,43 +317,24 @@ render_header('Inglés', 'panel', '', $nav);
     <div class="stat-card"><span class="stat-num"><?= $resultados ? e(date('d/m', strtotime($resultados[0]['fecha']))) : '—' ?></span><span>Última lección</span></div>
 </div>
 
-<div class="grid-2">
-    <!-- Radar de destrezas -->
-    <div class="card">
-        <h3>Radar de destrezas</h3>
-        <?php if (!$hayRadar): ?>
-            <p class="muted">Todavía no hay datos: el radar aparecerá cuando el alumno juegue.</p>
-        <?php else: ?>
-            <div class="ingles-radar"><?= radar_svg($radar) ?></div>
-            <ul class="editlist radar-lista">
-                <?php foreach ($radar as $v): ?>
-                    <li>
-                        <span><?= e($v['nombre']) ?></span>
-                        <span class="muted"><?= $v['pct'] !== null
-                            ? $v['pct'] . ' % · ' . $v['n'] . ($v['n'] === 1 ? ' reto' : ' retos')
-                            : 'sin datos' ?></span>
-                    </li>
-                <?php endforeach; ?>
-            </ul>
-            <p class="muted">Cuanto más lejos del centro, más fuerte esa destreza. Las lecciones
-                recientes pesan más, así el radar refleja el nivel actual y se actualiza con cada
-                lección. Las zonas cercanas al centro son las que conviene reforzar.</p>
-        <?php endif; ?>
-    </div>
-
-    <!-- Fallos más repetidos -->
-    <div class="card">
-        <h3>Fallos más repetidos</h3>
-        <?php if (!$topFallos): ?>
-            <p class="muted">Sin fallos registrados por ahora. 🎉</p>
-        <?php else: ?>
-            <ul class="editlist">
-                <?php foreach ($topFallos as $clave => $n): ?>
-                    <li><span><?= e($clave) ?></span><span class="tag"><?= $n ?> <?= $n === 1 ? 'fallo' : 'fallos' ?></span></li>
-                <?php endforeach; ?>
-            </ul>
-        <?php endif; ?>
-    </div>
+<!-- Radar de destrezas -->
+<div class="card">
+    <h3>Radar de destrezas</h3>
+    <?php if (!$hayRadar): ?>
+        <p class="muted">Todavía no hay datos: el radar aparecerá cuando el alumno juegue.</p>
+    <?php else: ?>
+        <div class="ingles-radar"><?= radar_svg($radar) ?></div>
+        <ul class="editlist radar-lista">
+            <?php foreach ($radar as $v): ?>
+                <li>
+                    <span><?= e($v['nombre']) ?></span>
+                    <span class="muted"><?= $v['pct'] !== null
+                        ? $v['pct'] . ' % · ' . $v['n'] . ($v['n'] === 1 ? ' reto' : ' retos')
+                        : 'sin datos' ?></span>
+                </li>
+            <?php endforeach; ?>
+        </ul>
+    <?php endif; ?>
 </div>
 
 <!-- Últimas lecciones -->
