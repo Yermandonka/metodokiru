@@ -51,7 +51,11 @@ if ($aid) {
     $materias = $st->fetchAll();
 }
 
-$nav = [['Dashboard', 'mentor/dashboard.php', false], ['Zona académica', 'mentor/academia.php', true]];
+$nav = [
+    ['Dashboard', 'mentor/dashboard.php', false],
+    ['Zona académica', 'mentor/academia.php', true],
+    ['Inglés', 'mentor/ingles.php', false],
+];
 render_header('Zona académica', 'panel', '', $nav);
 ?>
 <div class="page-head">

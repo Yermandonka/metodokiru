@@ -105,7 +105,10 @@ $objOk      = (int) db()->query("SELECT COUNT(*) FROM objetivos WHERE alumno_id=
 
 $avatares = avatares();
 
-render_header('Perfil de ' . $alumno['nombre'], 'panel', '', [['← Volver', $volver, false]]);
+render_header('Perfil de ' . $alumno['nombre'], 'panel', '', [
+    ['← Volver', $volver, false],
+    ['🇬🇧 Inglés del alumno', 'mentor/ingles.php?id=' . $aid, false],
+]);
 ?>
 <div class="page-head">
     <h1><?= $avatares[$alumno['avatar']] ?? '🦊' ?> <?= e($alumno['nombre']) ?></h1>

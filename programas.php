@@ -4,10 +4,10 @@ web_head('Programas | Método Kiru');
 web_menu('programas');
 ?>
 
+  <?php web_nav() ?>
+
   <!-- HERO -->
   <header class="subpage-hero">
-
-    <?php web_nav() ?>
 
     <div class="hero-content">
 

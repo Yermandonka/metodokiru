@@ -4,8 +4,9 @@ web_head('Conócenos — Método Kiru');
 web_menu('conocenos');
 ?>
 
+  <?php web_nav() ?>
+
   <header class="subpage-hero">
-    <?php web_nav() ?>
 
     <div class="subpage-content">
       <p class="eyebrow">Conócenos</p>

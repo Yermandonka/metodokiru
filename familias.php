@@ -4,8 +4,9 @@ web_head('Área familias — Método Kiru');
 web_menu('familias');
 ?>
 
+  <?php web_nav() ?>
+
   <header class="subpage-hero">
-    <?php web_nav() ?>
 
     <div class="subpage-content">
       <p class="eyebrow">Área familias</p>

@@ -17,6 +17,8 @@
   --serif:Georgia, "Times New Roman", serif;
   --radio:18px;
   --radio-lg:24px;
+  --nav-alto:72px;
+  --nav-sep:14px; /* separación de la cabecera con los bordes de la página */
 }
 
 *{
@@ -83,11 +85,30 @@ h1{
    CABECERA COMÚN
    ========================= */
 
+/* Barra de navegación propia: tarjeta flotante con esquinas redondas,
+   separada del borde superior y de los laterales, centrada y simétrica.
+   Al hacer scroll se queda pegada arriba manteniendo la separación. */
 .web-nav{
+  position:sticky;
+  top:var(--nav-sep);
+  z-index:100;
+
   display:flex;
   justify-content:space-between;
   align-items:center;
   gap:12px;
+
+  height:var(--nav-alto);
+  margin:var(--nav-sep) auto 0;
+  width:min(1200px, 94%);
+  padding:0 14px 0 22px;
+
+  background:rgba(255,253,248,.92);
+  backdrop-filter:blur(8px);
+  -webkit-backdrop-filter:blur(8px);
+  border:1px solid var(--linea);
+  border-radius:999px;
+  box-shadow:var(--sombra);
 }
 
 .nav-actions{
@@ -139,25 +160,26 @@ h1{
   transition:transform .2s, background .2s, color .2s, border-color .2s;
 }
 
-/* Estilo «divertido» 3D como los botones del juego de inglés:
-   relieve inferior y el botón se hunde al pulsarlo. */
+/* Estilo «divertido» como el juego de inglés: colorimetría multicolor
+   tipo Duolingo (estática) + relieve 3D y el botón se hunde al pulsarlo. */
 .btn-accede{
-  background:linear-gradient(135deg, var(--dorado), #e6c657);
-  color:#3a2e0a;
+  background:linear-gradient(135deg, #58cc02, #1cb0f6, #ce82ff, #ff9600);
+  color:#fff;
+  text-shadow:0 1px 2px rgba(0,0,0,.25);
   font-weight:800;
   letter-spacing:1px;
   text-transform:uppercase;
   font-size:14px;
   border-radius:16px;
-  box-shadow:0 4px 0 #a8861d;
+  box-shadow:0 4px 0 rgba(58,50,42,.35);
   transition:transform .1s, filter .15s, box-shadow .1s;
 }
 
-.btn-accede:hover{ filter:brightness(1.07); }
+.btn-accede:hover{ filter:brightness(1.08); }
 
 .btn-accede:active{
   transform:translateY(3px);
-  box-shadow:0 1px 0 #a8861d;
+  box-shadow:0 1px 0 rgba(58,50,42,.35);
 }
 
 .primary{
@@ -366,8 +388,10 @@ body.menu-abierto{ overflow:hidden; }
    HERO / SUBPÁGINAS
    ========================= */
 
+/* La portada ocupa justo la pantalla que queda bajo la barra */
 .hero{
-  min-height:100vh;
+  min-height:calc(100vh - var(--nav-alto) - var(--nav-sep));
+  min-height:calc(100svh - var(--nav-alto) - var(--nav-sep));
   padding:40px 7%;
   display:flex;
   flex-direction:column;
@@ -378,20 +402,45 @@ body.menu-abierto{ overflow:hidden; }
   margin:auto 0;
 }
 
+/* Flecha que invita a bajar (la portada solo muestra el hero al cargar) */
+.scroll-abajo{
+  align-self:center;
+  width:46px;
+  height:46px;
+  display:grid;
+  place-items:center;
+
+  border:1px solid var(--linea);
+  border-radius:999px;
+  background:var(--crema2);
+  color:var(--marron);
+  box-shadow:var(--sombra);
+
+  animation:kiru-baja 2s ease-in-out infinite;
+  transition:background .2s;
+}
+
+.scroll-abajo:hover{ background:var(--arena); }
+
+@keyframes kiru-baja{
+  0%,100%{ transform:translateY(0); }
+  50%{ transform:translateY(8px); }
+}
+
+html{ scroll-behavior:smooth; }
+
+@media (prefers-reduced-motion: reduce){
+  .scroll-abajo{ animation:none; }
+  html{ scroll-behavior:auto; }
+}
+
 .subpage-hero{
-  padding:40px 7% 20px;
+  padding:48px 7% 20px;
 }
 
 .subpage-content,
 .subpage-hero .hero-content{
   max-width:900px;
-  margin-top:48px;
-}
-
-/* Portada condensada (menos espacio en blanco) */
-.pagina-inicio .hero{
-  min-height:78vh;
-  padding:32px 7% 60px;
 }
 
 .pagina-inicio h1{
@@ -747,17 +796,14 @@ a.family-card:hover{
 
 @media(max-width:900px){
 
-  .hero,
-  .pagina-inicio .hero{
-    min-height:auto;
-    padding:24px 6% 56px;
-  }
+  :root{ --nav-alto:60px; --nav-sep:10px; }
 
-  .subpage-hero{ padding:20px 6% 30px; }
+  .web-nav{ padding:0 8px 0 16px; }
 
-  .subpage-content,
-  .subpage-hero .hero-content,
-  .hero-content{ margin-top:36px; }
+  /* La portada sigue ocupando toda la pantalla también en móvil */
+  .hero{ padding:24px 6% 20px; }
+
+  .subpage-hero{ padding:32px 6% 30px; }
 
   .hero-buttons{ gap:10px; }
 

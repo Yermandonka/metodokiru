@@ -9,6 +9,8 @@ $st = db()->prepare("SELECT COALESCE(SUM(cantidad),0) FROM skillcoins_log
 $st->execute([$aid]);
 $hoyIngles = (int) $st->fetchColumn();
 
+$cfg = ingles_config($aid);
+
 render_header('Inglés', 'alumno', $mundo, nav_alumno('ingles'));
 ?>
 <h1 class="page-title">Summer English 🇬🇧</h1>
@@ -19,8 +21,10 @@ render_header('Inglés', 'alumno', $mundo, nav_alumno('ingles'));
         <div class="ingles-ico">🎮</div>
         <div>
             <h3>Play mini-games and learn English!</h3>
-            <p class="muted">Each lesson has 10 fun games: translate, complete, order,
-                match and listen. One win = <strong>1 SkillCoin</strong> (max 50 a day).
+            <p class="muted">Each lesson has <?= (int)$cfg['ejercicios'] ?> fun games: translate, complete, order,
+                match and listen. One win = <strong><?= (int)$cfg['coins_acierto'] ?> SkillCoin<?= $cfg['coins_acierto'] === 1 ? '' : 's' ?></strong>
+                (max <?= (int)$cfg['tope_diario'] ?> a day).
+                <?php if ($cfg['tiempo_seg'] > 0): ?>You have <strong><?= (int)$cfg['tiempo_seg'] ?> seconds</strong> per game! ⏱<?php endif; ?>
                 Every lesson is new!</p>
             <p class="muted">Today you have <strong><?= $hoyIngles ?></strong> 🪙 from English.</p>
         </div>
@@ -32,6 +36,7 @@ render_header('Inglés', 'alumno', $mundo, nav_alumno('ingles'));
 <div class="card" id="pantallaJuego" hidden>
     <div class="ingles-top">
         <div class="progress"><div class="progress-fill" id="inglesBarra" style="width:0%"></div></div>
+        <span class="ingles-timer" id="inglesTimer" hidden></span>
         <span class="ingles-racha" id="inglesRacha" hidden></span>
         <span class="muted" id="inglesPaso"></span>
     </div>

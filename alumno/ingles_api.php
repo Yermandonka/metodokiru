@@ -1,16 +1,15 @@
 <?php
 /**
  * API del juego «Inglés de verano» (mini-juegos tipo Duolingo).
- *  - accion=nueva    → devuelve una lección de ejercicios variados.
+ *  - accion=nueva    → devuelve una lección de ejercicios variados según la
+ *                      configuración del mentor (cantidad, temas, material PDF, tiempo).
  *                      Se generan con Gemini (diversos, sin repetir los ya vistos);
  *                      si no hay clave o la IA falla, se usa un banco local.
- *  - accion=terminar → suma los SkillCoins de la lección (1 por acierto, con tope diario).
+ *  - accion=terminar → suma los SkillCoins de la lección (según configuración,
+ *                      con tope diario), guarda el detalle para el mentor y le avisa.
  */
 require_once __DIR__ . '/../includes/functions.php';
 header('Content-Type: application/json; charset=utf-8');
-
-const INGLES_EJERCICIOS  = 10; // ejercicios por lección
-const INGLES_TOPE_DIARIO = 50; // SkillCoins máximas al día jugando
 
 $user = current_user();
 if (!$user || $user['rol'] !== 'alumno') {
@@ -25,6 +24,7 @@ if (!$alumno) {
     exit;
 }
 $aid = (int) $alumno['id'];
+$cfg = ingles_config($aid);
 
 /** Banco local de ejercicios: se usa si no hay clave de IA o si Gemini falla. */
 function ingles_banco(): array
@@ -184,10 +184,12 @@ if ($accion === 'nueva') {
     $vistos = $_SESSION['ingles_vistos'] ?? [];
     $leccion = [];
     $conIA = false;
+    $cantidad = $cfg['ejercicios'];
 
     if (GEMINI_API_KEY) {
         try {
-            foreach (ai_ingles((int) ($alumno['edad'] ?: 12), INGLES_EJERCICIOS, $vistos) as $e) {
+            $material = ingles_material_activo($aid);
+            foreach (ai_ingles((int) ($alumno['edad'] ?: 12), $cantidad, $vistos, $cfg['temas'], $material) as $e) {
                 if (is_array($e) && ($ok = ingles_valido($e))) {
                     $leccion[] = $ok;
                 }
@@ -198,13 +200,13 @@ if ($accion === 'nueva') {
         }
     }
 
-    if (count($leccion) < INGLES_EJERCICIOS) {
+    if (count($leccion) < $cantidad) {
         $banco = ingles_banco();
         shuffle($banco);
         // Primero los que el alumno no ha visto hace poco.
         usort($banco, fn($a, $b) => (int) in_array(ingles_clave($a), $vistos, true) <=> (int) in_array(ingles_clave($b), $vistos, true));
         foreach ($banco as $e) {
-            if (count($leccion) >= INGLES_EJERCICIOS) {
+            if (count($leccion) >= $cantidad) {
                 break;
             }
             if ($ok = ingles_valido($e)) {
@@ -212,7 +214,7 @@ if ($accion === 'nueva') {
             }
         }
     }
-    $leccion = array_slice($leccion, 0, INGLES_EJERCICIOS);
+    $leccion = array_slice($leccion, 0, $cantidad);
     shuffle($leccion);
 
     // Evita dos retos del mismo tipo seguidos (cuando hay variedad suficiente).
@@ -232,19 +234,63 @@ if ($accion === 'nueva') {
     }
     $_SESSION['ingles_vistos'] = array_slice(array_values(array_unique($vistos)), -60);
 
-    echo json_encode(['ejercicios' => $leccion, 'ia' => $conIA]);
+    echo json_encode([
+        'ejercicios'    => $leccion,
+        'ia'            => $conIA,
+        'tiempo'        => $cfg['tiempo_seg'],
+        'coins_acierto' => $cfg['coins_acierto'],
+    ]);
 
 } elseif ($accion === 'terminar') {
-    $aciertos = max(0, min(INGLES_EJERCICIOS, (int) ($_POST['aciertos'] ?? 0)));
+    // Detalle de respuestas (para que el mentor vea patrones): [{tipo, clave, ok}, ...]
+    $tiposValidos = ['eleccion', 'hueco', 'ordenar', 'parejas', 'escucha', 'verdadero', 'escribir', 'emoji'];
+    $detalle = [];
+    $crudo = json_decode((string) ($_POST['detalle'] ?? ''), true);
+    if (is_array($crudo)) {
+        foreach (array_slice($crudo, 0, max(1, $cfg['ejercicios'])) as $d) {
+            if (is_array($d) && in_array($d['tipo'] ?? '', $tiposValidos, true)) {
+                $detalle[] = [
+                    'tipo'  => $d['tipo'],
+                    'clave' => limpiar_texto($d['clave'] ?? '', 150),
+                    'ok'    => (bool) ($d['ok'] ?? false),
+                ];
+            }
+        }
+    }
+
+    if ($detalle) {
+        $total    = count($detalle);
+        $aciertos = count(array_filter($detalle, fn($d) => $d['ok']));
+    } else {
+        $total    = $cfg['ejercicios'];
+        $aciertos = max(0, min($total, (int) ($_POST['aciertos'] ?? 0)));
+    }
+
     $st = db()->prepare("SELECT COALESCE(SUM(cantidad),0) FROM skillcoins_log
                          WHERE alumno_id = ? AND motivo LIKE 'Inglés%' AND DATE(fecha) = CURDATE()");
     $st->execute([$aid]);
     $hoy = (int) $st->fetchColumn();
-    $coins = max(0, min($aciertos, INGLES_TOPE_DIARIO - $hoy));
+    $coins = max(0, min($aciertos * $cfg['coins_acierto'], $cfg['tope_diario'] - $hoy));
     if ($coins > 0) {
         sc_add($aid, $coins, 'Inglés: lección de verano');
     }
-    echo json_encode(['coins' => $coins, 'hoy' => $hoy + $coins, 'tope' => INGLES_TOPE_DIARIO]);
+
+    // Guarda el resultado para el panel del mentor.
+    ingles_tablas();
+    db()->prepare('INSERT INTO ingles_resultados (alumno_id, aciertos, total, coins, detalle) VALUES (?,?,?,?,?)')
+        ->execute([$aid, $aciertos, $total, $coins, $detalle ? json_encode($detalle, JSON_UNESCAPED_UNICODE) : null]);
+
+    // Avisa al mentor de la lección terminada.
+    if (!empty($alumno['mentor_id'])) {
+        db()->prepare('INSERT INTO notificaciones (mentor_id, alumno_id, mensaje) VALUES (?,?,?)')
+            ->execute([
+                (int) $alumno['mentor_id'],
+                $aid,
+                '🇬🇧 ' . $user['nombre'] . " terminó una lección de inglés: $aciertos/$total aciertos (+$coins 🪙)",
+            ]);
+    }
+
+    echo json_encode(['coins' => $coins, 'hoy' => $hoy + $coins, 'tope' => $cfg['tope_diario']]);
 
 } else {
     http_response_code(400);

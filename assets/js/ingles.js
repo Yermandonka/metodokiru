@@ -7,11 +7,18 @@
     var cont = $('ejercicio'), barra = $('inglesBarra'), paso = $('inglesPaso');
     var feedback = $('inglesFeedback'), btnAccion = $('inglesAccion'), pie = $('inglesPie');
     var btnEmpezar = $('inglesEmpezar'), btnOtra = $('inglesOtra'), chipRacha = $('inglesRacha');
+    var chipTimer = $('inglesTimer');
 
     var ejercicios = [], idx = 0, aciertos = 0, racha = 0;
     var evaluar = null;          // función del ejercicio actual → {ok, solucion}
     var resuelto = false;
     var redibujarParejas = null; // para redibujar las cuerdas al girar el móvil
+
+    // Configuración que manda el servidor (la fija el mentor)
+    var tiempoLimite = 0;        // segundos por ejercicio; 0 = sin límite
+    var coinsAcierto = 1;        // SkillCoins por acierto
+    var detalle = [];            // respuestas de la lección: {tipo, clave, ok}
+    var timerId = null, tRestante = 0;
 
     var TIPOS = {
         eleccion:  { txt: '🎯 Translate', clase: 't-eleccion' },
@@ -131,6 +138,66 @@
         elemento.classList.remove(clase);
         void elemento.offsetWidth;
         elemento.classList.add(clase);
+    }
+
+    /* ---------- Detalle para el mentor ---------- */
+    /* Identifica el ejercicio igual que el servidor (para ver patrones de fallos). */
+    function claveEj(e) {
+        if (e.tipo === 'eleccion') return e.pregunta;
+        if (e.tipo === 'hueco') return e.frase;
+        if (e.tipo === 'ordenar') return e.solucion;
+        if (e.tipo === 'escucha') return e.texto;
+        if (e.tipo === 'parejas') return e.pares.map(function (p) { return p.en; }).join(',');
+        if (e.tipo === 'verdadero') return e.afirmacion;
+        if (e.tipo === 'escribir') return 'w:' + e.solucion;
+        if (e.tipo === 'emoji') return e.emoji;
+        return '';
+    }
+    function registrar(ok) {
+        var e = ejercicios[idx];
+        if (e) detalle.push({ tipo: e.tipo, clave: claveEj(e), ok: !!ok });
+    }
+
+    /* ---------- Temporizador por ejercicio (si el mentor lo activa) ---------- */
+    function pararTimer() {
+        if (timerId) { clearInterval(timerId); timerId = null; }
+        if (chipTimer) chipTimer.hidden = true;
+    }
+    function pintarTimer() {
+        chipTimer.textContent = '⏱ ' + tRestante;
+        chipTimer.classList.toggle('poco', tRestante <= 5);
+        if (tRestante <= 5) anima(chipTimer, 'pop');
+    }
+    function iniciarTimer() {
+        pararTimer();
+        if (!tiempoLimite || !chipTimer) return;
+        tRestante = tiempoLimite;
+        pintarTimer();
+        chipTimer.hidden = false;
+        timerId = setInterval(function () {
+            tRestante--;
+            if (tRestante <= 0) { pararTimer(); tiempoAgotado(); return; }
+            pintarTimer();
+        }, 1000);
+    }
+    /* Se acabó el tiempo: cuenta como fallo y se pasa al siguiente. */
+    function tiempoAgotado() {
+        if (resuelto) return;
+        resuelto = true;
+        registrar(false);
+        racha = 0;
+        pintarRacha();
+        feedback.innerHTML = '';
+        feedback.appendChild(el('span', 'fb-ico', '⏰'));
+        feedback.appendChild(el('span', '', "Time's up! Be faster next time."));
+        feedback.hidden = false;
+        feedback.className = 'ingles-feedback mal';
+        sonidoFallo();
+        anima(cont, 'tiembla');
+        btnAccion.classList.add('mal');
+        btnAccion.textContent = idx + 1 >= ejercicios.length ? 'See result' : 'Continue';
+        btnAccion.hidden = false;
+        pie.hidden = false;
     }
 
     /* ---------- Tipos con opciones (elección, hueco, escucha) ---------- */
@@ -359,7 +426,10 @@
         pie.hidden = true; // sin caja blanca hasta que haya resultado
         cont.innerHTML = '';
 
+        pararTimer();
+
         // Mini-lección antes del reto (si la trae y aún no se ha visto).
+        // Sin temporizador: leer la lección no puntúa.
         if (e.leccion && !e.leccionVista) {
             e.leccionVista = true;
             cont.appendChild(el('span', 'ingles-tipo t-leccion', '📖 Lesson'));
@@ -386,6 +456,7 @@
         else if (e.tipo === 'emoji') pintarOpciones('What is this?', e.opciones, e.correcta, null, el('div', 'ingles-emoji', e.emoji));
 
         anima(cont, 'entrada');
+        iniciarTimer();
     }
 
     function pintarRacha() {
@@ -401,18 +472,21 @@
     function resolver() {
         if (resuelto || !evaluar) return;
         resuelto = true;
+        pararTimer();
         var r = evaluar();
+        registrar(r.ok);
         if (r.ok) { aciertos++; racha++; } else { racha = 0; }
         pintarRacha();
 
+        var premio = coinsAcierto > 0 ? ' +' + coinsAcierto + ' 🪙' : '';
         var texto;
         if (r.parejas) {
             texto = r.ok
-                ? azar(FRASES_OK) + ' All pairs, no mistakes! +1 🪙'
+                ? azar(FRASES_OK) + ' All pairs, no mistakes!' + premio
                 : azar(FRASES_MAL) + ' You made ' + r.fallos + ' mistake(s).';
         } else {
             texto = r.ok
-                ? azar(FRASES_OK) + ' +1 🪙'
+                ? azar(FRASES_OK) + premio
                 : azar(FRASES_MAL) + ' The answer was: «' + r.solucion + '»';
         }
         if (r.ok && racha >= 3) texto += ' 🔥 Streak: ' + racha + '!';
@@ -438,10 +512,12 @@
     }
 
     function terminarLeccion() {
+        pararTimer();
         barra.style.width = '100%';
         var fd = new FormData();
         fd.append('accion', 'terminar');
         fd.append('aciertos', aciertos);
+        fd.append('detalle', JSON.stringify(detalle));
         fetch(KIRU_INGLES.api, { method: 'POST', body: fd })
             .then(function (r) { return r.json(); })
             .catch(function () { return {}; })
@@ -534,6 +610,9 @@
                 idx = 0;
                 aciertos = 0;
                 racha = 0;
+                detalle = [];
+                tiempoLimite = (typeof d.tiempo === 'number' && d.tiempo > 0) ? d.tiempo : 0;
+                if (typeof d.coins_acierto === 'number') coinsAcierto = d.coins_acierto;
                 pintarRacha();
                 pInicio.hidden = true;
                 pFin.hidden = true;

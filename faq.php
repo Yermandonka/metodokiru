@@ -4,8 +4,9 @@ web_head('Preguntas frecuentes — Método Kiru');
 web_menu('faq');
 ?>
 
+  <?php web_nav() ?>
+
   <header class="subpage-hero">
-    <?php web_nav() ?>
 
     <div class="subpage-content">
       <p class="eyebrow">Preguntas frecuentes</p>

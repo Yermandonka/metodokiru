@@ -444,6 +444,11 @@ img { max-width: 100%; height: auto; }
 .ingles-racha { background: linear-gradient(135deg, #ff9600, #ffc800); color: #7a4b00; font-weight: 800; padding: 6px 12px; border-radius: 999px; font-size: .85rem; white-space: nowrap; }
 .ingles-racha.pop { animation: kiru-pop .35s ease; }
 
+/* Temporizador por ejercicio (si el mentor lo activa) */
+.ingles-timer { background: #1cb0f6; color: #fff; font-weight: 800; padding: 6px 12px; border-radius: 999px; font-size: .85rem; white-space: nowrap; }
+.ingles-timer.poco { background: #ff4b4b; }
+.ingles-timer.pop { animation: kiru-pop .3s ease; }
+
 #ejercicio.entrada { animation: kiru-sube .35s ease; }
 #ejercicio.tiembla { animation: kiru-tiembla .5s ease; }
 

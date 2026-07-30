@@ -343,6 +343,95 @@ function registrar_conexion(int $alumnoId): void
     }
 }
 
+/* ---------- Inglés: configuración del mentor, materiales (PDF) y resultados ---------- */
+
+function ingles_tablas(): void
+{
+    static $creadas = false;
+    if ($creadas) {
+        return;
+    }
+    db()->exec("CREATE TABLE IF NOT EXISTS ingles_config (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        alumno_id INT NOT NULL UNIQUE,
+        ejercicios INT NOT NULL DEFAULT 10,
+        coins_acierto INT NOT NULL DEFAULT 1,
+        tope_diario INT NOT NULL DEFAULT 50,
+        tiempo_seg INT NOT NULL DEFAULT 0,
+        temas VARCHAR(255) NOT NULL DEFAULT '',
+        FOREIGN KEY (alumno_id) REFERENCES alumnos(id) ON DELETE CASCADE
+    ) ENGINE=InnoDB");
+    db()->exec("CREATE TABLE IF NOT EXISTS ingles_material (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        alumno_id INT NOT NULL,
+        titulo VARCHAR(100) NOT NULL,
+        contenido MEDIUMTEXT NOT NULL,
+        activo TINYINT(1) DEFAULT 1,
+        creado_en DATETIME DEFAULT CURRENT_TIMESTAMP,
+        INDEX (alumno_id),
+        FOREIGN KEY (alumno_id) REFERENCES alumnos(id) ON DELETE CASCADE
+    ) ENGINE=InnoDB");
+    db()->exec("CREATE TABLE IF NOT EXISTS ingles_resultados (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        alumno_id INT NOT NULL,
+        aciertos INT NOT NULL,
+        total INT NOT NULL,
+        coins INT NOT NULL DEFAULT 0,
+        detalle TEXT,
+        fecha DATETIME DEFAULT CURRENT_TIMESTAMP,
+        INDEX (alumno_id, fecha),
+        FOREIGN KEY (alumno_id) REFERENCES alumnos(id) ON DELETE CASCADE
+    ) ENGINE=InnoDB");
+    $creadas = true;
+}
+
+/** Configuración del juego de inglés del alumno (valores por defecto si el mentor no la ha tocado). */
+function ingles_config(int $alumnoId): array
+{
+    ingles_tablas();
+    $st = db()->prepare('SELECT * FROM ingles_config WHERE alumno_id = ?');
+    $st->execute([$alumnoId]);
+    $cfg = $st->fetch() ?: [];
+    return [
+        'ejercicios'    => (int) ($cfg['ejercicios'] ?? 10),
+        'coins_acierto' => (int) ($cfg['coins_acierto'] ?? 1),
+        'tope_diario'   => (int) ($cfg['tope_diario'] ?? 50),
+        'tiempo_seg'    => (int) ($cfg['tiempo_seg'] ?? 0),
+        'temas'         => (string) ($cfg['temas'] ?? ''),
+    ];
+}
+
+function ingles_config_guardar(int $alumnoId, array $cfg): void
+{
+    ingles_tablas();
+    db()->prepare(
+        'INSERT INTO ingles_config (alumno_id, ejercicios, coins_acierto, tope_diario, tiempo_seg, temas)
+         VALUES (?,?,?,?,?,?)
+         ON DUPLICATE KEY UPDATE ejercicios=VALUES(ejercicios), coins_acierto=VALUES(coins_acierto),
+             tope_diario=VALUES(tope_diario), tiempo_seg=VALUES(tiempo_seg), temas=VALUES(temas)'
+    )->execute([
+        $alumnoId,
+        $cfg['ejercicios'],
+        $cfg['coins_acierto'],
+        $cfg['tope_diario'],
+        $cfg['tiempo_seg'],
+        $cfg['temas'],
+    ]);
+}
+
+/** Texto de los materiales (PDF) activos del alumno, recortado para caber en el prompt. */
+function ingles_material_activo(int $alumnoId, int $max = 6000): string
+{
+    ingles_tablas();
+    $st = db()->prepare('SELECT titulo, contenido FROM ingles_material WHERE alumno_id = ? AND activo = 1 ORDER BY id DESC LIMIT 3');
+    $st->execute([$alumnoId]);
+    $trozos = [];
+    foreach ($st->fetchAll() as $m) {
+        $trozos[] = '## ' . $m['titulo'] . "\n" . $m['contenido'];
+    }
+    return mb_substr(implode("\n\n", $trozos), 0, $max);
+}
+
 /* ---------- IA (Fase 2) ---------- */
 
 /** POST a la API de Gemini; devuelve la respuesta decodificada o lanza RuntimeException. */
@@ -408,18 +497,29 @@ function ai_generar(string $tema, int $edad = 12): string
 /**
  * Genera una lección de inglés (ejercicios tipo Duolingo) con Gemini.
  * $evitar: contenidos ya usados que no deben repetirse.
+ * $temas: temas preferidos que fija el mentor (separados por comas); vacío = variados.
+ * $material: contenido extraído de los PDF del mentor; si existe, los ejercicios se basan en él.
  * Devuelve la lista de ejercicios sin validar; lanza RuntimeException si falla.
  */
-function ai_ingles(int $edad, int $cantidad, array $evitar = []): array
+function ai_ingles(int $edad, int $cantidad, array $evitar = [], string $temas = '', string $material = ''): array
 {
-    $temas = ['los animales', 'la comida', 'la familia', 'el colegio', 'los deportes',
-        'el verano y la playa', 'los viajes', 'la ropa', 'la casa', 'el cuerpo',
-        'los colores y los números', 'las rutinas diarias', 'los hobbies', 'la ciudad',
-        'el tiempo y las estaciones', 'las emociones', 'la naturaleza', 'las fiestas'];
-    $tema = $temas[array_rand($temas)];
+    if ($temas !== '') {
+        $lista = array_values(array_filter(array_map('trim', explode(',', $temas))));
+    } else {
+        $lista = ['los animales', 'la comida', 'la familia', 'el colegio', 'los deportes',
+            'el verano y la playa', 'los viajes', 'la ropa', 'la casa', 'el cuerpo',
+            'los colores y los números', 'las rutinas diarias', 'los hobbies', 'la ciudad',
+            'el tiempo y las estaciones', 'las emociones', 'la naturaleza', 'las fiestas'];
+    }
+    $tema = $lista ? $lista[array_rand($lista)] : 'vocabulario general';
 
     $prompt = "Crea exactamente $cantidad ejercicios de inglés básico (nivel A1-A2, estilo Duolingo) "
-        . "para un niño hispanohablante de $edad años. Tema principal: $tema (puedes mezclar con vocabulario general).\n"
+        . "para un niño hispanohablante de $edad años. Tema principal: $tema (puedes mezclar con vocabulario general).\n";
+    if ($material !== '') {
+        $prompt .= "IMPORTANTE: basa el vocabulario y las estructuras de los ejercicios en este material "
+            . "que ha preparado su mentor (los temas anteriores son secundarios):\n---\n$material\n---\n";
+    }
+    $prompt .= ''
         . "Hay 8 tipos de ejercicio; usa al menos 6 distintos en cada lección y mézclalos. Formato exacto:\n"
         . '- {"tipo":"eleccion","pregunta":"How do you say «perro» in English?","opciones":["dog","cat","bird","fish"],"correcta":0}' . "\n"
         . '- {"tipo":"hueco","frase":"I ___ football on Sundays.","opciones":["play","plays","playing","played"],"correcta":0}' . "\n"
@@ -460,6 +560,31 @@ function ai_ingles(int $edad, int $cantidad, array $evitar = []): array
         throw new RuntimeException('Gemini no devolvió ejercicios válidos.');
     }
     return $json['ejercicios'];
+}
+
+/**
+ * Extrae con Gemini el contenido didáctico de un PDF (en base64) para poder
+ * crear ejercicios de inglés a partir de él. Lanza RuntimeException si falla.
+ */
+function ai_pdf_extraer(string $pdfBase64): string
+{
+    $data = gemini_request([
+        'contents' => [[
+            'parts' => [
+                ['inline_data' => ['mime_type' => 'application/pdf', 'data' => $pdfBase64]],
+                ['text' => 'Extrae de este PDF el contenido útil para crear ejercicios de inglés '
+                    . 'para un niño hispanohablante: listas de vocabulario (inglés — español), '
+                    . 'estructuras gramaticales con un ejemplo, y los temas que trata. '
+                    . 'Devuelve SOLO texto plano organizado en listas, breve (máximo 200 líneas), sin comentarios.'],
+            ],
+        ]],
+        'generationConfig' => ['temperature' => 0.2],
+    ]);
+    $texto = trim($data['candidates'][0]['content']['parts'][0]['text'] ?? '');
+    if ($texto === '') {
+        throw new RuntimeException('Gemini no pudo leer el PDF (¿es un escaneo sin texto o demasiado grande?).');
+    }
+    return $texto;
 }
 
 /* ---------- Markdown ---------- */

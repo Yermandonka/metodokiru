@@ -29,6 +29,7 @@ $notis = $notis->fetchAll();
 $nav = [
     ['Dashboard', 'mentor/dashboard.php', true],
     ['Zona académica', 'mentor/academia.php', false],
+    ['Inglés', 'mentor/ingles.php', false],
 ];
 render_header('Panel del mentor', 'panel', '', $nav);
 ?>

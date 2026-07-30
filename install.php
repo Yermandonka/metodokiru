@@ -129,6 +129,40 @@ try {
             INDEX (usuario_id),
             FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE
         ) ENGINE=InnoDB",
+
+        'ingles_config' => "CREATE TABLE IF NOT EXISTS ingles_config (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            alumno_id INT NOT NULL UNIQUE,
+            ejercicios INT NOT NULL DEFAULT 10,
+            coins_acierto INT NOT NULL DEFAULT 1,
+            tope_diario INT NOT NULL DEFAULT 50,
+            tiempo_seg INT NOT NULL DEFAULT 0,
+            temas VARCHAR(255) NOT NULL DEFAULT '',
+            FOREIGN KEY (alumno_id) REFERENCES alumnos(id) ON DELETE CASCADE
+        ) ENGINE=InnoDB",
+
+        'ingles_material' => "CREATE TABLE IF NOT EXISTS ingles_material (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            alumno_id INT NOT NULL,
+            titulo VARCHAR(100) NOT NULL,
+            contenido MEDIUMTEXT NOT NULL,
+            activo TINYINT(1) DEFAULT 1,
+            creado_en DATETIME DEFAULT CURRENT_TIMESTAMP,
+            INDEX (alumno_id),
+            FOREIGN KEY (alumno_id) REFERENCES alumnos(id) ON DELETE CASCADE
+        ) ENGINE=InnoDB",
+
+        'ingles_resultados' => "CREATE TABLE IF NOT EXISTS ingles_resultados (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            alumno_id INT NOT NULL,
+            aciertos INT NOT NULL,
+            total INT NOT NULL,
+            coins INT NOT NULL DEFAULT 0,
+            detalle TEXT,
+            fecha DATETIME DEFAULT CURRENT_TIMESTAMP,
+            INDEX (alumno_id, fecha),
+            FOREIGN KEY (alumno_id) REFERENCES alumnos(id) ON DELETE CASCADE
+        ) ENGINE=InnoDB",
     ];
 
     foreach ($tables as $name => $sql) {

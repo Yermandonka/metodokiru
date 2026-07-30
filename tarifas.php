@@ -4,9 +4,10 @@ web_head('Tarifas | Método Kiru');
 web_menu('tarifas');
 ?>
 
+  <?php web_nav() ?>
+
   <!-- HERO -->
   <header class="subpage-hero">
-    <?php web_nav() ?>
 
     <div class="hero-content">
       <h1>Tarifas</h1>
