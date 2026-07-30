@@ -368,9 +368,9 @@ img { max-width: 100%; height: auto; }
 @media (max-width: 640px) {
     /* Barra superior: marca + usuario en la primera fila; navegación deslizable debajo */
     .topbar { flex-wrap: wrap; gap: 8px 12px; padding: 10px 14px; }
-    .brand-logo { padding: 4px 10px 3px; }
-    .brand-logo-kiru { font-size: 16px; letter-spacing: 1px; text-indent: 1px; }
-    .brand-logo-sub { font-size: 5px; letter-spacing: 1.4px; text-indent: 1.4px; }
+    .brand-logo { padding: 3px 8px 2px; gap: 1px; }
+    .brand-logo-kiru { font-size: 12px; letter-spacing: 1px; text-indent: 1px; }
+    .brand-logo-sub { font-size: 4px; letter-spacing: 1px; text-indent: 1px; }
     .brand-name { display: none; } /* en móvil, solo el logo */
     .topbar-user { margin-left: auto; gap: 8px; }
     .uname { display: none; }
