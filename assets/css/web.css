@@ -17,7 +17,7 @@
   --serif:Georgia, "Times New Roman", serif;
   --radio:18px;
   --radio-lg:24px;
-  --nav-alto:72px;
+  --nav-alto:84px;
   --nav-sep:14px; /* separación de la cabecera con los bordes de la página */
 }
 
@@ -160,12 +160,12 @@ h1{
   transition:transform .2s, background .2s, color .2s, border-color .2s;
 }
 
-/* Estilo «divertido» como el juego de inglés: colorimetría multicolor
-   tipo Duolingo (estática) + relieve 3D y el botón se hunde al pulsarlo. */
+/* Estilo «divertido» como el juego de inglés, pero contenido: degradado
+   suave verde→azul + relieve 3D y el botón se hunde al pulsarlo. */
 .btn-accede{
-  background:linear-gradient(135deg, #58cc02, #1cb0f6, #ce82ff, #ff9600);
+  background:linear-gradient(135deg, #6abf47, #2fa7dd);
   color:#fff;
-  text-shadow:0 1px 2px rgba(0,0,0,.25);
+  text-shadow:0 1px 2px rgba(0,0,0,.18);
   font-weight:800;
   letter-spacing:1px;
   text-transform:uppercase;
@@ -796,7 +796,7 @@ a.family-card:hover{
 
 @media(max-width:900px){
 
-  :root{ --nav-alto:60px; --nav-sep:10px; }
+  :root{ --nav-alto:68px; --nav-sep:10px; }
 
   .web-nav{ padding:0 8px 0 16px; }
 
