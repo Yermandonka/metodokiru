@@ -19,6 +19,8 @@ function render_header(string $titulo, string $tema = 'panel', string $mundo = '
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <title><?= e($titulo) ?> · <?= e(APP_NAME) ?></title>
+    <link rel="icon" type="image/svg+xml" href="<?= asset('assets/img/favicon.svg') ?>">
+    <link rel="icon" type="image/png" sizes="64x64" href="<?= asset('assets/img/favicon.png') ?>">
     <link rel="stylesheet" href="<?= asset('assets/css/style.css') ?>">
 </head>
 <body class="<?= e($bodyClass) ?>">

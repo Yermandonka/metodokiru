@@ -29,6 +29,8 @@ function web_head(string $title, string $bodyClass = ''): void
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title><?= e($title) ?></title>
+  <link rel="icon" type="image/svg+xml" href="<?= asset('assets/img/favicon.svg') ?>">
+  <link rel="icon" type="image/png" sizes="64x64" href="<?= asset('assets/img/favicon.png') ?>">
   <link rel="stylesheet" href="<?= asset('assets/css/web.css') ?>">
 </head>
 <body<?= $bodyClass !== '' ? ' class="' . e($bodyClass) . '"' : '' ?>>
