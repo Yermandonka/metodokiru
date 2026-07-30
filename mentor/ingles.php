@@ -2,7 +2,7 @@
 /**
  * Inglés (mentor): configura el juego de cada alumno (cantidad, SkillCoins,
  * tiempo, temas), sube PDFs para generar ejercicios con su contenido y ve
- * el feedback del alumno: lecciones jugadas, precisión por tipo y fallos comunes.
+ * el feedback del alumno: lecciones jugadas, radar de destrezas y fallos comunes.
  */
 require_once __DIR__ . '/../includes/functions.php';
 require_once __DIR__ . '/../includes/layout.php';
@@ -87,9 +87,33 @@ $cfg = $alumno ? ingles_config($aid) : null;
 
 $materiales = [];
 $resultados = [];
-$porTipo = [];
 $topFallos = [];
 $precisionMedia = null;
+
+/* Radar de destrezas: cada tipo de reto puntúa en una o dos destrezas del
+   idioma. Las lecciones recientes pesan más, así el radar refleja el nivel
+   actual y se mueve con cada lección que juega el alumno. */
+$DESTREZAS = [
+    'vocabulario' => '📚 Vocabulario',
+    'gramatica'   => '🧩 Gramática',
+    'lectura'     => '🧠 Comprensión',
+    'escucha'     => '👂 Escucha',
+    'escritura'   => '⌨️ Escritura',
+];
+$TIPO_DESTREZA = [
+    'eleccion'  => ['vocabulario' => 1.0, 'lectura' => 0.5],
+    'parejas'   => ['vocabulario' => 1.0],
+    'emoji'     => ['vocabulario' => 1.0],
+    'hueco'     => ['gramatica' => 1.0, 'lectura' => 0.5],
+    'ordenar'   => ['gramatica' => 1.0, 'escritura' => 0.5],
+    'verdadero' => ['lectura' => 1.0],
+    'escucha'   => ['escucha' => 1.0],
+    'escribir'  => ['escritura' => 1.0, 'vocabulario' => 0.5],
+];
+$radar = [];
+foreach ($DESTREZAS as $k => $nombre) {
+    $radar[$k] = ['nombre' => $nombre, 'ok' => 0.0, 'peso' => 0.0, 'n' => 0, 'pct' => null];
+}
 
 if ($alumno) {
     $st = db()->prepare('SELECT * FROM ingles_material WHERE alumno_id=? ORDER BY id DESC');
@@ -100,38 +124,92 @@ if ($alumno) {
     $st->execute([$aid]);
     $resultados = $st->fetchAll();
 
-    // Patrones: precisión por tipo de ejercicio y fallos más repetidos.
+    // Patrones: destrezas del radar y fallos más repetidos.
     $fallos = [];
     $sumAciertos = 0;
     $sumTotal = 0;
-    foreach ($resultados as $r) {
+    foreach ($resultados as $i => $r) {
         $sumAciertos += (int) $r['aciertos'];
         $sumTotal    += (int) $r['total'];
+        $reciente = pow(0.93, $i); // $resultados va de la más nueva a la más vieja
         foreach ((array) json_decode((string) $r['detalle'], true) as $d) {
             if (!is_array($d) || empty($d['tipo'])) {
                 continue;
             }
-            $t = $d['tipo'];
-            $porTipo[$t] ??= ['ok' => 0, 'total' => 0];
-            $porTipo[$t]['total']++;
-            if (!empty($d['ok'])) {
-                $porTipo[$t]['ok']++;
-            } elseif (($d['clave'] ?? '') !== '') {
+            foreach ($TIPO_DESTREZA[$d['tipo']] ?? [] as $dk => $w) {
+                $radar[$dk]['peso'] += $w * $reciente;
+                $radar[$dk]['n']++;
+                if (!empty($d['ok'])) {
+                    $radar[$dk]['ok'] += $w * $reciente;
+                }
+            }
+            if (empty($d['ok']) && ($d['clave'] ?? '') !== '') {
                 $fallos[$d['clave']] = ($fallos[$d['clave']] ?? 0) + 1;
             }
         }
     }
-    uasort($porTipo, fn($a, $b) => ($a['ok'] / max(1, $a['total'])) <=> ($b['ok'] / max(1, $b['total'])));
+    foreach ($radar as $k => $v) {
+        if ($v['peso'] > 0) {
+            $radar[$k]['pct'] = (int) round($v['ok'] / $v['peso'] * 100);
+        }
+    }
     arsort($fallos);
     $topFallos = array_slice($fallos, 0, 8, true);
     $precisionMedia = $sumTotal ? round($sumAciertos / $sumTotal * 100) : null;
 }
+$hayRadar = (bool) array_filter($radar, fn($v) => $v['pct'] !== null);
 
-$tipoNombre = [
-    'eleccion' => '🎯 Traducir', 'hueco' => '✏️ Completar', 'ordenar' => '🧩 Ordenar',
-    'parejas' => '🔗 Parejas', 'escucha' => '👂 Escuchar', 'verdadero' => '🤔 V/F',
-    'escribir' => '⌨️ Escribir', 'emoji' => '🖼️ Emoji',
-];
+/** Dibuja el radar (SVG) con un eje por destreza; pct null = sin datos aún. */
+function radar_svg(array $ejes): string
+{
+    $n = count($ejes);
+    $cx = 240.0; $cy = 178.0; $R = 104.0;
+    $ang = fn(int $i) => -M_PI / 2 + $i * 2 * M_PI / $n;
+    $punto = function (int $i, float $r) use ($ang, $cx, $cy) {
+        return [round($cx + $r * cos($ang($i)), 1), round($cy + $r * sin($ang($i)), 1)];
+    };
+    $poligono = function (float $r) use ($n, $punto) {
+        $p = [];
+        for ($i = 0; $i < $n; $i++) { [$x, $y] = $punto($i, $r); $p[] = "$x,$y"; }
+        return implode(' ', $p);
+    };
+
+    $s = '<svg viewBox="0 0 480 336" role="img" aria-label="Radar de destrezas de inglés">';
+    // Rejilla: anillos al 25/50/75/100 % y radios hasta cada vértice.
+    foreach ([.25, .5, .75, 1] as $f) {
+        $s .= '<polygon points="' . $poligono($R * $f) . '" fill="none" stroke="var(--linea)" stroke-width="1"/>';
+    }
+    for ($i = 0; $i < $n; $i++) {
+        [$x, $y] = $punto($i, $R);
+        $s .= "<line x1=\"$cx\" y1=\"$cy\" x2=\"$x\" y2=\"$y\" stroke=\"var(--linea)\" stroke-width=\"1\"/>";
+    }
+    foreach ([25, 50, 75, 100] as $v) {
+        $s .= '<text x="' . ($cx + 5) . '" y="' . round($cy - $R * $v / 100 + 4, 1) . '" font-size="9" fill="var(--muted)">' . $v . '</text>';
+    }
+    // Polígono del alumno.
+    $p = [];
+    foreach (array_values($ejes) as $i => $e) {
+        [$x, $y] = $punto($i, $R * max(0, min(100, (int) ($e['pct'] ?? 0))) / 100);
+        $p[] = "$x,$y";
+    }
+    $s .= '<polygon points="' . implode(' ', $p) . '" fill="#7c8a5a" fill-opacity=".14" stroke="#7c8a5a" stroke-width="2" stroke-linejoin="round"/>';
+    // Puntos (huecos si esa destreza aún no tiene datos) y etiquetas.
+    foreach (array_values($ejes) as $i => $e) {
+        $con = $e['pct'] !== null;
+        [$x, $y] = $punto($i, $R * ($con ? max(0, min(100, (int) $e['pct'])) : 0) / 100);
+        $s .= $con
+            ? "<circle cx=\"$x\" cy=\"$y\" r=\"4.5\" fill=\"#7c8a5a\" stroke=\"var(--crema2)\" stroke-width=\"2\"/>"
+            : "<circle cx=\"$x\" cy=\"$y\" r=\"4\" fill=\"var(--crema2)\" stroke=\"var(--muted)\" stroke-width=\"1.5\"/>";
+        $cos = cos($ang($i)); $sin = sin($ang($i));
+        [$lx, $ly] = $punto($i, $R + 22);
+        $anchor = $cos > .15 ? 'start' : ($cos < -.15 ? 'end' : 'middle');
+        $sube = $sin < -.3 ? -12 : ($sin > .3 ? 12 : 0); // separa la etiqueta del vértice
+        $s .= '<text x="' . $lx . '" y="' . round($ly + $sube, 1) . '" text-anchor="' . $anchor . '" font-size="13" font-weight="700" fill="var(--texto)">' . e($e['nombre']) . '</text>';
+        $s .= '<text x="' . $lx . '" y="' . round($ly + $sube + 15, 1) . '" text-anchor="' . $anchor . '" font-size="12" fill="var(--muted)">'
+            . ($con ? (int) $e['pct'] . ' %' : 'sin datos') . '</text>';
+    }
+    return $s . '</svg>';
+}
 
 $nav = [
     ['Dashboard', 'mentor/dashboard.php', false],
@@ -247,22 +325,26 @@ render_header('Inglés', 'panel', '', $nav);
 </div>
 
 <div class="grid-2">
-    <!-- Patrones por tipo -->
+    <!-- Radar de destrezas -->
     <div class="card">
-        <h3>Patrones por tipo de ejercicio</h3>
-        <?php if (!$porTipo): ?>
-            <p class="muted">Todavía no hay datos: aparecerán cuando el alumno juegue.</p>
+        <h3>Radar de destrezas</h3>
+        <?php if (!$hayRadar): ?>
+            <p class="muted">Todavía no hay datos: el radar aparecerá cuando el alumno juegue.</p>
         <?php else: ?>
-            <?php foreach ($porTipo as $t => $v): $pct = round($v['ok'] / max(1, $v['total']) * 100); ?>
-                <div style="margin-bottom:12px">
-                    <div style="display:flex;justify-content:space-between">
-                        <strong><?= e($tipoNombre[$t] ?? $t) ?></strong>
-                        <span class="muted"><?= $v['ok'] ?>/<?= $v['total'] ?> · <?= $pct ?>%</span>
-                    </div>
-                    <div class="progress"><div class="progress-fill <?= $pct < 60 ? '' : 'gold' ?>" style="width:<?= $pct ?>%"></div></div>
-                </div>
-            <?php endforeach; ?>
-            <p class="muted">Los tipos con menos precisión salen primero: son los que conviene reforzar.</p>
+            <div class="ingles-radar"><?= radar_svg($radar) ?></div>
+            <ul class="editlist radar-lista">
+                <?php foreach ($radar as $v): ?>
+                    <li>
+                        <span><?= e($v['nombre']) ?></span>
+                        <span class="muted"><?= $v['pct'] !== null
+                            ? $v['pct'] . ' % · ' . $v['n'] . ($v['n'] === 1 ? ' reto' : ' retos')
+                            : 'sin datos' ?></span>
+                    </li>
+                <?php endforeach; ?>
+            </ul>
+            <p class="muted">Cuanto más lejos del centro, más fuerte esa destreza. Las lecciones
+                recientes pesan más, así el radar refleja el nivel actual y se actualiza con cada
+                lección. Las zonas cercanas al centro son las que conviene reforzar.</p>
         <?php endif; ?>
     </div>
 

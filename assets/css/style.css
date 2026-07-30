@@ -441,6 +441,22 @@ img { max-width: 100%; height: auto; }
     background-image: linear-gradient(45deg, rgba(255,255,255,.3) 25%, transparent 25%, transparent 50%, rgba(255,255,255,.3) 50%, rgba(255,255,255,.3) 75%, transparent 75%);
     background-size: 24px 24px; animation: kiru-rayas 1s linear infinite;
 }
+/* Radar de destrezas (panel del mentor) */
+.ingles-radar { max-width: 480px; margin: 0 auto; }
+.ingles-radar svg { display: block; width: 100%; height: auto; }
+.radar-lista { margin-top: 6px; }
+
+/* Barra de carga mientras se prepara la lección */
+.ingles-carga { margin-top: 4px; }
+.ingles-carga-barra { height: 16px; background: var(--arena); border-radius: 999px; overflow: hidden; }
+.ingles-carga-fill { position: relative; height: 100%; width: 0; border-radius: 999px; background: linear-gradient(90deg, #58cc02, #8ae32d); }
+.ingles-carga-fill::after {
+    content: ""; position: absolute; inset: 0; border-radius: 999px;
+    background-image: linear-gradient(45deg, rgba(255,255,255,.3) 25%, transparent 25%, transparent 50%, rgba(255,255,255,.3) 50%, rgba(255,255,255,.3) 75%, transparent 75%);
+    background-size: 24px 24px; animation: kiru-rayas 1s linear infinite;
+}
+.ingles-carga-txt { margin: 8px 0 0; text-align: center; font-weight: 700; color: var(--oliva); animation: kiru-late 1.2s ease-in-out infinite; }
+
 .ingles-racha { background: linear-gradient(135deg, #ff9600, #ffc800); color: #7a4b00; font-weight: 800; padding: 6px 12px; border-radius: 999px; font-size: .85rem; white-space: nowrap; }
 .ingles-racha.pop { animation: kiru-pop .35s ease; }
 
@@ -567,6 +583,7 @@ body.ingles-inmersivo .ingles-pie { padding-bottom: calc(12px + env(safe-area-in
 @keyframes kiru-sube { from { transform: translateY(16px); opacity: 0; } to { transform: none; opacity: 1; } }
 @keyframes kiru-flota { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
 @keyframes kiru-rayas { from { background-position: 0 0; } to { background-position: 24px 0; } }
+@keyframes kiru-late { 0%, 100% { opacity: 1; } 50% { opacity: .45; } }
 @keyframes kiru-confeti { to { transform: translateY(105vh) rotate(720deg); } }
 
 /* ---------- Modo inmersivo en móvil ----------
@@ -635,7 +652,8 @@ body.ingles-inmersivo .ingles-pie { padding-bottom: calc(12px + env(safe-area-in
     .ingles-tipo, .ingles-opcion, .ingles-chip, .ingles-racha,
     .ingles-feedback, .ingles-feedback .fb-ico, .ingles-leccion,
     .ingles-emoji, .ingles-input.mal,
-    #ejercicio.entrada, #ejercicio.tiembla, .ingles-top .progress-fill::after { animation: none !important; }
+    #ejercicio.entrada, #ejercicio.tiembla, .ingles-top .progress-fill::after,
+    .ingles-carga-fill::after, .ingles-carga-txt { animation: none !important; }
     .cuerda { transition: none; }
     .confeti { display: none; }
 }

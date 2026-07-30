@@ -590,11 +590,50 @@
     var btnEntrar = $('inglesEntrar');
     if (btnEntrar) btnEntrar.addEventListener('click', pantallaCompletaMovil);
 
+    /* ---------- Barra de carga mientras se prepara la lección ---------- */
+    var CARGA_DEFECTO = 6000; // ms; primera vez, sin dato guardado
+    function estimacionCarga() {
+        try {
+            var t = parseInt(localStorage.getItem('kiruInglesCargaMs') || '', 10);
+            if (t && t > 300) return t;
+        } catch (e) { /* sin localStorage */ }
+        return CARGA_DEFECTO;
+    }
+    function guardarCarga(ms) {
+        try { localStorage.setItem('kiruInglesCargaMs', String(ms)); } catch (e) { /* nada */ }
+    }
+    /* Sustituye el botón por una barra que avanza según el tiempo estimado. */
+    function crearCarga(boton) {
+        var caja = el('div', 'ingles-carga');
+        var pista = el('div', 'ingles-carga-barra');
+        var fill = el('div', 'ingles-carga-fill');
+        pista.appendChild(fill);
+        caja.appendChild(pista);
+        caja.appendChild(el('p', 'ingles-carga-txt', 'Getting your games ready… 🎲'));
+        boton.parentNode.insertBefore(caja, boton.nextSibling);
+        return { caja: caja, fill: fill };
+    }
+
     function empezar(boton) {
         pantallaCompletaMovil(); // dentro del toque del usuario
         boton.disabled = true;
-        var txt = boton.textContent;
-        boton.textContent = 'Loading…';
+        boton.hidden = true;
+        var carga = crearCarga(boton);
+        var estimado = estimacionCarga();
+        var t0 = Date.now();
+        // Avanza rápido al principio y se frena cerca del final:
+        // roza el 96 % cuando pasa el tiempo estimado y espera ahí a la lección.
+        var rafId = requestAnimationFrame(function paso() {
+            var f = (Date.now() - t0) / estimado;
+            carga.fill.style.width = (96 * (1 - Math.exp(-3 * f))).toFixed(1) + '%';
+            rafId = requestAnimationFrame(paso);
+        });
+        function quitarCarga() {
+            cancelAnimationFrame(rafId);
+            carga.caja.remove();
+            boton.hidden = false;
+            boton.disabled = false;
+        }
         var fd = new FormData();
         fd.append('accion', 'nueva');
         fetch(KIRU_INGLES.api, { method: 'POST', body: fd })
@@ -606,25 +645,28 @@
                     lista = lista.filter(function (e) { return e.tipo !== 'escucha'; });
                 }
                 if (!lista.length) throw new Error('sin ejercicios');
-                ejercicios = lista;
-                idx = 0;
-                aciertos = 0;
-                racha = 0;
-                detalle = [];
-                tiempoLimite = (typeof d.tiempo === 'number' && d.tiempo > 0) ? d.tiempo : 0;
-                if (typeof d.coins_acierto === 'number') coinsAcierto = d.coins_acierto;
-                pintarRacha();
-                pInicio.hidden = true;
-                pFin.hidden = true;
-                pJuego.hidden = false;
-                pintar();
+                guardarCarga(Date.now() - t0); // afina la barra para la próxima vez
+                cancelAnimationFrame(rafId);
+                carga.fill.style.width = '100%';
+                setTimeout(function () {
+                    quitarCarga();
+                    ejercicios = lista;
+                    idx = 0;
+                    aciertos = 0;
+                    racha = 0;
+                    detalle = [];
+                    tiempoLimite = (typeof d.tiempo === 'number' && d.tiempo > 0) ? d.tiempo : 0;
+                    if (typeof d.coins_acierto === 'number') coinsAcierto = d.coins_acierto;
+                    pintarRacha();
+                    pInicio.hidden = true;
+                    pFin.hidden = true;
+                    pJuego.hidden = false;
+                    pintar();
+                }, 300);
             })
             .catch(function () {
+                quitarCarga();
                 alert('Oops! The lesson did not load. Try again!');
-            })
-            .finally(function () {
-                boton.disabled = false;
-                boton.textContent = txt;
             });
     }
 
