@@ -106,7 +106,6 @@ function web_menu(string $activo = ''): void
         <a href="<?= url('login.php') ?>" class="btn-accede">Accede</a>
         <a href="<?= CALENDLY_URL ?>" target="_blank" class="menu-cta">Reservar llamada</a>
         <a href="<?= WHATSAPP_URL ?>" target="_blank" class="menu-cta">WhatsApp</a>
-        <a href="https://calculalo.app" target="_blank" rel="noopener" class="menu-cta">Calculalo.app</a>
       </div>
 
     </aside>
@@ -154,7 +153,6 @@ function web_foot(): void
       <div class="web-foot-contacto">
         <a href="<?= WHATSAPP_URL ?>" target="_blank">WhatsApp</a>
         <a href="<?= CALENDLY_URL ?>" target="_blank">Reservar llamada</a>
-        <a href="https://calculalo.app" target="_blank" rel="noopener">Calculalo.app</a>
         <a href="<?= url('login.php') ?>">Campus Virtual</a>
       </div>
     </div>

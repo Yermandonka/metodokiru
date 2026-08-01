@@ -503,6 +503,14 @@ img { max-width: 100%; height: auto; }
 .avatar-nombre { font-size: .72rem; color: var(--muted); font-weight: 600; }
 
 /* =========================================================
+   CÁLCULO (Calculalo incrustado en el campus)
+   ========================================================= */
+.calculo-card { padding: 0; overflow: hidden; }
+.calculo-card iframe { display: block; width: 100%; height: min(78vh, 900px); border: 0; }
+.calculo-alt { text-align: center; }
+.tema-alumno .calculo-alt { color: rgba(255, 255, 255, .85); }
+
+/* =========================================================
    TAREAS DE INGLÉS (lista del alumno + revisión de respuestas)
    ========================================================= */
 .tarea-cab { display: flex; justify-content: space-between; align-items: flex-start; gap: 14px; flex-wrap: wrap; }

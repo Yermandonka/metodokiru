@@ -26,6 +26,7 @@ function nav_alumno(string $activo): array
         ['Inicio', 'alumno/inicio.php', 'index'],
         ['Objetivos', 'alumno/objetivos.php', 'objetivos'],
         ['Inglés', 'alumno/ingles.php', 'ingles'],
+        ['Cálculo', 'alumno/calculo.php', 'calculo'],
         ['SkillCoins', 'alumno/skillcoins.php', 'skillcoins'],
         ['Estadísticas', 'alumno/estadisticas.php', 'estadisticas'],
         ['Recompensas', 'alumno/recompensas.php', 'recompensas'],
