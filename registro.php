@@ -83,8 +83,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <div class="login-card">
         <a class="login-logo" href="<?= url('index.php') ?>" title="Ir a la página principal">
             <img class="login-logo-icono" src="<?= asset('assets/img/logo.svg') ?>" alt="Método Kiru">
-            <span class="brand-logo-kiru">KIRU</span>
-            <span class="brand-logo-sub">Mentoría a<br>domicilio</span>
         </a>
         <h1>Crear cuenta</h1>
         <p class="login-sub">Únete a Método Kiru</p>
