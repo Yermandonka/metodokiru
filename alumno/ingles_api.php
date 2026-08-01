@@ -194,7 +194,20 @@ if ($tareaId > 0) {
 // Tipos de reto que evalúan la destreza de la tarea (vacío = todos).
 $tiposTarea = $tarea ? ingles_tipos_de($tarea['destreza']) : [];
 
+// Una tarea solo se hace una vez: si ya tiene resultado, no se puede repetir.
+$tareaHecha = false;
+if ($tarea) {
+    $st = db()->prepare('SELECT COUNT(*) FROM ingles_resultados WHERE tarea_id = ?');
+    $st->execute([(int) $tarea['id']]);
+    $tareaHecha = (bool) $st->fetchColumn();
+}
+
 if ($accion === 'nueva') {
+    if ($tarea && $tareaHecha) {
+        http_response_code(409);
+        echo json_encode(['error' => 'tarea ya completada']);
+        exit;
+    }
     $vistos = $_SESSION['ingles_vistos'] ?? [];
     $leccion = [];
     $conIA = false;
@@ -260,6 +273,11 @@ if ($accion === 'nueva') {
     ]);
 
 } elseif ($accion === 'terminar') {
+    // Si la tarea ya estaba hecha (p. ej. dos pestañas), el resultado no la
+    // sobrescribe: se guarda como práctica libre y la nota original se conserva.
+    if ($tarea && $tareaHecha) {
+        $tarea = null;
+    }
     // Detalle de respuestas (lo revisan el alumno y el mentor):
     // [{tipo, clave, ok, pregunta, respuesta, solucion}, ...]
     $tiposValidos = ['eleccion', 'hueco', 'ordenar', 'parejas', 'escucha', 'verdadero', 'escribir', 'emoji'];

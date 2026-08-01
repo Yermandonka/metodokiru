@@ -55,8 +55,7 @@ render_header('Inglés', 'alumno', $mundo, nav_alumno('ingles'));
                             <?= e(date('d/m/Y', strtotime($t['fecha_entrega']))) ?><?= $atrasada ? ' · ¡atrasada!' : '' ?></span>
                     <?php endif; ?>
                     <?php if ($hecha): ?>
-                        <span class="tag nivel">✅ Completada</span>
-                        <span class="tag gold">Nota: <?= nota_txt($nota) ?>/10</span>
+                        <span class="tag tag-completada">✅ Completada</span>
                     <?php else: ?>
                         <span class="tag prio-media">⬜ Pendiente</span>
                     <?php endif; ?>
@@ -64,11 +63,14 @@ render_header('Inglés', 'alumno', $mundo, nav_alumno('ingles'));
             </div>
             <div class="tarea-acciones">
                 <?php if ($hecha): ?>
+                    <div class="tarea-nota <?= $nota < 5 ? 'mal' : '' ?>">
+                        <span class="tarea-nota-num"><?= nota_txt($nota) ?></span>
+                        <span class="tarea-nota-lbl">Nota /10</span>
+                    </div>
                     <button class="btn-sm tarea-revisar" type="button" data-rev="rev<?= (int)$t['id'] ?>">Ver mis respuestas</button>
+                <?php else: ?>
+                    <button class="btn tarea-empezar" type="button" data-tarea="<?= (int)$t['id'] ?>">Empezar</button>
                 <?php endif; ?>
-                <button class="btn tarea-empezar" type="button" data-tarea="<?= (int)$t['id'] ?>">
-                    <?= $hecha ? 'Repetir' : 'Empezar' ?>
-                </button>
             </div>
         </div>
 
