@@ -44,18 +44,6 @@ if ($alumno && $_SERVER['REQUEST_METHOD'] === 'POST') {
             flash('Tarea «' . $titulo . '» creada.');
             redirect('mentor/ingles.php?id=' . $aid);
 
-        } elseif ($accion === 'add_tareas_todas') {
-            // Una tarea por cada destreza evaluable, con la misma fecha de entrega.
-            $fecha = fecha_o_null($_POST['fecha_entrega'] ?? null);
-            $st = db()->prepare('INSERT INTO ingles_tareas (alumno_id, titulo, destreza, fecha_entrega) VALUES (?,?,?,?)');
-            foreach (ingles_destrezas() as $clave => $nombre) {
-                // El nombre lleva un emoji delante («📚 Vocabulario»): se quita para el título.
-                $limpio = trim(preg_replace('/^[^\p{L}]+/u', '', $nombre));
-                $st->execute([$aid, 'Tarea de ' . mb_strtolower($limpio), $clave, $fecha]);
-            }
-            flash('Creadas ' . count(ingles_destrezas()) . ' tareas, una por destreza.');
-            redirect('mentor/ingles.php?id=' . $aid);
-
         } elseif ($accion === 'del_tarea') {
             db()->prepare('DELETE FROM ingles_tareas WHERE id=? AND alumno_id=?')
                 ->execute([post_int('tarea_id', 1), $aid]);
@@ -199,32 +187,22 @@ render_header('Inglés', 'panel', '', $nav);
         <?php if (!$tareas): ?><li class="muted">El alumno aún no tiene tareas.</li><?php endif; ?>
     </ul>
 
-    <div class="grid-2" style="margin-top:14px">
-        <form method="post" class="form">
-            <input type="hidden" name="accion" value="add_tarea">
-            <input type="hidden" name="alumno_id" value="<?= $aid ?>">
-            <label>Título <input type="text" name="titulo" placeholder="Ej: Vocabulario de la comida" required></label>
-            <div class="row">
-                <label>Destreza
-                    <select name="destreza">
-                        <?php foreach ($destrezas as $clave => $nombre): ?>
-                            <option value="<?= $clave ?>"><?= e($nombre) ?></option>
-                        <?php endforeach; ?>
-                    </select>
-                </label>
-                <label>Fecha de entrega <input type="date" name="fecha_entrega"></label>
-            </div>
-            <button class="btn-sm">Añadir tarea</button>
-        </form>
-        <form method="post" class="form">
-            <input type="hidden" name="accion" value="add_tareas_todas">
-            <input type="hidden" name="alumno_id" value="<?= $aid ?>">
-            <label>Crear una tarea de cada destreza (<?= count($destrezas) ?>)
-                <input type="date" name="fecha_entrega" title="Fecha de entrega común (opcional)">
+    <form method="post" class="form" style="margin-top:14px">
+        <input type="hidden" name="accion" value="add_tarea">
+        <input type="hidden" name="alumno_id" value="<?= $aid ?>">
+        <label>Título <input type="text" name="titulo" placeholder="Ej: Vocabulario de la comida" required></label>
+        <div class="row">
+            <label>Destreza
+                <select name="destreza">
+                    <?php foreach ($destrezas as $clave => $nombre): ?>
+                        <option value="<?= $clave ?>"><?= e($nombre) ?></option>
+                    <?php endforeach; ?>
+                </select>
             </label>
-            <button class="btn-sm">Crear las <?= count($destrezas) ?> tareas</button>
-        </form>
-    </div>
+            <label>Fecha de entrega <input type="date" name="fecha_entrega"></label>
+        </div>
+        <button class="btn-sm">Añadir tarea</button>
+    </form>
 </div>
 
 <div class="grid-2">
