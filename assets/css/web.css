@@ -901,11 +901,16 @@ a.family-card:hover{
 
   :root{ --nav-alto:64px; --nav-sep:10px; }
 
-  .web-nav{ padding:0 10px 0 20px; gap:12px; }
+  .web-nav{ padding:0 16px 0 10px; gap:12px; }
 
   /* En móvil los enlaces y el WhatsApp viven en el menú lateral */
   .nav-links{ display:none; }
   .btn-whatsapp{ display:none; }
+
+  /* Hamburguesa y Accede pegados a la izquierda; el logo, a la derecha */
+  .nav-actions{ order:-1; }
+  .nav-actions .menu-btn{ order:-1; }
+  .web-nav .brand-kiru{ margin-left:auto; }
 
   /* La portada sigue ocupando toda la pantalla también en móvil */
   .hero{ padding:24px 6% 20px; }
