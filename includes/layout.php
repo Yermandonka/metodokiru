@@ -25,14 +25,8 @@ function render_header(string $titulo, string $tema = 'panel', string $mundo = '
 </head>
 <body class="<?= e($bodyClass) ?>">
 <header class="topbar">
-    <a class="brand" href="<?= url('index.php') ?>" title="Ir a la página principal">
-        <span class="brand-logo">
-            <img class="brand-icono" src="<?= asset('assets/img/logo.svg') ?>" alt="Kiru">
-            <span class="brand-texto">
-                <span class="brand-logo-kiru">KIRU</span>
-                <span class="brand-logo-sub">Mentoría a<br>domicilio</span>
-            </span>
-        </span>
+    <a class="brand" href="<?= url('index.php') ?>" title="Método Kiru — ir a la página principal">
+        <img class="brand-icono" src="<?= asset('assets/img/logo.svg') ?>" alt="Método Kiru">
     </a>
     <?php if ($nav): ?>
     <nav class="mainnav">

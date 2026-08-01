@@ -461,7 +461,7 @@ function ingles_tareas_de(int $alumnoId): array
 {
     ingles_tablas();
     $st = db()->prepare(
-        'SELECT t.*, r.id AS resultado_id, r.aciertos, r.total, r.detalle, r.fecha AS hecha_en
+        'SELECT t.*, r.id AS resultado_id, r.aciertos, r.total, r.coins, r.detalle, r.fecha AS hecha_en
          FROM ingles_tareas t
          LEFT JOIN ingles_resultados r ON r.id = (
              SELECT r2.id FROM ingles_resultados r2
