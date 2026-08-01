@@ -53,26 +53,28 @@ render_header('Panel del mentor', 'panel', '', $nav);
                 $dias = $a['ultima_conexion'] ? (int)((time() - strtotime($a['ultima_conexion'])) / 86400) : null;
             ?>
             <a class="alumno-card" href="<?= url('mentor/alumno.php?id=' . $aid) ?>">
-                <div class="ac-avatar"><?= avatar_emoji($a['avatar']) ?></div>
-                <div class="ac-body">
-                    <div class="ac-name"><?= e($a['nombre']) ?> <span class="muted">· <?= (int)$a['edad'] ?> años</span></div>
-                    <div class="ac-tags">
-                        <span class="tag nivel"><?= e($nivel['nombre']) ?></span>
-                        <span class="tag gold"><?= sc_total($aid) ?> 🪙</span>
-                        <?php if ($racha > 0): ?><span class="tag">🔥 <?= $racha ?></span><?php endif; ?>
+                <div class="ac-top">
+                    <div class="ac-avatar"><?= avatar_emoji($a['avatar']) ?></div>
+                    <div class="ac-quien">
+                        <div class="ac-name"><?= e($a['nombre']) ?></div>
+                        <div class="muted"><?= (int)$a['edad'] ?> años</div>
+                        <div class="ac-tags">
+                            <span class="tag nivel"><?= e($nivel['nombre']) ?></span>
+                        </div>
                     </div>
-                    <div class="ac-nota">
-                        <?php if ($notaMedia !== null): ?>
-                            Nota media: <strong><?= nota_txt($notaMedia) ?></strong>/10
-                        <?php else: ?>
-                            <span class="muted">Sin tareas completadas aún</span>
-                        <?php endif; ?>
+                    <div class="ac-notabox <?= $notaMedia !== null && $notaMedia < 5 ? 'mal' : '' ?>">
+                        <span class="ac-notabox-num"><?= $notaMedia !== null ? nota_txt($notaMedia) : '—' ?></span>
+                        <span class="ac-notabox-lbl">Nota media</span>
                     </div>
-                    <div class="ac-meta">
-                        <span><?= $pendientes ?> tarea(s) de inglés pendiente(s)<?= $pendientes > 0 ? ' ⬜' : ' ✅' ?></span>
-                        <span>Esta semana: <?= sc_semana($aid) ?> 🪙</span>
-                        <span>Última conexión: <?= e($ultima) ?><?= $dias !== null && $dias >= 5 ? ' ⚠️' : '' ?></span>
-                    </div>
+                </div>
+                <div class="ac-datos">
+                    <div class="ac-dato"><span>🪙 <?= sc_total($aid) ?></span><small>SkillCoins</small></div>
+                    <div class="ac-dato"><span>✨ <?= sc_semana($aid) ?></span><small>Esta semana</small></div>
+                    <div class="ac-dato"><span>🔥 <?= $racha ?></span><small>Racha</small></div>
+                    <div class="ac-dato"><span><?= $pendientes > 0 ? '⬜ ' . $pendientes : '✅ 0' ?></span><small>Tareas pendientes</small></div>
+                </div>
+                <div class="ac-meta">
+                    <span>Última conexión: <?= e($ultima) ?><?= $dias !== null && $dias >= 5 ? ' ⚠️' : '' ?></span>
                 </div>
             </a>
             <?php endforeach; ?>

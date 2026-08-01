@@ -155,36 +155,50 @@ render_header('Inglés', 'panel', '', $nav);
     <div class="card"><p class="muted">No hay alumnos disponibles.</p></div>
 <?php else: ?>
 
-<!-- Tareas: lista + creación, todo en un único panel -->
+<!-- Tareas creadas -->
 <div class="card">
-    <h3>Tareas de inglés</h3>
-    <ul class="editlist">
+    <h3>Tareas creadas</h3>
+    <?php if (!$tareas): ?>
+        <p class="muted">El alumno aún no tiene tareas. Crea la primera en «Nueva tarea», aquí debajo.</p>
+    <?php else: ?>
+    <div class="tareas-grid">
         <?php foreach ($tareas as $t):
-            $hecha = $t['resultado_id'] !== null; ?>
-            <li>
-                <span><?= $hecha ? '✅' : '⬜' ?> <?= e($t['titulo']) ?>
-                    <small class="muted">
-                        (<?= e($destrezas[$t['destreza']] ?? $t['destreza']) ?><?=
-                            $t['fecha_entrega'] ? ' · entrega ' . e(date('d/m/Y', strtotime($t['fecha_entrega']))) : '' ?>)
-                    </small>
-                    <?php if ($hecha): ?>
-                        <span class="tag gold">Nota: <?= nota_txt(nota_sobre_10((int)$t['aciertos'], (int)$t['total'])) ?>/10</span>
-                    <?php endif; ?>
-                </span>
+            $hecha = $t['resultado_id'] !== null;
+            $nombreDestreza = $destrezas[$t['destreza']] ?? $t['destreza'];
+            $emoji = mb_substr($nombreDestreza, 0, mb_strpos($nombreDestreza, ' ') ?: 2);
+        ?>
+        <div class="tarea-mini <?= $hecha ? 'hecha' : 'pendiente' ?>">
+            <div class="tarea-mini-cab">
+                <span class="tarea-mini-ico"><?= e($emoji) ?></span>
                 <form method="post" class="inline"
                       onsubmit="return confirm('¿Eliminar la tarea «<?= e($t['titulo']) ?>»?')">
                     <input type="hidden" name="accion" value="del_tarea">
                     <input type="hidden" name="alumno_id" value="<?= $aid ?>">
                     <input type="hidden" name="tarea_id" value="<?= (int)$t['id'] ?>">
-                    <button class="btn-x" title="Eliminar tarea">✕ Eliminar</button>
+                    <button class="btn-x" title="Eliminar tarea">✕</button>
                 </form>
-            </li>
+            </div>
+            <div class="tarea-mini-titulo"><?= e($t['titulo']) ?></div>
+            <?php if ($t['fecha_entrega']): ?>
+                <div class="tarea-mini-meta">📅 Entrega: <?= e(date('d/m/Y', strtotime($t['fecha_entrega']))) ?></div>
+            <?php endif; ?>
+            <div class="tarea-mini-pie">
+                <?php if ($hecha): ?>
+                    <span class="tag nivel">✅ Completada</span>
+                    <span class="tag gold"><?= nota_txt(nota_sobre_10((int)$t['aciertos'], (int)$t['total'])) ?>/10</span>
+                <?php else: ?>
+                    <span class="tag prio-media">⬜ Pendiente</span>
+                <?php endif; ?>
+            </div>
+        </div>
         <?php endforeach; ?>
-        <?php if (!$tareas): ?><li class="muted">El alumno aún no tiene tareas.</li><?php endif; ?>
-    </ul>
+    </div>
+    <?php endif; ?>
+</div>
 
-    <hr>
-    <h4>Nueva tarea</h4>
+<!-- Nueva tarea -->
+<div class="card">
+    <h3>Nueva tarea</h3>
     <p class="muted">Sube el PDF con el contenido (apuntes, vocabulario del cole…): los ejercicios se
         generan a partir de él y la tarea se crea directamente en las <?= count($destrezas) ?> áreas
         (vocabulario, gramática, comprensión, escucha y escritura).</p>
