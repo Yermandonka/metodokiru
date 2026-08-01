@@ -214,6 +214,8 @@ code { background: #efe7d8; padding: 1px 6px; border-radius: 6px; font-size: .85
 .ac-meta { font-size: .78rem; color: var(--muted); display: flex; flex-direction: column; gap: 2px; }
 
 /* ---------- Tareas creadas (mentor): rejilla visual ---------- */
+.tareas-sub { margin: 14px 0 10px; color: var(--marron-osc); }
+.tareas-sub:first-of-type { margin-top: 4px; }
 .tareas-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 12px; }
 .tarea-mini {
     display: flex; flex-direction: column; gap: 6px;

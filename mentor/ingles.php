@@ -155,77 +155,6 @@ render_header('Inglés', 'panel', '', $nav);
     <div class="card"><p class="muted">No hay alumnos disponibles.</p></div>
 <?php else: ?>
 
-<?php
-$pendientes = array_filter($tareas, fn($t) => $t['resultado_id'] === null);
-$completadas = array_filter($tareas, fn($t) => $t['resultado_id'] !== null);
-$emojiDestreza = function (string $clave) use ($destrezas): string {
-    $nombre = $destrezas[$clave] ?? $clave;
-    return mb_substr($nombre, 0, mb_strpos($nombre, ' ') ?: 2);
-};
-?>
-<!-- Tareas pendientes -->
-<div class="card">
-    <h3>Tareas pendientes</h3>
-    <?php if (!$pendientes): ?>
-        <p class="muted">No hay tareas pendientes. Crea una nueva en «Nueva tarea», aquí debajo.</p>
-    <?php else: ?>
-    <div class="tareas-grid">
-        <?php foreach ($pendientes as $t): ?>
-        <div class="tarea-mini pendiente">
-            <div class="tarea-mini-cab">
-                <span class="tarea-mini-ico"><?= e($emojiDestreza($t['destreza'])) ?></span>
-                <form method="post" class="inline"
-                      onsubmit="return confirm('¿Eliminar la tarea «<?= e($t['titulo']) ?>»?')">
-                    <input type="hidden" name="accion" value="del_tarea">
-                    <input type="hidden" name="alumno_id" value="<?= $aid ?>">
-                    <input type="hidden" name="tarea_id" value="<?= (int)$t['id'] ?>">
-                    <button class="btn-x" title="Eliminar tarea">✕</button>
-                </form>
-            </div>
-            <div class="tarea-mini-titulo"><?= e($t['titulo']) ?></div>
-            <?php if ($t['fecha_entrega']): ?>
-                <div class="tarea-mini-meta">📅 Entrega: <?= e(date('d/m/Y', strtotime($t['fecha_entrega']))) ?></div>
-            <?php endif; ?>
-            <div class="tarea-mini-pie">
-                <span class="tag prio-media">⬜ Pendiente</span>
-            </div>
-        </div>
-        <?php endforeach; ?>
-    </div>
-    <?php endif; ?>
-</div>
-
-<!-- Tareas completadas, con el detalle de cada una -->
-<div class="card">
-    <h3>Tareas completadas</h3>
-    <?php if (!$completadas): ?>
-        <p class="muted">El alumno aún no ha completado ninguna tarea.</p>
-    <?php else: ?>
-    <div class="tareas-grid">
-        <?php foreach ($completadas as $t): ?>
-        <div class="tarea-mini hecha">
-            <div class="tarea-mini-cab">
-                <span class="tarea-mini-ico"><?= e($emojiDestreza($t['destreza'])) ?></span>
-                <form method="post" class="inline"
-                      onsubmit="return confirm('¿Eliminar la tarea «<?= e($t['titulo']) ?>»?')">
-                    <input type="hidden" name="accion" value="del_tarea">
-                    <input type="hidden" name="alumno_id" value="<?= $aid ?>">
-                    <input type="hidden" name="tarea_id" value="<?= (int)$t['id'] ?>">
-                    <button class="btn-x" title="Eliminar tarea">✕</button>
-                </form>
-            </div>
-            <div class="tarea-mini-titulo"><?= e($t['titulo']) ?></div>
-            <div class="tarea-mini-meta">✅ Hecha el <?= e(date('d/m/Y H:i', strtotime($t['hecha_en']))) ?></div>
-            <div class="tarea-mini-meta">🎯 <?= (int)$t['aciertos'] ?> / <?= (int)$t['total'] ?> aciertos · +<?= (int)$t['coins'] ?> 🪙</div>
-            <div class="tarea-mini-pie">
-                <span class="tag gold">Nota: <?= nota_txt(nota_sobre_10((int)$t['aciertos'], (int)$t['total'])) ?>/10</span>
-            </div>
-        </div>
-        <?php endforeach; ?>
-    </div>
-    <?php endif; ?>
-</div>
-
 <!-- Nueva tarea -->
 <div class="card">
     <h3>Nueva tarea</h3>
@@ -265,6 +194,75 @@ $emojiDestreza = function (string $clave) use ($destrezas): string {
     </form>
     <?php if (!GEMINI_API_KEY): ?>
         <p class="muted" style="margin-top:10px">💡 Para leer los PDF hace falta la clave de Gemini en <code>GEMINI_API_KEY</code>.</p>
+    <?php endif; ?>
+</div>
+
+<!-- Tareas del alumno: pendientes y completadas en el mismo cuadro -->
+<?php
+$pendientes  = array_filter($tareas, fn($t) => $t['resultado_id'] === null);
+$completadas = array_filter($tareas, fn($t) => $t['resultado_id'] !== null);
+$emojiDestreza = function (string $clave) use ($destrezas): string {
+    $nombre = $destrezas[$clave] ?? $clave;
+    return mb_substr($nombre, 0, mb_strpos($nombre, ' ') ?: 2);
+};
+?>
+<div class="card">
+    <h3>Tareas del alumno</h3>
+    <?php if (!$tareas): ?>
+        <p class="muted">El alumno aún no tiene tareas. Crea la primera en «Nueva tarea», aquí arriba.</p>
+    <?php endif; ?>
+
+    <?php if ($pendientes): ?>
+    <h4 class="tareas-sub">⬜ Pendientes</h4>
+    <div class="tareas-grid">
+        <?php foreach ($pendientes as $t): ?>
+        <div class="tarea-mini pendiente">
+            <div class="tarea-mini-cab">
+                <span class="tarea-mini-ico"><?= e($emojiDestreza($t['destreza'])) ?></span>
+                <form method="post" class="inline"
+                      onsubmit="return confirm('¿Eliminar la tarea «<?= e($t['titulo']) ?>»?')">
+                    <input type="hidden" name="accion" value="del_tarea">
+                    <input type="hidden" name="alumno_id" value="<?= $aid ?>">
+                    <input type="hidden" name="tarea_id" value="<?= (int)$t['id'] ?>">
+                    <button class="btn-x" title="Eliminar tarea">✕</button>
+                </form>
+            </div>
+            <div class="tarea-mini-titulo"><?= e($t['titulo']) ?></div>
+            <?php if ($t['fecha_entrega']): ?>
+                <div class="tarea-mini-meta">📅 Entrega: <?= e(date('d/m/Y', strtotime($t['fecha_entrega']))) ?></div>
+            <?php endif; ?>
+            <div class="tarea-mini-pie">
+                <span class="tag prio-media">⬜ Pendiente</span>
+            </div>
+        </div>
+        <?php endforeach; ?>
+    </div>
+    <?php endif; ?>
+
+    <?php if ($completadas): ?>
+    <h4 class="tareas-sub">✅ Completadas</h4>
+    <div class="tareas-grid">
+        <?php foreach ($completadas as $t): ?>
+        <div class="tarea-mini hecha">
+            <div class="tarea-mini-cab">
+                <span class="tarea-mini-ico"><?= e($emojiDestreza($t['destreza'])) ?></span>
+                <form method="post" class="inline"
+                      onsubmit="return confirm('¿Eliminar la tarea «<?= e($t['titulo']) ?>»?')">
+                    <input type="hidden" name="accion" value="del_tarea">
+                    <input type="hidden" name="alumno_id" value="<?= $aid ?>">
+                    <input type="hidden" name="tarea_id" value="<?= (int)$t['id'] ?>">
+                    <button class="btn-x" title="Eliminar tarea">✕</button>
+                </form>
+            </div>
+            <div class="tarea-mini-titulo"><?= e($t['titulo']) ?></div>
+            <div class="tarea-mini-meta">✅ Hecha el <?= e(date('d/m/Y H:i', strtotime($t['hecha_en']))) ?></div>
+            <div class="tarea-mini-meta">🎯 <?= (int)$t['aciertos'] ?> / <?= (int)$t['total'] ?> aciertos · +<?= (int)$t['coins'] ?> 🪙</div>
+            <div class="tarea-mini-pie">
+                <span class="tag gold">Nota: <?= nota_txt(nota_sobre_10((int)$t['aciertos'], (int)$t['total'])) ?>/10</span>
+            </div>
+        </div>
+        <?php endforeach; ?>
+    </div>
     <?php endif; ?>
 </div>
 
