@@ -389,13 +389,17 @@ function ingles_tablas(): void
         titulo VARCHAR(100) NOT NULL,
         destreza VARCHAR(20) NOT NULL,
         fecha_entrega DATE NULL,
+        material_id INT NULL,
         creada_en DATETIME DEFAULT CURRENT_TIMESTAMP,
         INDEX (alumno_id),
         FOREIGN KEY (alumno_id) REFERENCES alumnos(id) ON DELETE CASCADE
     ) ENGINE=InnoDB");
-    // Migración perezosa: instalaciones antiguas no tenían la columna tarea_id.
+    // Migraciones perezosas para instalaciones anteriores.
     if (!db()->query("SHOW COLUMNS FROM ingles_resultados LIKE 'tarea_id'")->fetch()) {
         db()->exec('ALTER TABLE ingles_resultados ADD COLUMN tarea_id INT NULL AFTER alumno_id');
+    }
+    if (!db()->query("SHOW COLUMNS FROM ingles_tareas LIKE 'material_id'")->fetch()) {
+        db()->exec('ALTER TABLE ingles_tareas ADD COLUMN material_id INT NULL AFTER fecha_entrega');
     }
     $creadas = true;
 }

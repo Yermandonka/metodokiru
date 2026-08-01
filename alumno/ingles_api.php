@@ -215,7 +215,18 @@ if ($accion === 'nueva') {
 
     if (GEMINI_API_KEY) {
         try {
-            $material = ingles_material_activo($aid);
+            // La tarea usa su propio PDF; si no tiene, los materiales activos del alumno.
+            $material = '';
+            if ($tarea && !empty($tarea['material_id'])) {
+                $st = db()->prepare('SELECT titulo, contenido FROM ingles_material WHERE id = ? AND alumno_id = ?');
+                $st->execute([(int) $tarea['material_id'], $aid]);
+                if ($m = $st->fetch()) {
+                    $material = mb_substr('## ' . $m['titulo'] . "\n" . $m['contenido'], 0, 6000);
+                }
+            }
+            if ($material === '') {
+                $material = ingles_material_activo($aid);
+            }
             foreach (ai_ingles((int) ($alumno['edad'] ?: 12), $cantidad, $vistos, $cfg['temas'], $material, $tiposTarea) as $e) {
                 if (is_array($e) && (!$tiposTarea || in_array($e['tipo'] ?? '', $tiposTarea, true))
                     && ($ok = ingles_valido($e))) {

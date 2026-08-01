@@ -159,6 +159,7 @@ try {
             titulo VARCHAR(100) NOT NULL,
             destreza VARCHAR(20) NOT NULL,
             fecha_entrega DATE NULL,
+            material_id INT NULL,
             creada_en DATETIME DEFAULT CURRENT_TIMESTAMP,
             INDEX (alumno_id),
             FOREIGN KEY (alumno_id) REFERENCES alumnos(id) ON DELETE CASCADE

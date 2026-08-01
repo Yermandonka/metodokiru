@@ -1,9 +1,9 @@
 <?php
 /**
- * Inglés (mentor): crea las tareas de cada alumno (una por destreza, con título
- * y fecha de entrega), configura los ejercicios (cantidad, SkillCoins, tiempo,
- * temas), sube PDFs para generar contenido propio y ve el feedback del alumno:
- * tareas completadas con su nota y radar de destrezas.
+ * Inglés (mentor): un único panel para crear tareas. Cada tarea se crea con
+ * su título, su fecha de entrega y su PDF (obligatorio): los ejercicios se
+ * generan a partir del contenido del PDF, en las 5 áreas evaluables (una
+ * tarea por destreza). Debajo, el feedback del alumno: notas y radar.
  */
 require_once __DIR__ . '/../includes/functions.php';
 require_once __DIR__ . '/../includes/layout.php';
@@ -33,42 +33,15 @@ $errores = [];
 if ($alumno && $_SERVER['REQUEST_METHOD'] === 'POST') {
     $accion = $_POST['accion'] ?? '';
     try {
-        if ($accion === 'add_tarea') {
+        if ($accion === 'crear_tarea') {
             $titulo = post_texto('titulo', 80);
             if ($titulo === '') {
                 throw new RuntimeException('La tarea necesita un título.');
             }
-            // La tarea se crea directamente en las 5 áreas: una por destreza.
-            $fecha = fecha_o_null($_POST['fecha_entrega'] ?? null);
-            $st = db()->prepare('INSERT INTO ingles_tareas (alumno_id, titulo, destreza, fecha_entrega) VALUES (?,?,?,?)');
-            foreach (ingles_destrezas() as $clave => $nombre) {
-                // El nombre lleva un emoji delante («📚 Vocabulario»): se quita para el título.
-                $limpio = trim(preg_replace('/^[^\p{L}]+/u', '', $nombre));
-                $st->execute([$aid, $titulo . ' · ' . $limpio, $clave, $fecha]);
-            }
-            flash('Tarea «' . $titulo . '» creada en las ' . count(ingles_destrezas()) . ' áreas.');
-            redirect('mentor/ingles.php?id=' . $aid);
-
-        } elseif ($accion === 'del_tarea') {
-            db()->prepare('DELETE FROM ingles_tareas WHERE id=? AND alumno_id=?')
-                ->execute([post_int('tarea_id', 1), $aid]);
-            redirect('mentor/ingles.php?id=' . $aid);
-
-        } elseif ($accion === 'config') {
-            ingles_config_guardar($aid, [
-                'ejercicios'    => post_int('ejercicios', 4, 20, 10),
-                'coins_acierto' => post_int('coins_acierto', 0, 5, 1),
-                'tope_diario'   => post_int('tope_diario', 0, 500, 50),
-                'tiempo_seg'    => post_int('tiempo_seg', 0, 120, 0),
-                'temas'         => post_texto('temas', 255),
-            ]);
-            flash('Configuración de los ejercicios guardada.');
-            redirect('mentor/ingles.php?id=' . $aid);
-
-        } elseif ($accion === 'subir_pdf') {
+            // El PDF es obligatorio: los ejercicios se crean con su contenido.
             $f = $_FILES['pdf'] ?? null;
             if (!$f || ($f['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK) {
-                throw new RuntimeException('Elige un archivo PDF.');
+                throw new RuntimeException('Sube el PDF con el contenido de la tarea (es obligatorio).');
             }
             if ($f['size'] > 8 * 1024 * 1024) {
                 throw new RuntimeException('El PDF no puede superar los 8 MB.');
@@ -78,25 +51,49 @@ if ($alumno && $_SERVER['REQUEST_METHOD'] === 'POST') {
                 throw new RuntimeException('El archivo no parece un PDF válido.');
             }
             if (!GEMINI_API_KEY) {
-                throw new RuntimeException('Para leer PDFs hace falta la clave de Gemini (variable GEMINI_API_KEY).');
+                throw new RuntimeException('Para leer el PDF hace falta la clave de Gemini (variable GEMINI_API_KEY).');
             }
-            $titulo = post_texto('titulo', 100)
-                ?: limpiar_texto(pathinfo($f['name'] ?? 'Material', PATHINFO_FILENAME), 100)
-                ?: 'Material';
+
+            // Ajustes de los ejercicios (se guardan para el alumno).
+            ingles_config_guardar($aid, [
+                'ejercicios'    => post_int('ejercicios', 4, 20, 10),
+                'coins_acierto' => post_int('coins_acierto', 0, 5, 1),
+                'tope_diario'   => post_int('tope_diario', 0, 500, 50),
+                'tiempo_seg'    => post_int('tiempo_seg', 0, 120, 0),
+                'temas'         => ingles_config($aid)['temas'],
+            ]);
+
+            // El PDF se lee una vez y queda ligado a la tarea.
             $contenido = ai_pdf_extraer(base64_encode($bin));
             db()->prepare('INSERT INTO ingles_material (alumno_id, titulo, contenido, activo) VALUES (?,?,?,1)')
                 ->execute([$aid, $titulo, $contenido]);
-            flash('Material «' . $titulo . '» listo: las próximas lecciones usarán su contenido.');
+            $materialId = (int) db()->lastInsertId();
+
+            // La tarea se crea directamente en las 5 áreas: una por destreza.
+            $fecha = fecha_o_null($_POST['fecha_entrega'] ?? null);
+            $st = db()->prepare('INSERT INTO ingles_tareas (alumno_id, titulo, destreza, fecha_entrega, material_id) VALUES (?,?,?,?,?)');
+            foreach (ingles_destrezas() as $clave => $nombre) {
+                // El nombre lleva un emoji delante («📚 Vocabulario»): se quita para el título.
+                $limpio = trim(preg_replace('/^[^\p{L}]+/u', '', $nombre));
+                $st->execute([$aid, $titulo . ' · ' . $limpio, $clave, $fecha, $materialId]);
+            }
+            flash('Tarea «' . $titulo . '» creada en las ' . count(ingles_destrezas()) . ' áreas con el contenido del PDF.');
             redirect('mentor/ingles.php?id=' . $aid);
 
-        } elseif ($accion === 'toggle_material') {
-            db()->prepare('UPDATE ingles_material SET activo = 1 - activo WHERE id=? AND alumno_id=?')
-                ->execute([post_int('material_id', 1), $aid]);
-            redirect('mentor/ingles.php?id=' . $aid);
-
-        } elseif ($accion === 'del_material') {
-            db()->prepare('DELETE FROM ingles_material WHERE id=? AND alumno_id=?')
-                ->execute([post_int('material_id', 1), $aid]);
+        } elseif ($accion === 'del_tarea') {
+            $tid = post_int('tarea_id', 1);
+            $st = db()->prepare('SELECT material_id FROM ingles_tareas WHERE id=? AND alumno_id=?');
+            $st->execute([$tid, $aid]);
+            $materialId = (int) $st->fetchColumn();
+            db()->prepare('DELETE FROM ingles_tareas WHERE id=? AND alumno_id=?')->execute([$tid, $aid]);
+            // Si ninguna otra tarea usa ese PDF, se limpia también su contenido.
+            if ($materialId) {
+                $st = db()->prepare('SELECT COUNT(*) FROM ingles_tareas WHERE material_id=?');
+                $st->execute([$materialId]);
+                if (!$st->fetchColumn()) {
+                    db()->prepare('DELETE FROM ingles_material WHERE id=? AND alumno_id=?')->execute([$materialId, $aid]);
+                }
+            }
             redirect('mentor/ingles.php?id=' . $aid);
         }
     } catch (RuntimeException $ex) {
@@ -107,7 +104,6 @@ if ($alumno && $_SERVER['REQUEST_METHOD'] === 'POST') {
 /* ---------- Datos ---------- */
 $cfg = $alumno ? ingles_config($aid) : null;
 
-$materiales = [];
 $resultados = [];
 $tareas = [];
 $precisionMedia = null;
@@ -116,10 +112,6 @@ $destrezas = ingles_destrezas();
 
 if ($alumno) {
     $tareas = ingles_tareas_de($aid);
-
-    $st = db()->prepare('SELECT * FROM ingles_material WHERE alumno_id=? ORDER BY id DESC');
-    $st->execute([$aid]);
-    $materiales = $st->fetchAll();
 
     $st = db()->prepare('SELECT r.*, t.titulo AS tarea_titulo FROM ingles_resultados r
                          LEFT JOIN ingles_tareas t ON t.id = r.tarea_id
@@ -144,7 +136,7 @@ render_header('Inglés', 'panel', '', $nav);
 ?>
 <div class="page-head">
     <h1>Inglés del alumno 🇬🇧</h1>
-    <p class="muted">Crea tareas (una por destreza), sube PDFs con contenido propio y revisa las notas del alumno.</p>
+    <p class="muted">Crea una tarea con su PDF y se genera en las 5 áreas evaluables. Debajo, las notas y el radar del alumno.</p>
 </div>
 
 <form method="get" class="form-inline" style="margin-bottom:18px">
@@ -163,10 +155,9 @@ render_header('Inglés', 'panel', '', $nav);
     <div class="card"><p class="muted">No hay alumnos disponibles.</p></div>
 <?php else: ?>
 
-<!-- Tareas del alumno -->
+<!-- Tareas: lista + creación, todo en un único panel -->
 <div class="card">
     <h3>Tareas de inglés</h3>
-    <p class="muted">El alumno ve estas tareas en su panel, con su fecha de entrega, y al hacerlas recibe su nota.</p>
     <ul class="editlist">
         <?php foreach ($tareas as $t):
             $hecha = $t['resultado_id'] !== null; ?>
@@ -192,28 +183,25 @@ render_header('Inglés', 'panel', '', $nav);
         <?php if (!$tareas): ?><li class="muted">El alumno aún no tiene tareas.</li><?php endif; ?>
     </ul>
 
-    <form method="post" class="form" style="margin-top:14px">
-        <input type="hidden" name="accion" value="add_tarea">
+    <hr>
+    <h4>Nueva tarea</h4>
+    <p class="muted">Sube el PDF con el contenido (apuntes, vocabulario del cole…): los ejercicios se
+        generan a partir de él y la tarea se crea directamente en las <?= count($destrezas) ?> áreas
+        (vocabulario, gramática, comprensión, escucha y escritura).</p>
+    <form method="post" enctype="multipart/form-data" class="form">
+        <input type="hidden" name="accion" value="crear_tarea">
         <input type="hidden" name="alumno_id" value="<?= $aid ?>">
-        <p class="muted" style="margin:0 0 10px">Al añadirla se crea directamente en las <?= count($destrezas) ?> áreas:
-            una tarea por destreza (vocabulario, gramática, comprensión, escucha y escritura).</p>
         <div class="row">
-            <label>Título <input type="text" name="titulo" placeholder="Ej: Semana del 4 de agosto" required></label>
+            <label>Título <input type="text" name="titulo" placeholder="Ej: Unidad 4 — La comida" required></label>
             <label>Fecha de entrega <input type="date" name="fecha_entrega"></label>
         </div>
-        <button class="btn-sm">Añadir tarea en las <?= count($destrezas) ?> áreas</button>
-    </form>
-</div>
-
-<div class="grid-2">
-    <!-- Configuración de los ejercicios -->
-    <div class="card">
-        <h3>Configuración de los ejercicios</h3>
-        <form method="post" class="form">
-            <input type="hidden" name="accion" value="config">
-            <input type="hidden" name="alumno_id" value="<?= $aid ?>">
+        <label>Archivo PDF (obligatorio, máx. 8 MB)
+            <input type="file" name="pdf" accept="application/pdf,.pdf" required>
+        </label>
+        <details class="ajustes-plegable">
+            <summary>Ajustes de los ejercicios (opcional)</summary>
             <div class="row">
-                <label>Ejercicios por lección
+                <label>Ejercicios por tarea
                     <input type="number" name="ejercicios" value="<?= $cfg['ejercicios'] ?>" min="4" max="20">
                 </label>
                 <label>SkillCoins por acierto
@@ -228,58 +216,12 @@ render_header('Inglés', 'panel', '', $nav);
                     <input type="number" name="tiempo_seg" value="<?= $cfg['tiempo_seg'] ?>" min="0" max="120">
                 </label>
             </div>
-            <label>Temas para la IA (separados por comas; vacío = variados)
-                <input type="text" name="temas" value="<?= e($cfg['temas']) ?>" placeholder="Ej: los animales, la comida, el colegio">
-            </label>
-            <button class="btn">Guardar configuración</button>
-        </form>
-    </div>
-
-    <!-- Material PDF -->
-    <div class="card">
-        <h3>Contenido desde PDF</h3>
-        <p class="muted">Sube un PDF (apuntes, vocabulario del cole…) y las lecciones se generarán con su contenido.</p>
-        <form method="post" enctype="multipart/form-data" class="form">
-            <input type="hidden" name="accion" value="subir_pdf">
-            <input type="hidden" name="alumno_id" value="<?= $aid ?>">
-            <label>Título (opcional)
-                <input type="text" name="titulo" placeholder="Ej: Unidad 4 — La comida" maxlength="100">
-            </label>
-            <label>Archivo PDF (máx. 8 MB)
-                <input type="file" name="pdf" accept="application/pdf,.pdf" required>
-            </label>
-            <button class="btn">Subir y preparar ejercicios</button>
-        </form>
-        <?php if (!GEMINI_API_KEY): ?>
-            <p class="muted" style="margin-top:10px">💡 Para leer PDFs hace falta la clave de Gemini en <code>GEMINI_API_KEY</code>.</p>
-        <?php endif; ?>
-
-        <?php if ($materiales): ?>
-        <hr>
-        <ul class="editlist">
-            <?php foreach ($materiales as $m): ?>
-                <li>
-                    <span><?= $m['activo'] ? '📗' : '📕' ?> <?= e($m['titulo']) ?>
-                        <small class="muted"><?= e(date('d/m/Y', strtotime($m['creado_en']))) ?><?= $m['activo'] ? '' : ' · pausado' ?></small></span>
-                    <span>
-                        <form method="post" class="inline">
-                            <input type="hidden" name="accion" value="toggle_material">
-                            <input type="hidden" name="alumno_id" value="<?= $aid ?>">
-                            <input type="hidden" name="material_id" value="<?= (int)$m['id'] ?>">
-                            <button class="btn-sm"><?= $m['activo'] ? 'Pausar' : 'Activar' ?></button>
-                        </form>
-                        <form method="post" class="inline">
-                            <input type="hidden" name="accion" value="del_material">
-                            <input type="hidden" name="alumno_id" value="<?= $aid ?>">
-                            <input type="hidden" name="material_id" value="<?= (int)$m['id'] ?>">
-                            <button class="btn-x" title="Eliminar">✕</button>
-                        </form>
-                    </span>
-                </li>
-            <?php endforeach; ?>
-        </ul>
-        <?php endif; ?>
-    </div>
+        </details>
+        <button class="btn">Crear tarea en las <?= count($destrezas) ?> áreas</button>
+    </form>
+    <?php if (!GEMINI_API_KEY): ?>
+        <p class="muted" style="margin-top:10px">💡 Para leer los PDF hace falta la clave de Gemini en <code>GEMINI_API_KEY</code>.</p>
+    <?php endif; ?>
 </div>
 
 <!-- Feedback del alumno -->
