@@ -187,11 +187,12 @@ render_header('Inglés', 'panel', '', $nav);
                         <span class="tag gold">Nota: <?= nota_txt(nota_sobre_10((int)$t['aciertos'], (int)$t['total'])) ?>/10</span>
                     <?php endif; ?>
                 </span>
-                <form method="post" class="inline">
+                <form method="post" class="inline"
+                      onsubmit="return confirm('¿Eliminar la tarea «<?= e($t['titulo']) ?>»?')">
                     <input type="hidden" name="accion" value="del_tarea">
                     <input type="hidden" name="alumno_id" value="<?= $aid ?>">
                     <input type="hidden" name="tarea_id" value="<?= (int)$t['id'] ?>">
-                    <button class="btn-x" title="Eliminar">✕</button>
+                    <button class="btn-x" title="Eliminar tarea">✕ Eliminar</button>
                 </form>
             </li>
         <?php endforeach; ?>
