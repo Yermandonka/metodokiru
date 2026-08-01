@@ -579,6 +579,13 @@ img { max-width: 100%; height: auto; }
     background-size: 24px 24px; animation: kiru-rayas 1s linear infinite;
 }
 .ingles-carga-txt { margin: 8px 0 0; text-align: center; font-weight: 700; color: var(--oliva); animation: kiru-late 1.2s ease-in-out infinite; }
+/* En móvil la barra flota centrada: el modo inmersivo oculta las barras y
+   bloquea el scroll, y si no podría quedar fuera de la pantalla. */
+.ingles-carga.flotante {
+    position: fixed; left: 18px; right: 18px; top: 42%; z-index: 120; margin: 0;
+    background: var(--crema2); border-radius: 16px; padding: 18px 20px;
+    box-shadow: 0 12px 34px rgba(0, 0, 0, .3);
+}
 
 .ingles-racha { background: linear-gradient(135deg, #ff9600, #ffc800); color: #7a4b00; font-weight: 800; padding: 6px 12px; border-radius: 999px; font-size: .85rem; white-space: nowrap; }
 .ingles-racha.pop { animation: kiru-pop .35s ease; }

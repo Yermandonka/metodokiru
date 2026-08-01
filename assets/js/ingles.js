@@ -625,9 +625,12 @@
     function guardarCarga(ms) {
         try { localStorage.setItem('kiruInglesCargaMs', String(ms)); } catch (e) { /* nada */ }
     }
-    /* Sustituye el botón por una barra que avanza según el tiempo estimado. */
+    /* Sustituye el botón por una barra que avanza según el tiempo estimado.
+       En móvil (modo inmersivo, sin scroll) la barra flota centrada en la
+       pantalla para que siempre se vea. */
     function crearCarga(boton) {
         var caja = el('div', 'ingles-carga');
+        if (window.matchMedia('(max-width: 820px)').matches) caja.classList.add('flotante');
         var pista = el('div', 'ingles-carga-barra');
         var fill = el('div', 'ingles-carga-fill');
         pista.appendChild(fill);
