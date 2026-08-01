@@ -51,14 +51,26 @@ web_menu('inicio');
 
   </header>
 
+  <!-- CUADERNOS DEL MÉTODO -->
+  <section class="foto-ancha" id="mas">
+    <img src="<?= asset('assets/img/cuadernos.jpg') ?>"
+         alt="Cuadernos del Método Kiru: niveles Explorador y Constructor">
+  </section>
+
   <!-- MENSAJE PRINCIPAL -->
 
-  <section class="quote" id="mas">
+  <section class="quote">
 
     <h2>
       Menos discusiones por los deberes. Más autonomía, responsabilidad y confianza.
     </h2>
 
+  </section>
+
+  <!-- UNA SESIÓN REAL -->
+  <section class="foto-ancha">
+    <img src="<?= asset('assets/img/sesion.jpg') ?>"
+         alt="Un alumno trabajando con los materiales del Método Kiru en una sesión">
   </section>
 
   <!-- TESTIMONIOS -->

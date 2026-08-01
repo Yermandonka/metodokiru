@@ -44,7 +44,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // ---------- Animaciones de aparición al hacer scroll ----------
   const animados = document.querySelectorAll(
     ".hero-content, .subpage-content, .quote h2, .quote a, .testimonials h2, blockquote, " +
-    ".programa-card, .tarifa-card, .faq-item, .family-card, .program-note"
+    ".programa-card, .tarifa-card, .faq-item, .family-card, .program-note, .foto-ancha img"
   );
 
   // En la portada las animaciones son reversibles: se repiten al subir y bajar.

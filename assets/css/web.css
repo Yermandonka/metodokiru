@@ -18,7 +18,7 @@
   --radio:18px;
   --radio-lg:24px;
   --nav-alto:78px;
-  --nav-sep:0px; /* la cabecera es una barra plana a ancho completo */
+  --nav-sep:14px; /* separación de la cabecera flotante con los bordes */
 }
 
 /* Tipografía del logo (autoalojada, assets/fonts) */
@@ -94,26 +94,29 @@ h1{
    CABECERA COMÚN
    ========================= */
 
-/* Barra de navegación plana a ancho completo (como en el vídeo):
-   logo a la izquierda, enlaces visibles y acciones a la derecha.
-   Al hacer scroll se queda pegada arriba. */
+/* Barra de navegación flotante y redondeada: logo a la izquierda,
+   enlaces visibles y acciones a la derecha. Al hacer scroll se queda
+   pegada arriba manteniendo la separación con los bordes. */
 .web-nav{
   position:sticky;
-  top:0;
+  top:var(--nav-sep);
   z-index:100;
 
   display:flex;
   align-items:center;
-  gap:28px;
+  gap:24px;
 
   height:var(--nav-alto);
-  width:100%;
-  padding:0 clamp(16px, 4vw, 48px);
+  margin:var(--nav-sep) auto 0;
+  width:min(1200px, 94%);
+  padding:0 16px 0 28px;
 
-  background:rgba(255,253,248,.95);
+  background:rgba(255,253,248,.92);
   backdrop-filter:blur(8px);
   -webkit-backdrop-filter:blur(8px);
-  border-bottom:1px solid var(--linea);
+  border:1px solid var(--linea);
+  border-radius:999px;
+  box-shadow:var(--sombra);
 }
 
 /* Enlaces visibles en la propia barra (en móvil se esconden en el menú) */
@@ -518,6 +521,23 @@ html{ scroll-behavior:smooth; }
 }
 
 /* =========================
+   FOTOS ANCHAS DE LA PORTADA
+   ========================= */
+
+.foto-ancha{
+  padding:26px 7% 10px;
+}
+
+.foto-ancha img{
+  display:block;
+  width:100%;
+  max-width:1100px;
+  margin:0 auto;
+  border-radius:var(--radio-lg);
+  box-shadow:var(--sombra);
+}
+
+/* =========================
    FRASE CENTRAL / TESTIMONIOS
    ========================= */
 
@@ -865,9 +885,9 @@ a.family-card:hover{
 
 @media(max-width:900px){
 
-  :root{ --nav-alto:64px; --nav-sep:0px; }
+  :root{ --nav-alto:64px; --nav-sep:10px; }
 
-  .web-nav{ padding:0 14px; gap:12px; }
+  .web-nav{ padding:0 10px 0 20px; gap:12px; }
 
   /* En móvil los enlaces y el WhatsApp viven en el menú lateral */
   .nav-links{ display:none; }
