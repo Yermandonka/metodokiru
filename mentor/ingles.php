@@ -188,7 +188,7 @@ render_header('Inglés', 'panel', '', $nav);
     <p class="muted">Sube el PDF con el contenido (apuntes, vocabulario del cole…): los ejercicios se
         generan a partir de él y la tarea se crea directamente en las <?= count($destrezas) ?> áreas
         (vocabulario, gramática, comprensión, escucha y escritura).</p>
-    <form method="post" enctype="multipart/form-data" class="form">
+    <form method="post" enctype="multipart/form-data" class="form" id="formNuevaTarea">
         <input type="hidden" name="accion" value="crear_tarea">
         <input type="hidden" name="alumno_id" value="<?= $aid ?>">
         <div class="row">
@@ -272,5 +272,47 @@ render_header('Inglés', 'panel', '', $nav);
     </table>
 </div>
 
+<script>
+/* Barra de progreso al crear la tarea: leer el PDF con la IA tarda unos
+   segundos y así el mentor ve cuánto lleva. La estimación se afina con la
+   duración real de la última creación (guardada en localStorage). */
+(function () {
+    var form = document.getElementById('formNuevaTarea');
+    if (!form) return;
+
+    // Si venimos de una creación, guarda cuánto tardó para la próxima barra.
+    var t0 = parseInt(localStorage.getItem('kiruTareaT0') || '', 10);
+    if (t0) {
+        localStorage.removeItem('kiruTareaT0');
+        var ms = Date.now() - t0;
+        if (ms > 1000 && ms < 120000) localStorage.setItem('kiruTareaCargaMs', String(ms));
+    }
+
+    form.addEventListener('submit', function () {
+        var btn = form.querySelector('button.btn');
+        if (!btn || btn.disabled) return;
+        btn.disabled = true;
+        btn.hidden = true;
+
+        var caja = document.createElement('div');
+        caja.className = 'ingles-carga';
+        caja.innerHTML = '<div class="ingles-carga-barra"><div class="ingles-carga-fill"></div></div>'
+            + '<p class="ingles-carga-txt">Leyendo el PDF y creando la tarea en las 5 áreas… ⏳</p>';
+        btn.parentNode.insertBefore(caja, btn);
+        var fill = caja.querySelector('.ingles-carga-fill');
+
+        var estimado = parseInt(localStorage.getItem('kiruTareaCargaMs') || '', 10) || 15000;
+        var inicio = Date.now();
+        localStorage.setItem('kiruTareaT0', String(inicio));
+        // Avanza rápido al principio y se frena rozando el 96 % hasta que
+        // el servidor termina y la página cambia sola.
+        (function paso() {
+            var f = (Date.now() - inicio) / estimado;
+            fill.style.width = (96 * (1 - Math.exp(-3 * f))).toFixed(1) + '%';
+            requestAnimationFrame(paso);
+        })();
+    });
+})();
+</script>
 <?php endif; ?>
 <?php render_footer(); ?>
