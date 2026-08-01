@@ -54,13 +54,26 @@ function web_head(string $title, string $bodyClass = '', string $desc = ''): voi
 <?php
 }
 
-/** Cabecera común de todas las páginas: marca + Accede + hamburguesa. */
+/** Cabecera común: marca + enlaces visibles + WhatsApp + Accede (hamburguesa solo en móvil). */
 function web_nav(): void
 {
+    $enlaces = [
+        ['Programas', 'programas.php'],
+        ['Tarifas', 'tarifas.php'],
+        ['Familias', 'familias.php'],
+        ['Conócenos', 'conocenos.php'],
+        ['FAQ', 'faq.php'],
+    ];
     ?>
     <nav class="web-nav">
       <?php web_brand() ?>
+      <div class="nav-links">
+        <?php foreach ($enlaces as [$texto, $archivo]): ?>
+          <a href="<?= url($archivo) ?>"><?= e($texto) ?></a>
+        <?php endforeach; ?>
+      </div>
       <div class="nav-actions">
+        <a href="<?= WHATSAPP_URL ?>" target="_blank" class="btn-whatsapp">WhatsApp</a>
         <a href="<?= url('login.php') ?>" class="btn-accede">Accede</a>
         <?php web_menu_btn() ?>
       </div>
@@ -89,6 +102,8 @@ function web_menu(string $activo = ''): void
       <div class="menu-acciones">
         <a href="<?= url('login.php') ?>" class="btn-accede">Accede</a>
         <a href="<?= CALENDLY_URL ?>" target="_blank" class="menu-cta">Reservar llamada</a>
+        <a href="<?= WHATSAPP_URL ?>" target="_blank" class="menu-cta">WhatsApp</a>
+        <a href="https://calculalo.app" target="_blank" rel="noopener" class="menu-cta">Calculalo.app</a>
       </div>
 
     </aside>
@@ -136,6 +151,7 @@ function web_foot(): void
       <div class="web-foot-contacto">
         <a href="<?= WHATSAPP_URL ?>" target="_blank">WhatsApp</a>
         <a href="<?= CALENDLY_URL ?>" target="_blank">Reservar llamada</a>
+        <a href="https://calculalo.app" target="_blank" rel="noopener">Calculalo.app</a>
         <a href="<?= url('login.php') ?>">Campus Virtual</a>
       </div>
     </div>

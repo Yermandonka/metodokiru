@@ -45,12 +45,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <h1>Método Kiru</h1>
         <p class="login-sub">Entra en tu mundo</p>
         <?php if ($error): ?><div class="login-error"><?= e($error) ?></div><?php endif; ?>
-        <form method="post" autocomplete="off">
+        <form method="post">
             <label>Usuario
-                <input type="text" name="username" required autofocus>
+                <input type="text" name="username" autocomplete="username" required autofocus>
             </label>
             <label>Contraseña
-                <input type="password" name="password" required>
+                <input type="password" name="password" autocomplete="current-password" required>
             </label>
             <label class="login-check">
                 <input type="checkbox" name="recuerdame" checked>

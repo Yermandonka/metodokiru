@@ -93,7 +93,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div class="login-error"><?= e($er) ?></div>
         <?php endforeach; ?>
 
-        <form method="post" autocomplete="off">
+        <form method="post">
             <label>Nombre
                 <input type="text" name="nombre" value="<?= e($datos['nombre']) ?>" required autofocus>
             </label>
@@ -108,13 +108,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <input type="number" name="edad" value="<?= e((string)$datos['edad']) ?>" min="5" max="18">
             </label>
             <label>Usuario
-                <input type="text" name="username" value="<?= e($datos['username']) ?>" required>
+                <input type="text" name="username" value="<?= e($datos['username']) ?>" autocomplete="username" required>
             </label>
             <label>Contraseña
-                <input type="password" name="password" required>
+                <input type="password" name="password" autocomplete="new-password" required>
             </label>
             <label>Repite la contraseña
-                <input type="password" name="password2" required>
+                <input type="password" name="password2" autocomplete="new-password" required>
             </label>
             <label class="login-check">
                 <input type="checkbox" name="recuerdame" checked>

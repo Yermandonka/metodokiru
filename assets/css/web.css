@@ -17,8 +17,8 @@
   --serif:Georgia, "Times New Roman", serif;
   --radio:18px;
   --radio-lg:24px;
-  --nav-alto:84px;
-  --nav-sep:14px; /* separación de la cabecera con los bordes de la página */
+  --nav-alto:78px;
+  --nav-sep:0px; /* la cabecera es una barra plana a ancho completo */
 }
 
 /* Tipografía del logo (autoalojada, assets/fonts) */
@@ -94,31 +94,44 @@ h1{
    CABECERA COMÚN
    ========================= */
 
-/* Barra de navegación propia: tarjeta flotante con esquinas redondas,
-   separada del borde superior y de los laterales, centrada y simétrica.
-   Al hacer scroll se queda pegada arriba manteniendo la separación. */
+/* Barra de navegación plana a ancho completo (como en el vídeo):
+   logo a la izquierda, enlaces visibles y acciones a la derecha.
+   Al hacer scroll se queda pegada arriba. */
 .web-nav{
   position:sticky;
-  top:var(--nav-sep);
+  top:0;
   z-index:100;
 
   display:flex;
-  justify-content:space-between;
   align-items:center;
-  gap:12px;
+  gap:28px;
 
   height:var(--nav-alto);
-  margin:var(--nav-sep) auto 0;
-  width:min(1200px, 94%);
-  padding:0 14px 0 56px;
+  width:100%;
+  padding:0 clamp(16px, 4vw, 48px);
 
-  background:rgba(255,253,248,.92);
+  background:rgba(255,253,248,.95);
   backdrop-filter:blur(8px);
   -webkit-backdrop-filter:blur(8px);
-  border:1px solid var(--linea);
-  border-radius:999px;
-  box-shadow:var(--sombra);
+  border-bottom:1px solid var(--linea);
 }
+
+/* Enlaces visibles en la propia barra (en móvil se esconden en el menú) */
+.nav-links{
+  display:flex;
+  align-items:center;
+  gap:clamp(14px, 2.2vw, 30px);
+  margin-left:auto;
+}
+
+.nav-links a{
+  font-family:var(--serif);
+  font-size:16.5px;
+  color:var(--texto);
+  transition:color .2s;
+}
+
+.nav-links a:hover{ color:var(--marron); }
 
 .nav-actions{
   display:flex;
@@ -126,11 +139,32 @@ h1{
   gap:12px;
 }
 
-/* Marca KIRU (el logo, recreado en CSS): vuelve a la portada al pulsarla */
+/* Botón de WhatsApp: píldora clara con borde, como en el vídeo */
+.btn-whatsapp{
+  padding:10px 20px;
+  border:1px solid var(--linea);
+  border-radius:999px;
+  background:var(--crema2);
+  font-size:14.5px;
+  font-weight:600;
+  color:var(--texto);
+  transition:background .2s, border-color .2s;
+}
+
+.btn-whatsapp:hover{
+  background:var(--arena);
+  border-color:var(--marron);
+}
+
+/* Marca KIRU (icono + nombre): vuelve a la portada al pulsarla.
+   Crece un poco al pasar el ratón para que se note que es interactiva. */
 .brand-kiru{
   display:inline-flex;
   color:var(--texto);
+  transition:transform .2s ease;
 }
+
+.brand-kiru:hover{ transform:scale(1.07); }
 
 .brand-logo{
   display:flex;
@@ -279,6 +313,11 @@ h1{
 
 .menu-btn.abierto span:nth-child(1){ transform:translateY(4px) rotate(45deg); }
 .menu-btn.abierto span:nth-child(2){ transform:translateY(-4px) rotate(-45deg); }
+
+/* En escritorio los enlaces ya están visibles en la barra: sin hamburguesa */
+@media(min-width:901px){
+  .menu-btn{ display:none; }
+}
 
 .close-menu{
   width:44px;
@@ -826,9 +865,13 @@ a.family-card:hover{
 
 @media(max-width:900px){
 
-  :root{ --nav-alto:68px; --nav-sep:10px; }
+  :root{ --nav-alto:64px; --nav-sep:0px; }
 
-  .web-nav{ padding:0 8px 0 34px; }
+  .web-nav{ padding:0 14px; gap:12px; }
+
+  /* En móvil los enlaces y el WhatsApp viven en el menú lateral */
+  .nav-links{ display:none; }
+  .btn-whatsapp{ display:none; }
 
   /* La portada sigue ocupando toda la pantalla también en móvil */
   .hero{ padding:24px 6% 20px; }
