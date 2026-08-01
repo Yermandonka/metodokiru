@@ -482,6 +482,19 @@ function nota_txt(float $nota): string
     return rtrim(rtrim(number_format($nota, 1, ',', ''), '0'), ',');
 }
 
+/** Nota media (sobre 10) de las tareas de inglés completadas; null si aún no hay. */
+function nota_media_ingles(int $alumnoId): ?float
+{
+    ingles_tablas();
+    $st = db()->prepare(
+        'SELECT AVG(aciertos / total * 10) FROM ingles_resultados
+         WHERE alumno_id = ? AND tarea_id IS NOT NULL AND total > 0'
+    );
+    $st->execute([$alumnoId]);
+    $v = $st->fetchColumn();
+    return $v === null ? null : round((float) $v, 1);
+}
+
 /* ---------- Inglés: radar de destrezas (lo ven mentor y familias) ---------- */
 
 /** Nombres de las destrezas del radar, por clave. */

@@ -45,21 +45,21 @@ render_header('Panel del mentor', 'panel', '', $nav);
             <?php foreach ($alumnos as $a):
                 $aid = (int) $a['id'];
                 $nivel = nivel_actual($a);
-                $sc = sc_total($aid);
-                $ultima = $a['ultima_conexion'] ? date('d/m/Y H:i', strtotime($a['ultima_conexion'])) : 'Nunca';
-                $dias = $a['ultima_conexion'] ? (int)((time() - strtotime($a['ultima_conexion'])) / 86400) : null;
+                $notaMedia = nota_media_ingles($aid);
             ?>
             <a class="alumno-card" href="<?= url('mentor/alumno.php?id=' . $aid) ?>">
                 <div class="ac-avatar"><?= avatar_emoji($a['avatar']) ?></div>
                 <div class="ac-body">
-                    <div class="ac-name"><?= e($a['nombre']) ?> <span class="muted">· <?= (int)$a['edad'] ?> años</span></div>
+                    <div class="ac-name"><?= e($a['nombre']) ?></div>
                     <div class="ac-tags">
                         <span class="tag nivel"><?= e($nivel['nombre']) ?></span>
-                        <span class="tag gold"><?= $sc ?> 🪙</span>
                     </div>
-                    <div class="ac-meta">
-                        <span>Última: <?= e($ultima) ?><?= $dias !== null && $dias >= 5 ? ' ⚠️' : '' ?></span>
-                        <span>Esta semana: <?= sc_semana($aid) ?> 🪙</span>
+                    <div class="ac-nota">
+                        <?php if ($notaMedia !== null): ?>
+                            Nota media: <strong><?= nota_txt($notaMedia) ?></strong>/10
+                        <?php else: ?>
+                            <span class="muted">Sin tareas completadas aún</span>
+                        <?php endif; ?>
                     </div>
                 </div>
             </a>

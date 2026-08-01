@@ -1,4 +1,11 @@
 <?php
+/**
+ * Ficha del alumno (mentor/admin), en dos pestañas:
+ *  - Resumen: vista del alumno — estadísticas, sus tareas de inglés con la
+ *    nota de cada una, nota media y radar de destrezas (feedback).
+ *  - Ajustes: todo lo que el mentor modifica — perfil, objetivos, hábitos,
+ *    recompensas y ajuste de SkillCoins.
+ */
 require_once __DIR__ . '/../includes/functions.php';
 require_once __DIR__ . '/../includes/layout.php';
 $user = require_login(['mentor', 'admin']);
@@ -14,8 +21,9 @@ if ($user['rol'] === 'mentor' && (int) $alumno['mentor_id'] !== (int) $user['id'
     die('Este alumno no está asignado a ti.');
 }
 $volver = $user['rol'] === 'admin' ? 'admin/resumen.php' : 'mentor/dashboard.php';
+$tab = ($_GET['t'] ?? '') === 'ajustes' ? 'ajustes' : 'resumen';
 
-/* ---------- Acciones ---------- */
+/* ---------- Acciones (todas viven en la pestaña Ajustes) ---------- */
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $accion = $_POST['accion'] ?? '';
     switch ($accion) {
@@ -79,57 +87,140 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             break;
     }
-    redirect('mentor/alumno.php?id=' . $aid);
+    redirect('mentor/alumno.php?id=' . $aid . '&t=ajustes');
 }
 
-/* ---------- Datos ---------- */
+/* ---------- Datos comunes ---------- */
 $total  = sc_total($aid);
 $semana = sc_semana($aid);
 $nivelActual = nivel_actual($alumno);
-$niveles = niveles_todos();
-
-$objetivos = db()->prepare('SELECT * FROM objetivos WHERE alumno_id=? ORDER BY completado, id');
-$objetivos->execute([$aid]);
-$objetivos = $objetivos->fetchAll();
-
-$habitos = db()->prepare('SELECT * FROM habitos WHERE alumno_id=? ORDER BY id');
-$habitos->execute([$aid]);
-$habitos = $habitos->fetchAll();
-
-$recompensas = db()->prepare('SELECT * FROM recompensas WHERE alumno_id=? ORDER BY conseguida, costo');
-$recompensas->execute([$aid]);
-$recompensas = $recompensas->fetchAll();
-
-$conexiones = (int) db()->query("SELECT COUNT(*) FROM conexiones WHERE alumno_id=$aid")->fetchColumn();
-$objOk      = (int) db()->query("SELECT COUNT(*) FROM objetivos WHERE alumno_id=$aid AND completado=1")->fetchColumn();
-
 $avatares = avatares();
 
 render_header('Perfil de ' . $alumno['nombre'], 'panel', '', [
     ['← Volver', $volver, false],
-    ['🇬🇧 Inglés del alumno', 'mentor/ingles.php?id=' . $aid, false],
 ]);
 ?>
 <div class="page-head">
     <h1><?= $avatares[$alumno['avatar']] ?? '🦊' ?> <?= e($alumno['nombre']) ?></h1>
-    <p class="muted">@<?= e($alumno['username']) ?> · Nivel actual: <strong><?= e($nivelActual['nombre']) ?></strong>
+    <p class="muted">@<?= e($alumno['username']) ?> · <?= (int)$alumno['edad'] ?> años
+        · Nivel: <strong><?= e($nivelActual['nombre']) ?></strong>
         · <?= $total ?> 🪙 (<?= $semana ?> esta semana)</p>
 </div>
 
+<!-- Pestañas: vista del alumno / ajustes -->
+<nav class="tabs">
+    <a class="<?= $tab === 'resumen' ? 'active' : '' ?>" href="<?= url('mentor/alumno.php?id=' . $aid) ?>">📊 Resumen</a>
+    <a class="<?= $tab === 'ajustes' ? 'active' : '' ?>" href="<?= url('mentor/alumno.php?id=' . $aid . '&t=ajustes') ?>">⚙️ Ajustes</a>
+    <a href="<?= url('mentor/ingles.php?id=' . $aid) ?>">🇬🇧 Inglés</a>
+</nav>
+
+<?php if ($tab === 'resumen'): ?>
+<?php
+    /* ---------- Datos del resumen ---------- */
+    $racha      = racha_dias($aid);
+    $conexiones = (int) db()->query("SELECT COUNT(*) FROM conexiones WHERE alumno_id=$aid")->fetchColumn();
+    $objOk      = (int) db()->query("SELECT COUNT(*) FROM objetivos WHERE alumno_id=$aid AND completado=1")->fetchColumn();
+    $notaMedia  = nota_media_ingles($aid);
+    $tareas     = ingles_tareas_de($aid);
+    $destrezas  = ingles_destrezas();
+    $radar      = ingles_radar($aid);
+    $hayRadar   = (bool) array_filter($radar, fn($v) => $v['pct'] !== null);
+
+    $st = db()->prepare('SELECT r.*, t.titulo AS tarea_titulo FROM ingles_resultados r
+                         LEFT JOIN ingles_tareas t ON t.id = r.tarea_id
+                         WHERE r.alumno_id=? ORDER BY r.fecha DESC LIMIT 10');
+    $st->execute([$aid]);
+    $resultados = $st->fetchAll();
+?>
+
 <!-- Estadísticas -->
 <div class="stat-row">
-    <div class="stat-card"><span class="stat-num"><?= $conexiones ?></span><span>Conexiones</span></div>
-    <div class="stat-card"><span class="stat-num"><?= $semana ?></span><span>SkillCoins esta semana</span></div>
-    <div class="stat-card"><span class="stat-num"><?= $total ?></span><span>SkillCoins</span></div>
-    <div class="stat-card"><span class="stat-num"><?= $objOk ?></span><span>Objetivos cumplidos</span></div>
+    <div class="stat-card"><span class="stat-num"><?= $notaMedia !== null ? nota_txt($notaMedia) . '/10' : '—' ?></span><span>Nota media de tareas</span></div>
+    <div class="stat-card"><span class="stat-num">🔥 <?= $racha ?></span><span>Días de racha</span></div>
+    <div class="stat-card"><span class="stat-num"><?= $conexiones ?></span><span>Días de conexión</span></div>
+    <div class="stat-card"><span class="stat-num">🎯 <?= $objOk ?></span><span>Objetivos cumplidos</span></div>
 </div>
 
+<div class="grid-2">
+    <!-- Tareas de inglés con su nota -->
+    <div class="card">
+        <div class="card-head">
+            <h3>Tareas de inglés</h3>
+            <a class="link" href="<?= url('mentor/ingles.php?id=' . $aid) ?>">Gestionar</a>
+        </div>
+        <ul class="editlist">
+            <?php foreach ($tareas as $t):
+                $hecha = $t['resultado_id'] !== null; ?>
+                <li>
+                    <span><?= $hecha ? '✅' : '⬜' ?> <?= e($t['titulo']) ?>
+                        <small class="muted"><?=
+                            $t['fecha_entrega'] ? 'entrega ' . e(date('d/m/Y', strtotime($t['fecha_entrega']))) : '' ?></small>
+                    </span>
+                    <?php if ($hecha): ?>
+                        <span class="tag gold"><?= nota_txt(nota_sobre_10((int)$t['aciertos'], (int)$t['total'])) ?>/10</span>
+                    <?php else: ?>
+                        <span class="tag prio-media">Pendiente</span>
+                    <?php endif; ?>
+                </li>
+            <?php endforeach; ?>
+            <?php if (!$tareas): ?><li class="muted">Sin tareas creadas. Créalas en «Inglés».</li><?php endif; ?>
+        </ul>
+    </div>
+
+    <!-- Feedback: radar de destrezas -->
+    <div class="card">
+        <h3>Radar de destrezas</h3>
+        <?php if ($hayRadar): ?>
+            <div class="ingles-radar"><?= radar_svg($radar) ?></div>
+        <?php else: ?>
+            <p class="muted">Aparecerá cuando el alumno haga sus tareas de inglés.</p>
+        <?php endif; ?>
+    </div>
+</div>
+
+<!-- Notas de las tareas completadas -->
+<div class="card">
+    <h3>Tareas completadas</h3>
+    <table class="tabla">
+        <thead><tr><th>Fecha</th><th>Tarea</th><th>Aciertos</th><th>Nota</th><th class="right">SkillCoins</th></tr></thead>
+        <tbody>
+        <?php foreach ($resultados as $r): ?>
+            <tr>
+                <td><?= e(date('d/m/Y H:i', strtotime($r['fecha']))) ?></td>
+                <td><?= e($r['tarea_titulo'] ?? 'Práctica libre') ?></td>
+                <td><?= (int)$r['aciertos'] ?> / <?= (int)$r['total'] ?></td>
+                <td><?= nota_txt(nota_sobre_10((int)$r['aciertos'], (int)$r['total'])) ?>/10</td>
+                <td class="right pos">+<?= (int)$r['coins'] ?> 🪙</td>
+            </tr>
+        <?php endforeach; ?>
+        <?php if (!$resultados): ?><tr><td colspan="5" class="muted">Aún no ha completado ninguna tarea.</td></tr><?php endif; ?>
+        </tbody>
+    </table>
+</div>
+
+<?php else: /* ---------- Pestaña Ajustes ---------- */ ?>
+<?php
+    $niveles = niveles_todos();
+
+    $objetivos = db()->prepare('SELECT * FROM objetivos WHERE alumno_id=? ORDER BY completado, id');
+    $objetivos->execute([$aid]);
+    $objetivos = $objetivos->fetchAll();
+
+    $habitos = db()->prepare('SELECT * FROM habitos WHERE alumno_id=? ORDER BY id');
+    $habitos->execute([$aid]);
+    $habitos = $habitos->fetchAll();
+
+    $recompensas = db()->prepare('SELECT * FROM recompensas WHERE alumno_id=? ORDER BY conseguida, costo');
+    $recompensas->execute([$aid]);
+    $recompensas = $recompensas->fetchAll();
+?>
 <div class="grid-2">
     <!-- Perfil -->
     <div class="card">
         <h3>Perfil y ajustes</h3>
         <form method="post" class="form">
             <input type="hidden" name="accion" value="perfil">
+            <input type="hidden" name="alumno_id" value="<?= $aid ?>">
             <label>Edad <input type="number" name="edad" value="<?= (int)$alumno['edad'] ?>" min="5" max="18"></label>
             <label>Mensaje diario (recordatorio)
                 <textarea name="mensaje_diario" rows="2"><?= e($alumno['mensaje_diario']) ?></textarea>
@@ -158,6 +249,7 @@ render_header('Perfil de ' . $alumno['nombre'], 'panel', '', [
         <h4>Ajustar SkillCoins</h4>
         <form method="post" class="form-inline">
             <input type="hidden" name="accion" value="dar_sc">
+            <input type="hidden" name="alumno_id" value="<?= $aid ?>">
             <input type="number" name="cantidad" placeholder="+/- cantidad" required>
             <input type="text" name="motivo" placeholder="Motivo">
             <button class="btn-sm">Aplicar</button>
@@ -173,6 +265,7 @@ render_header('Perfil de ' . $alumno['nombre'], 'panel', '', [
                     <span><?= $o['completado'] ? '✅' : '⬜' ?> <?= e($o['titulo']) ?>
                         <small class="muted">(<?= e($o['prioridad']) ?>, +<?= (int)$o['skillcoins'] ?>🪙)</small></span>
                     <form method="post" class="inline"><input type="hidden" name="accion" value="del_objetivo">
+                        <input type="hidden" name="alumno_id" value="<?= $aid ?>">
                         <input type="hidden" name="id" value="<?= (int)$o['id'] ?>">
                         <button class="btn-x" title="Eliminar">✕</button></form>
                 </li>
@@ -181,6 +274,7 @@ render_header('Perfil de ' . $alumno['nombre'], 'panel', '', [
         </ul>
         <form method="post" class="form">
             <input type="hidden" name="accion" value="add_objetivo">
+            <input type="hidden" name="alumno_id" value="<?= $aid ?>">
             <label>Título <input type="text" name="titulo" required></label>
             <label>Descripción <input type="text" name="descripcion"></label>
             <div class="row">
@@ -203,6 +297,7 @@ render_header('Perfil de ' . $alumno['nombre'], 'panel', '', [
                 <li>
                     <span><?= $h['completado'] ? '✅' : '⬜' ?> <?= e($h['titulo']) ?></span>
                     <form method="post" class="inline"><input type="hidden" name="accion" value="del_habito">
+                        <input type="hidden" name="alumno_id" value="<?= $aid ?>">
                         <input type="hidden" name="id" value="<?= (int)$h['id'] ?>">
                         <button class="btn-x">✕</button></form>
                 </li>
@@ -211,6 +306,7 @@ render_header('Perfil de ' . $alumno['nombre'], 'panel', '', [
         </ul>
         <form method="post" class="form-inline">
             <input type="hidden" name="accion" value="add_habito">
+            <input type="hidden" name="alumno_id" value="<?= $aid ?>">
             <input type="text" name="titulo" placeholder="Nuevo hábito" required>
             <button class="btn-sm">Añadir</button>
         </form>
@@ -225,6 +321,7 @@ render_header('Perfil de ' . $alumno['nombre'], 'panel', '', [
                     <span>🎁 <?= e($r['titulo']) ?> <small class="muted">(<?= (int)$r['costo'] ?>🪙)</small>
                         <?= $r['conseguida'] ? '<span class="tag">conseguida</span>' : '' ?></span>
                     <form method="post" class="inline"><input type="hidden" name="accion" value="del_recompensa">
+                        <input type="hidden" name="alumno_id" value="<?= $aid ?>">
                         <input type="hidden" name="id" value="<?= (int)$r['id'] ?>">
                         <button class="btn-x">✕</button></form>
                 </li>
@@ -233,10 +330,12 @@ render_header('Perfil de ' . $alumno['nombre'], 'panel', '', [
         </ul>
         <form method="post" class="form-inline">
             <input type="hidden" name="accion" value="add_recompensa">
+            <input type="hidden" name="alumno_id" value="<?= $aid ?>">
             <input type="text" name="titulo" placeholder="Premio" required>
             <input type="number" name="costo" placeholder="Coste 🪙" required style="max-width:120px">
             <button class="btn-sm">Añadir</button>
         </form>
     </div>
 </div>
+<?php endif; ?>
 <?php render_footer(); ?>

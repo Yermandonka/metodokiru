@@ -193,6 +193,17 @@ code { background: #efe7d8; padding: 1px 6px; border-radius: 6px; font-size: .85
 .ac-name { font-weight: 600; }
 .ac-tags { display: flex; gap: 6px; margin: 6px 0; }
 .ac-meta { font-size: .78rem; color: var(--muted); display: flex; flex-direction: column; gap: 2px; }
+.ac-nota { font-size: .85rem; color: var(--marron-osc); }
+.ac-nota strong { font-size: 1.05rem; color: #3f9302; }
+
+/* ---------- Pestañas dentro de una página (ficha del alumno) ---------- */
+.tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
+.tabs a {
+    text-decoration: none; color: var(--marron); font-weight: 600; font-size: .92rem;
+    padding: 9px 18px; border-radius: 999px; border: 1px solid var(--linea); background: var(--crema2);
+}
+.tabs a:hover { background: var(--arena); }
+.tabs a.active { background: var(--marron); border-color: var(--marron); color: #fff; }
 
 /* ---------- Notificaciones ---------- */
 .noti { background: var(--crema2); border: 1px solid var(--linea); border-left: 4px solid var(--dorado); border-radius: 12px; padding: 12px 14px; margin-bottom: 10px; }
