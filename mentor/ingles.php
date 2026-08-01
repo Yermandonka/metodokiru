@@ -1,8 +1,9 @@
 <?php
 /**
- * Inglés (mentor): configura el juego de cada alumno (cantidad, SkillCoins,
- * tiempo, temas), sube PDFs para generar ejercicios con su contenido y ve
- * el feedback del alumno: lecciones jugadas y radar de destrezas.
+ * Inglés (mentor): crea las tareas de cada alumno (una por destreza, con título
+ * y fecha de entrega), configura los ejercicios (cantidad, SkillCoins, tiempo,
+ * temas), sube PDFs para generar contenido propio y ve el feedback del alumno:
+ * tareas completadas con su nota y radar de destrezas.
  */
 require_once __DIR__ . '/../includes/functions.php';
 require_once __DIR__ . '/../includes/layout.php';
@@ -32,7 +33,35 @@ $errores = [];
 if ($alumno && $_SERVER['REQUEST_METHOD'] === 'POST') {
     $accion = $_POST['accion'] ?? '';
     try {
-        if ($accion === 'config') {
+        if ($accion === 'add_tarea') {
+            $titulo = post_texto('titulo', 100);
+            if ($titulo === '') {
+                throw new RuntimeException('La tarea necesita un título.');
+            }
+            $destreza = post_opcion('destreza', array_keys(ingles_destrezas()), 'vocabulario');
+            db()->prepare('INSERT INTO ingles_tareas (alumno_id, titulo, destreza, fecha_entrega) VALUES (?,?,?,?)')
+                ->execute([$aid, $titulo, $destreza, fecha_o_null($_POST['fecha_entrega'] ?? null)]);
+            flash('Tarea «' . $titulo . '» creada.');
+            redirect('mentor/ingles.php?id=' . $aid);
+
+        } elseif ($accion === 'add_tareas_todas') {
+            // Una tarea por cada destreza evaluable, con la misma fecha de entrega.
+            $fecha = fecha_o_null($_POST['fecha_entrega'] ?? null);
+            $st = db()->prepare('INSERT INTO ingles_tareas (alumno_id, titulo, destreza, fecha_entrega) VALUES (?,?,?,?)');
+            foreach (ingles_destrezas() as $clave => $nombre) {
+                // El nombre lleva un emoji delante («📚 Vocabulario»): se quita para el título.
+                $limpio = trim(preg_replace('/^[^\p{L}]+/u', '', $nombre));
+                $st->execute([$aid, 'Tarea de ' . mb_strtolower($limpio), $clave, $fecha]);
+            }
+            flash('Creadas ' . count(ingles_destrezas()) . ' tareas, una por destreza.');
+            redirect('mentor/ingles.php?id=' . $aid);
+
+        } elseif ($accion === 'del_tarea') {
+            db()->prepare('DELETE FROM ingles_tareas WHERE id=? AND alumno_id=?')
+                ->execute([post_int('tarea_id', 1), $aid]);
+            redirect('mentor/ingles.php?id=' . $aid);
+
+        } elseif ($accion === 'config') {
             ingles_config_guardar($aid, [
                 'ejercicios'    => post_int('ejercicios', 4, 20, 10),
                 'coins_acierto' => post_int('coins_acierto', 0, 5, 1),
@@ -40,7 +69,7 @@ if ($alumno && $_SERVER['REQUEST_METHOD'] === 'POST') {
                 'tiempo_seg'    => post_int('tiempo_seg', 0, 120, 0),
                 'temas'         => post_texto('temas', 255),
             ]);
-            flash('Configuración del juego guardada.');
+            flash('Configuración de los ejercicios guardada.');
             redirect('mentor/ingles.php?id=' . $aid);
 
         } elseif ($accion === 'subir_pdf') {
@@ -87,15 +116,21 @@ $cfg = $alumno ? ingles_config($aid) : null;
 
 $materiales = [];
 $resultados = [];
+$tareas = [];
 $precisionMedia = null;
 $radar = [];
+$destrezas = ingles_destrezas();
 
 if ($alumno) {
+    $tareas = ingles_tareas_de($aid);
+
     $st = db()->prepare('SELECT * FROM ingles_material WHERE alumno_id=? ORDER BY id DESC');
     $st->execute([$aid]);
     $materiales = $st->fetchAll();
 
-    $st = db()->prepare('SELECT * FROM ingles_resultados WHERE alumno_id=? ORDER BY fecha DESC LIMIT 30');
+    $st = db()->prepare('SELECT r.*, t.titulo AS tarea_titulo FROM ingles_resultados r
+                         LEFT JOIN ingles_tareas t ON t.id = r.tarea_id
+                         WHERE r.alumno_id=? ORDER BY r.fecha DESC LIMIT 30');
     $st->execute([$aid]);
     $resultados = $st->fetchAll();
 
@@ -116,7 +151,7 @@ render_header('Inglés', 'panel', '', $nav);
 ?>
 <div class="page-head">
     <h1>Inglés del alumno 🇬🇧</h1>
-    <p class="muted">Configura los mini-juegos, sube PDFs con contenido propio y revisa cómo va el alumno.</p>
+    <p class="muted">Crea tareas (una por destreza), sube PDFs con contenido propio y revisa las notas del alumno.</p>
 </div>
 
 <form method="get" class="form-inline" style="margin-bottom:18px">
@@ -135,10 +170,66 @@ render_header('Inglés', 'panel', '', $nav);
     <div class="card"><p class="muted">No hay alumnos disponibles.</p></div>
 <?php else: ?>
 
+<!-- Tareas del alumno -->
+<div class="card">
+    <h3>Tareas de inglés</h3>
+    <p class="muted">El alumno ve estas tareas en su panel, con su fecha de entrega, y al hacerlas recibe su nota.</p>
+    <ul class="editlist">
+        <?php foreach ($tareas as $t):
+            $hecha = $t['resultado_id'] !== null; ?>
+            <li>
+                <span><?= $hecha ? '✅' : '⬜' ?> <?= e($t['titulo']) ?>
+                    <small class="muted">
+                        (<?= e($destrezas[$t['destreza']] ?? $t['destreza']) ?><?=
+                            $t['fecha_entrega'] ? ' · entrega ' . e(date('d/m/Y', strtotime($t['fecha_entrega']))) : '' ?>)
+                    </small>
+                    <?php if ($hecha): ?>
+                        <span class="tag gold">Nota: <?= nota_txt(nota_sobre_10((int)$t['aciertos'], (int)$t['total'])) ?>/10</span>
+                    <?php endif; ?>
+                </span>
+                <form method="post" class="inline">
+                    <input type="hidden" name="accion" value="del_tarea">
+                    <input type="hidden" name="alumno_id" value="<?= $aid ?>">
+                    <input type="hidden" name="tarea_id" value="<?= (int)$t['id'] ?>">
+                    <button class="btn-x" title="Eliminar">✕</button>
+                </form>
+            </li>
+        <?php endforeach; ?>
+        <?php if (!$tareas): ?><li class="muted">El alumno aún no tiene tareas.</li><?php endif; ?>
+    </ul>
+
+    <div class="grid-2" style="margin-top:14px">
+        <form method="post" class="form">
+            <input type="hidden" name="accion" value="add_tarea">
+            <input type="hidden" name="alumno_id" value="<?= $aid ?>">
+            <label>Título <input type="text" name="titulo" placeholder="Ej: Vocabulario de la comida" required></label>
+            <div class="row">
+                <label>Destreza
+                    <select name="destreza">
+                        <?php foreach ($destrezas as $clave => $nombre): ?>
+                            <option value="<?= $clave ?>"><?= e($nombre) ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </label>
+                <label>Fecha de entrega <input type="date" name="fecha_entrega"></label>
+            </div>
+            <button class="btn-sm">Añadir tarea</button>
+        </form>
+        <form method="post" class="form">
+            <input type="hidden" name="accion" value="add_tareas_todas">
+            <input type="hidden" name="alumno_id" value="<?= $aid ?>">
+            <label>Crear una tarea de cada destreza (<?= count($destrezas) ?>)
+                <input type="date" name="fecha_entrega" title="Fecha de entrega común (opcional)">
+            </label>
+            <button class="btn-sm">Crear las <?= count($destrezas) ?> tareas</button>
+        </form>
+    </div>
+</div>
+
 <div class="grid-2">
-    <!-- Configuración del juego -->
+    <!-- Configuración de los ejercicios -->
     <div class="card">
-        <h3>Configuración del juego</h3>
+        <h3>Configuración de los ejercicios</h3>
         <form method="post" class="form">
             <input type="hidden" name="accion" value="config">
             <input type="hidden" name="alumno_id" value="<?= $aid ?>">
@@ -214,17 +305,17 @@ render_header('Inglés', 'panel', '', $nav);
 
 <!-- Feedback del alumno -->
 <div class="stat-row">
-    <div class="stat-card"><span class="stat-num"><?= count($resultados) ?></span><span>Lecciones (últimas 30)</span></div>
+    <div class="stat-card"><span class="stat-num"><?= count($resultados) ?></span><span>Tareas hechas (últimas 30)</span></div>
     <div class="stat-card"><span class="stat-num"><?= $precisionMedia !== null ? $precisionMedia . '%' : '—' ?></span><span>Precisión media</span></div>
     <div class="stat-card"><span class="stat-num"><?= array_sum(array_column($resultados, 'coins')) ?></span><span>SkillCoins ganadas</span></div>
-    <div class="stat-card"><span class="stat-num"><?= $resultados ? e(date('d/m', strtotime($resultados[0]['fecha']))) : '—' ?></span><span>Última lección</span></div>
+    <div class="stat-card"><span class="stat-num"><?= $resultados ? e(date('d/m', strtotime($resultados[0]['fecha']))) : '—' ?></span><span>Última tarea</span></div>
 </div>
 
 <!-- Radar de destrezas -->
 <div class="card">
     <h3>Radar de destrezas</h3>
     <?php if (!$hayRadar): ?>
-        <p class="muted">Todavía no hay datos: el radar aparecerá cuando el alumno juegue.</p>
+        <p class="muted">Todavía no hay datos: el radar aparecerá cuando el alumno haga sus tareas.</p>
     <?php else: ?>
         <div class="ingles-radar"><?= radar_svg($radar) ?></div>
         <ul class="editlist radar-lista">
@@ -240,21 +331,22 @@ render_header('Inglés', 'panel', '', $nav);
     <?php endif; ?>
 </div>
 
-<!-- Últimas lecciones -->
+<!-- Últimas tareas completadas -->
 <div class="card">
-    <h3>Últimas lecciones</h3>
+    <h3>Últimas tareas completadas</h3>
     <table class="tabla">
-        <thead><tr><th>Fecha</th><th>Aciertos</th><th>Precisión</th><th class="right">SkillCoins</th></tr></thead>
+        <thead><tr><th>Fecha</th><th>Tarea</th><th>Aciertos</th><th>Nota</th><th class="right">SkillCoins</th></tr></thead>
         <tbody>
-        <?php foreach (array_slice($resultados, 0, 15) as $r): $pct = $r['total'] ? round($r['aciertos'] / $r['total'] * 100) : 0; ?>
+        <?php foreach (array_slice($resultados, 0, 15) as $r): ?>
             <tr>
                 <td><?= e(date('d/m/Y H:i', strtotime($r['fecha']))) ?></td>
+                <td><?= e($r['tarea_titulo'] ?? 'Práctica libre') ?></td>
                 <td><?= (int)$r['aciertos'] ?> / <?= (int)$r['total'] ?></td>
-                <td><?= $pct ?>%</td>
+                <td><?= nota_txt(nota_sobre_10((int)$r['aciertos'], (int)$r['total'])) ?>/10</td>
                 <td class="right pos">+<?= (int)$r['coins'] ?> 🪙</td>
             </tr>
         <?php endforeach; ?>
-        <?php if (!$resultados): ?><tr><td colspan="4" class="muted">El alumno aún no ha jugado ninguna lección.</td></tr><?php endif; ?>
+        <?php if (!$resultados): ?><tr><td colspan="5" class="muted">El alumno aún no ha completado ninguna tarea.</td></tr><?php endif; ?>
         </tbody>
     </table>
 </div>

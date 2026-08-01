@@ -116,14 +116,14 @@ render_header('Inicio', 'alumno', $mundo, nav_alumno('index'));
     </form>
 </div>
 
-<!-- Inglés de verano -->
+<!-- Tareas de inglés -->
 <a class="card ingles-banner" href="<?= url('alumno/ingles.php') ?>">
     <span class="ingles-banner-ico">🇬🇧</span>
     <div>
-        <h3>Inglés de verano</h3>
-        <p class="muted">Mini-juegos tipo Duolingo: traduce, ordena, escucha… y gana SkillCoins.</p>
+        <h3>Tareas de inglés</h3>
+        <p class="muted">Traduce, ordena, escucha… completa las tareas de tu mentor y gana SkillCoins.</p>
     </div>
-    <span class="ingles-banner-go">Jugar →</span>
+    <span class="ingles-banner-go">Ir a mis tareas →</span>
 </a>
 
 <!-- Recordatorio diario -->

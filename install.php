@@ -153,9 +153,21 @@ try {
             FOREIGN KEY (alumno_id) REFERENCES alumnos(id) ON DELETE CASCADE
         ) ENGINE=InnoDB",
 
+        'ingles_tareas' => "CREATE TABLE IF NOT EXISTS ingles_tareas (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            alumno_id INT NOT NULL,
+            titulo VARCHAR(100) NOT NULL,
+            destreza VARCHAR(20) NOT NULL,
+            fecha_entrega DATE NULL,
+            creada_en DATETIME DEFAULT CURRENT_TIMESTAMP,
+            INDEX (alumno_id),
+            FOREIGN KEY (alumno_id) REFERENCES alumnos(id) ON DELETE CASCADE
+        ) ENGINE=InnoDB",
+
         'ingles_resultados' => "CREATE TABLE IF NOT EXISTS ingles_resultados (
             id INT AUTO_INCREMENT PRIMARY KEY,
             alumno_id INT NOT NULL,
+            tarea_id INT NULL,
             aciertos INT NOT NULL,
             total INT NOT NULL,
             coins INT NOT NULL DEFAULT 0,

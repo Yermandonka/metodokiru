@@ -374,6 +374,7 @@ function ingles_tablas(): void
     db()->exec("CREATE TABLE IF NOT EXISTS ingles_resultados (
         id INT AUTO_INCREMENT PRIMARY KEY,
         alumno_id INT NOT NULL,
+        tarea_id INT NULL,
         aciertos INT NOT NULL,
         total INT NOT NULL,
         coins INT NOT NULL DEFAULT 0,
@@ -382,6 +383,20 @@ function ingles_tablas(): void
         INDEX (alumno_id, fecha),
         FOREIGN KEY (alumno_id) REFERENCES alumnos(id) ON DELETE CASCADE
     ) ENGINE=InnoDB");
+    db()->exec("CREATE TABLE IF NOT EXISTS ingles_tareas (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        alumno_id INT NOT NULL,
+        titulo VARCHAR(100) NOT NULL,
+        destreza VARCHAR(20) NOT NULL,
+        fecha_entrega DATE NULL,
+        creada_en DATETIME DEFAULT CURRENT_TIMESTAMP,
+        INDEX (alumno_id),
+        FOREIGN KEY (alumno_id) REFERENCES alumnos(id) ON DELETE CASCADE
+    ) ENGINE=InnoDB");
+    // Migración perezosa: instalaciones antiguas no tenían la columna tarea_id.
+    if (!db()->query("SHOW COLUMNS FROM ingles_resultados LIKE 'tarea_id'")->fetch()) {
+        db()->exec('ALTER TABLE ingles_resultados ADD COLUMN tarea_id INT NULL AFTER alumno_id');
+    }
     $creadas = true;
 }
 
@@ -432,6 +447,41 @@ function ingles_material_activo(int $alumnoId, int $max = 6000): string
     return mb_substr(implode("\n\n", $trozos), 0, $max);
 }
 
+/* ---------- Inglés: tareas (las crea el mentor, una por destreza) ---------- */
+
+/**
+ * Tareas de inglés del alumno con su último resultado (si ya la ha hecho).
+ * Primero las pendientes (por fecha de entrega), después las completadas.
+ */
+function ingles_tareas_de(int $alumnoId): array
+{
+    ingles_tablas();
+    $st = db()->prepare(
+        'SELECT t.*, r.id AS resultado_id, r.aciertos, r.total, r.detalle, r.fecha AS hecha_en
+         FROM ingles_tareas t
+         LEFT JOIN ingles_resultados r ON r.id = (
+             SELECT r2.id FROM ingles_resultados r2
+             WHERE r2.tarea_id = t.id ORDER BY r2.fecha DESC, r2.id DESC LIMIT 1
+         )
+         WHERE t.alumno_id = ?
+         ORDER BY (r.id IS NOT NULL), t.fecha_entrega IS NULL, t.fecha_entrega, t.id'
+    );
+    $st->execute([$alumnoId]);
+    return $st->fetchAll();
+}
+
+/** Nota sobre 10 (un decimal) a partir de aciertos/total. */
+function nota_sobre_10(int $aciertos, int $total): float
+{
+    return $total > 0 ? round($aciertos / $total * 10, 1) : 0.0;
+}
+
+/** Nota en texto para mostrar: coma decimal y sin «,0» (8,5 · 10). */
+function nota_txt(float $nota): string
+{
+    return rtrim(rtrim(number_format($nota, 1, ',', ''), '0'), ',');
+}
+
 /* ---------- Inglés: radar de destrezas (lo ven mentor y familias) ---------- */
 
 /** Nombres de las destrezas del radar, por clave. */
@@ -446,15 +496,10 @@ function ingles_destrezas(): array
     ];
 }
 
-/**
- * Radar de destrezas del alumno: cada tipo de reto puntúa en una o dos
- * destrezas del idioma. Las lecciones recientes pesan más, así el radar
- * refleja el nivel actual y se mueve con cada lección que juega.
- * Devuelve [clave => ['nombre', 'pct' (null = sin datos), 'n']].
- */
-function ingles_radar(int $alumnoId): array
+/** Qué destrezas evalúa cada tipo de reto (y con qué peso). */
+function ingles_tipo_destreza(): array
 {
-    $TIPO_DESTREZA = [
+    return [
         'eleccion'  => ['vocabulario' => 1.0, 'lectura' => 0.5],
         'parejas'   => ['vocabulario' => 1.0],
         'emoji'     => ['vocabulario' => 1.0],
@@ -464,6 +509,29 @@ function ingles_radar(int $alumnoId): array
         'escucha'   => ['escucha' => 1.0],
         'escribir'  => ['escritura' => 1.0, 'vocabulario' => 0.5],
     ];
+}
+
+/** Tipos de reto que sirven para practicar una destreza concreta. */
+function ingles_tipos_de(string $destreza): array
+{
+    $tipos = [];
+    foreach (ingles_tipo_destreza() as $tipo => $pesos) {
+        if (isset($pesos[$destreza])) {
+            $tipos[] = $tipo;
+        }
+    }
+    return $tipos;
+}
+
+/**
+ * Radar de destrezas del alumno: cada tipo de reto puntúa en una o dos
+ * destrezas del idioma. Las lecciones recientes pesan más, así el radar
+ * refleja el nivel actual y se mueve con cada lección que juega.
+ * Devuelve [clave => ['nombre', 'pct' (null = sin datos), 'n']].
+ */
+function ingles_radar(int $alumnoId): array
+{
+    $TIPO_DESTREZA = ingles_tipo_destreza();
     $radar = [];
     foreach (ingles_destrezas() as $k => $nombre) {
         $radar[$k] = ['nombre' => $nombre, 'ok' => 0.0, 'peso' => 0.0, 'n' => 0, 'pct' => null];
@@ -646,9 +714,10 @@ function ai_generar(string $tema, int $edad = 12): string
  * $evitar: contenidos ya usados que no deben repetirse.
  * $temas: temas preferidos que fija el mentor (separados por comas); vacío = variados.
  * $material: contenido extraído de los PDF del mentor; si existe, los ejercicios se basan en él.
+ * $tipos: si la tarea evalúa una destreza concreta, solo se piden estos tipos de reto.
  * Devuelve la lista de ejercicios sin validar; lanza RuntimeException si falla.
  */
-function ai_ingles(int $edad, int $cantidad, array $evitar = [], string $temas = '', string $material = ''): array
+function ai_ingles(int $edad, int $cantidad, array $evitar = [], string $temas = '', string $material = '', array $tipos = []): array
 {
     if ($temas !== '') {
         $lista = array_values(array_filter(array_map('trim', explode(',', $temas))));
@@ -666,8 +735,10 @@ function ai_ingles(int $edad, int $cantidad, array $evitar = [], string $temas =
         $prompt .= "IMPORTANTE: basa el vocabulario y las estructuras de los ejercicios en este material "
             . "que ha preparado su mentor (los temas anteriores son secundarios):\n---\n$material\n---\n";
     }
-    $prompt .= ''
-        . "Hay 8 tipos de ejercicio; usa al menos 6 distintos en cada lección y mézclalos. Formato exacto:\n"
+    $prompt .= ($tipos
+            ? 'IMPORTANTE: esta tarea evalúa una destreza concreta; usa SOLO estos tipos de ejercicio: '
+                . implode(', ', $tipos) . ". Formato exacto:\n"
+            : "Hay 8 tipos de ejercicio; usa al menos 6 distintos en cada lección y mézclalos. Formato exacto:\n")
         . '- {"tipo":"eleccion","pregunta":"How do you say «perro» in English?","opciones":["dog","cat","bird","fish"],"correcta":0}' . "\n"
         . '- {"tipo":"hueco","frase":"I ___ football on Sundays.","opciones":["play","plays","playing","played"],"correcta":0}' . "\n"
         . '- {"tipo":"ordenar","es":"Me gusta la pizza","palabras":["I","like","pizza"],"solucion":"I like pizza"}' . "\n"

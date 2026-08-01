@@ -47,6 +47,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             db()->prepare('UPDATE alumnos SET padre_id=? WHERE id=?')->execute([$padreId, post_int('alumno_id', 1)]);
             flash('Familia actualizada.');
             redirect('admin/usuarios.php');
+        } elseif ($accion === 'del_usuario') {
+            $uid = post_int('usuario_id', 1);
+            if ($uid === (int) $user['id']) {
+                throw new RuntimeException('No puedes eliminar tu propia cuenta.');
+            }
+            $st = db()->prepare('SELECT * FROM usuarios WHERE id=?');
+            $st->execute([$uid]);
+            $u = $st->fetch();
+            if (!$u) {
+                throw new RuntimeException('Usuario no encontrado.');
+            }
+            if ($u['rol'] === 'alumno') {
+                $a = alumno_por_usuario($uid);
+                if ($a) {
+                    // Tablas sin clave foránea: se limpian a mano antes de borrar.
+                    foreach (['objetivos', 'habitos', 'recompensas', 'skillcoins_log', 'conexiones', 'materias', 'notificaciones'] as $t) {
+                        db()->prepare("DELETE FROM $t WHERE alumno_id=?")->execute([(int) $a['id']]);
+                    }
+                }
+            } elseif ($u['rol'] === 'mentor') {
+                db()->prepare('UPDATE alumnos SET mentor_id=NULL WHERE mentor_id=?')->execute([$uid]);
+                db()->prepare('DELETE FROM notificaciones WHERE mentor_id=?')->execute([$uid]);
+            } elseif ($u['rol'] === 'padre') {
+                db()->prepare('UPDATE alumnos SET padre_id=NULL WHERE padre_id=?')->execute([$uid]);
+            }
+            // Borra el usuario; la ficha de alumno y las tablas con clave foránea caen en cascada.
+            db()->prepare('DELETE FROM usuarios WHERE id=?')->execute([$uid]);
+            flash(ucfirst($u['rol']) . ' «' . $u['nombre'] . '» eliminado.');
+            redirect('admin/usuarios.php');
         }
     } catch (RuntimeException $ex) {
         $errores[] = $ex->getMessage();
@@ -56,7 +85,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $mentores = db()->query("SELECT * FROM usuarios WHERE rol='mentor' ORDER BY nombre")->fetchAll();
 $padres   = db()->query("SELECT * FROM usuarios WHERE rol='padre' ORDER BY nombre")->fetchAll();
 $alumnos  = db()->query(
-    "SELECT a.id, a.mentor_id, a.padre_id, a.edad, u.nombre, u.username
+    "SELECT a.id, a.mentor_id, a.padre_id, a.edad, u.id AS usuario_id, u.nombre, u.username
      FROM alumnos a JOIN usuarios u ON u.id=a.usuario_id ORDER BY u.nombre"
 )->fetchAll();
 
@@ -117,7 +146,7 @@ render_header('Usuarios', 'panel', '', nav_admin('usuarios'));
 <div class="card">
     <h3>Asignar mentor y familia a cada alumno</h3>
     <table class="tabla">
-        <thead><tr><th>Alumno</th><th>Usuario</th><th>Mentor</th><th>Familia</th></tr></thead>
+        <thead><tr><th>Alumno</th><th>Usuario</th><th>Mentor</th><th>Familia</th><th></th></tr></thead>
         <tbody>
         <?php foreach ($alumnos as $a): ?>
             <tr>
@@ -151,20 +180,57 @@ render_header('Usuarios', 'panel', '', nav_admin('usuarios'));
                         </select>
                     </form>
                 </td>
+                <td class="right">
+                    <form method="post" class="inline"
+                          onsubmit="return confirm('¿Eliminar definitivamente a <?= e($a['nombre']) ?> y todos sus datos?')">
+                        <input type="hidden" name="accion" value="del_usuario">
+                        <input type="hidden" name="usuario_id" value="<?= (int)$a['usuario_id'] ?>">
+                        <button class="btn-x" title="Eliminar alumno">✕</button>
+                    </form>
+                </td>
             </tr>
         <?php endforeach; ?>
         </tbody>
     </table>
 </div>
 
-<div class="card">
-    <h3>Mentores</h3>
-    <ul class="editlist">
-        <?php foreach ($mentores as $m):
-            $n = (int) db()->query("SELECT COUNT(*) FROM alumnos WHERE mentor_id=" . (int)$m['id'])->fetchColumn(); ?>
-            <li><span><?= e($m['nombre']) ?> <small class="muted">@<?= e($m['username']) ?> · <?= $n ?> alumno(s)</small></span></li>
-        <?php endforeach; ?>
-        <?php if (!$mentores): ?><li class="muted">Aún no hay mentores.</li><?php endif; ?>
-    </ul>
+<div class="grid-2">
+    <div class="card">
+        <h3>Mentores</h3>
+        <ul class="editlist">
+            <?php foreach ($mentores as $m):
+                $n = (int) db()->query("SELECT COUNT(*) FROM alumnos WHERE mentor_id=" . (int)$m['id'])->fetchColumn(); ?>
+                <li>
+                    <span><?= e($m['nombre']) ?> <small class="muted">@<?= e($m['username']) ?> · <?= $n ?> alumno(s)</small></span>
+                    <form method="post" class="inline"
+                          onsubmit="return confirm('¿Eliminar al mentor <?= e($m['nombre']) ?>? Sus alumnos quedarán sin mentor.')">
+                        <input type="hidden" name="accion" value="del_usuario">
+                        <input type="hidden" name="usuario_id" value="<?= (int)$m['id'] ?>">
+                        <button class="btn-x" title="Eliminar mentor">✕</button>
+                    </form>
+                </li>
+            <?php endforeach; ?>
+            <?php if (!$mentores): ?><li class="muted">Aún no hay mentores.</li><?php endif; ?>
+        </ul>
+    </div>
+
+    <div class="card">
+        <h3>Familias</h3>
+        <ul class="editlist">
+            <?php foreach ($padres as $p):
+                $n = (int) db()->query("SELECT COUNT(*) FROM alumnos WHERE padre_id=" . (int)$p['id'])->fetchColumn(); ?>
+                <li>
+                    <span><?= e($p['nombre']) ?> <small class="muted">@<?= e($p['username']) ?> · <?= $n ?> hijo(s)</small></span>
+                    <form method="post" class="inline"
+                          onsubmit="return confirm('¿Eliminar la cuenta de familia de <?= e($p['nombre']) ?>?')">
+                        <input type="hidden" name="accion" value="del_usuario">
+                        <input type="hidden" name="usuario_id" value="<?= (int)$p['id'] ?>">
+                        <button class="btn-x" title="Eliminar cuenta de familia">✕</button>
+                    </form>
+                </li>
+            <?php endforeach; ?>
+            <?php if (!$padres): ?><li class="muted">Aún no hay cuentas de familia.</li><?php endif; ?>
+        </ul>
+    </div>
 </div>
 <?php render_footer(); ?>

@@ -1,12 +1,14 @@
 <?php
 /**
- * API del juego «Inglés de verano» (mini-juegos tipo Duolingo).
- *  - accion=nueva    → devuelve una lección de ejercicios variados según la
- *                      configuración del mentor (cantidad, temas, material PDF, tiempo).
- *                      Se generan con Gemini (diversos, sin repetir los ya vistos);
- *                      si no hay clave o la IA falla, se usa un banco local.
- *  - accion=terminar → suma los SkillCoins de la lección (según configuración,
- *                      con tope diario), guarda el detalle para el mentor y le avisa.
+ * API de las tareas de inglés (mini-retos tipo Duolingo).
+ *  - accion=nueva    → devuelve los ejercicios de una tarea según la configuración
+ *                      del mentor (cantidad, temas, material PDF, tiempo) y la
+ *                      destreza que evalúa la tarea. Se generan con Gemini
+ *                      (diversos, sin repetir los ya vistos); si no hay clave o
+ *                      la IA falla, se usa un banco local.
+ *  - accion=terminar → suma los SkillCoins (según configuración, con tope diario),
+ *                      guarda el resultado con la nota y el detalle de respuestas
+ *                      (lo ven el alumno y el mentor) y avisa al mentor.
  */
 require_once __DIR__ . '/../includes/functions.php';
 header('Content-Type: application/json; charset=utf-8');
@@ -180,6 +182,18 @@ function ingles_clave(array $e): string
 
 $accion = $_POST['accion'] ?? '';
 
+// Tarea a la que pertenece la lección (siempre debe ser una tarea del alumno).
+$tarea = null;
+$tareaId = (int) ($_POST['tarea'] ?? 0);
+if ($tareaId > 0) {
+    ingles_tablas();
+    $st = db()->prepare('SELECT * FROM ingles_tareas WHERE id = ? AND alumno_id = ?');
+    $st->execute([$tareaId, $aid]);
+    $tarea = $st->fetch() ?: null;
+}
+// Tipos de reto que evalúan la destreza de la tarea (vacío = todos).
+$tiposTarea = $tarea ? ingles_tipos_de($tarea['destreza']) : [];
+
 if ($accion === 'nueva') {
     $vistos = $_SESSION['ingles_vistos'] ?? [];
     $leccion = [];
@@ -189,8 +203,9 @@ if ($accion === 'nueva') {
     if (GEMINI_API_KEY) {
         try {
             $material = ingles_material_activo($aid);
-            foreach (ai_ingles((int) ($alumno['edad'] ?: 12), $cantidad, $vistos, $cfg['temas'], $material) as $e) {
-                if (is_array($e) && ($ok = ingles_valido($e))) {
+            foreach (ai_ingles((int) ($alumno['edad'] ?: 12), $cantidad, $vistos, $cfg['temas'], $material, $tiposTarea) as $e) {
+                if (is_array($e) && (!$tiposTarea || in_array($e['tipo'] ?? '', $tiposTarea, true))
+                    && ($ok = ingles_valido($e))) {
                     $leccion[] = $ok;
                 }
             }
@@ -202,6 +217,9 @@ if ($accion === 'nueva') {
 
     if (count($leccion) < $cantidad) {
         $banco = ingles_banco();
+        if ($tiposTarea) {
+            $banco = array_values(array_filter($banco, fn($e) => in_array($e['tipo'], $tiposTarea, true)));
+        }
         shuffle($banco);
         // Primero los que el alumno no ha visto hace poco.
         usort($banco, fn($a, $b) => (int) in_array(ingles_clave($a), $vistos, true) <=> (int) in_array(ingles_clave($b), $vistos, true));
@@ -242,7 +260,8 @@ if ($accion === 'nueva') {
     ]);
 
 } elseif ($accion === 'terminar') {
-    // Detalle de respuestas (para que el mentor vea patrones): [{tipo, clave, ok}, ...]
+    // Detalle de respuestas (lo revisan el alumno y el mentor):
+    // [{tipo, clave, ok, pregunta, respuesta, solucion}, ...]
     $tiposValidos = ['eleccion', 'hueco', 'ordenar', 'parejas', 'escucha', 'verdadero', 'escribir', 'emoji'];
     $detalle = [];
     $crudo = json_decode((string) ($_POST['detalle'] ?? ''), true);
@@ -250,9 +269,12 @@ if ($accion === 'nueva') {
         foreach (array_slice($crudo, 0, max(1, $cfg['ejercicios'])) as $d) {
             if (is_array($d) && in_array($d['tipo'] ?? '', $tiposValidos, true)) {
                 $detalle[] = [
-                    'tipo'  => $d['tipo'],
-                    'clave' => limpiar_texto($d['clave'] ?? '', 150),
-                    'ok'    => (bool) ($d['ok'] ?? false),
+                    'tipo'      => $d['tipo'],
+                    'clave'     => limpiar_texto($d['clave'] ?? '', 150),
+                    'ok'        => (bool) ($d['ok'] ?? false),
+                    'pregunta'  => limpiar_texto($d['pregunta'] ?? '', 200),
+                    'respuesta' => limpiar_texto($d['respuesta'] ?? '', 120),
+                    'solucion'  => limpiar_texto($d['solucion'] ?? '', 120),
                 ];
             }
         }
@@ -272,25 +294,28 @@ if ($accion === 'nueva') {
     $hoy = (int) $st->fetchColumn();
     $coins = max(0, min($aciertos * $cfg['coins_acierto'], $cfg['tope_diario'] - $hoy));
     if ($coins > 0) {
-        sc_add($aid, $coins, 'Inglés: lección de verano');
+        sc_add($aid, $coins, 'Inglés: ' . ($tarea ? $tarea['titulo'] : 'práctica'));
     }
+    $nota = nota_sobre_10($aciertos, $total);
 
-    // Guarda el resultado para el panel del mentor.
+    // Guarda el resultado (nota y respuestas) para el alumno y el mentor.
     ingles_tablas();
-    db()->prepare('INSERT INTO ingles_resultados (alumno_id, aciertos, total, coins, detalle) VALUES (?,?,?,?,?)')
-        ->execute([$aid, $aciertos, $total, $coins, $detalle ? json_encode($detalle, JSON_UNESCAPED_UNICODE) : null]);
+    db()->prepare('INSERT INTO ingles_resultados (alumno_id, tarea_id, aciertos, total, coins, detalle) VALUES (?,?,?,?,?,?)')
+        ->execute([$aid, $tarea ? (int) $tarea['id'] : null, $aciertos, $total, $coins,
+            $detalle ? json_encode($detalle, JSON_UNESCAPED_UNICODE) : null]);
 
-    // Avisa al mentor de la lección terminada.
+    // Avisa al mentor de la tarea terminada.
     if (!empty($alumno['mentor_id'])) {
+        $que = $tarea ? 'la tarea de inglés «' . $tarea['titulo'] . '»' : 'una práctica de inglés';
         db()->prepare('INSERT INTO notificaciones (mentor_id, alumno_id, mensaje) VALUES (?,?,?)')
             ->execute([
                 (int) $alumno['mentor_id'],
                 $aid,
-                '🇬🇧 ' . $user['nombre'] . " terminó una lección de inglés: $aciertos/$total aciertos (+$coins 🪙)",
+                '🇬🇧 ' . $user['nombre'] . " completó $que: $aciertos/$total · nota " . nota_txt($nota) . " (+$coins 🪙)",
             ]);
     }
 
-    echo json_encode(['coins' => $coins, 'hoy' => $hoy + $coins, 'tope' => $cfg['tope_diario']]);
+    echo json_encode(['coins' => $coins, 'hoy' => $hoy + $coins, 'tope' => $cfg['tope_diario'], 'nota' => $nota]);
 
 } else {
     http_response_code(400);

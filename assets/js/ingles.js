@@ -1,4 +1,4 @@
-/* Método Kiru — Summer English: mini-juegos tipo Duolingo (interfaz en inglés sencillo) */
+/* Método Kiru — Tareas de inglés: mini-retos tipo Duolingo (interfaz en inglés sencillo) */
 (function () {
     if (!window.KIRU_INGLES) return;
 
@@ -6,10 +6,11 @@
     var pInicio = $('pantallaInicio'), pJuego = $('pantallaJuego'), pFin = $('pantallaFin');
     var cont = $('ejercicio'), barra = $('inglesBarra'), paso = $('inglesPaso');
     var feedback = $('inglesFeedback'), btnAccion = $('inglesAccion'), pie = $('inglesPie');
-    var btnEmpezar = $('inglesEmpezar'), btnOtra = $('inglesOtra'), chipRacha = $('inglesRacha');
+    var btnOtra = $('inglesOtra'), chipRacha = $('inglesRacha');
     var chipTimer = $('inglesTimer');
 
     var ejercicios = [], idx = 0, aciertos = 0, racha = 0;
+    var tareaActual = 0;         // id de la tarea del mentor que se está haciendo
     var evaluar = null;          // función del ejercicio actual → {ok, solucion}
     var resuelto = false;
     var redibujarParejas = null; // para redibujar las cuerdas al girar el móvil
@@ -140,7 +141,7 @@
         elemento.classList.add(clase);
     }
 
-    /* ---------- Detalle para el mentor ---------- */
+    /* ---------- Detalle de respuestas (lo revisan el alumno y el mentor) ---------- */
     /* Identifica el ejercicio igual que el servidor (para ver patrones de fallos). */
     function claveEj(e) {
         if (e.tipo === 'eleccion') return e.pregunta;
@@ -153,9 +154,26 @@
         if (e.tipo === 'emoji') return e.emoji;
         return '';
     }
-    function registrar(ok) {
+    /* Enunciado y solución de cada reto, para la revisión posterior. */
+    function infoEj(e) {
+        if (e.tipo === 'eleccion') return { pregunta: e.pregunta, solucion: e.opciones[e.correcta] };
+        if (e.tipo === 'hueco') return { pregunta: e.frase, solucion: e.opciones[e.correcta] };
+        if (e.tipo === 'ordenar') return { pregunta: 'In English: «' + e.es + '»', solucion: e.solucion };
+        if (e.tipo === 'escucha') return { pregunta: 'Listen: «' + e.texto + '»', solucion: e.texto };
+        if (e.tipo === 'parejas') return { pregunta: 'Match: ' + e.pares.map(function (p) { return p.es + ' – ' + p.en; }).join(', '), solucion: '' };
+        if (e.tipo === 'verdadero') return { pregunta: e.afirmacion, solucion: e.correcta ? 'True' : 'False' };
+        if (e.tipo === 'escribir') return { pregunta: e.pregunta, solucion: e.solucion };
+        if (e.tipo === 'emoji') return { pregunta: 'What is ' + e.emoji + '?', solucion: e.opciones[e.correcta] };
+        return { pregunta: '', solucion: '' };
+    }
+    function registrar(ok, respuesta) {
         var e = ejercicios[idx];
-        if (e) detalle.push({ tipo: e.tipo, clave: claveEj(e), ok: !!ok });
+        if (!e) return;
+        var info = infoEj(e);
+        detalle.push({
+            tipo: e.tipo, clave: claveEj(e), ok: !!ok,
+            pregunta: info.pregunta, respuesta: respuesta || '', solucion: info.solucion
+        });
     }
 
     /* ---------- Temporizador por ejercicio (si el mentor lo activa) ---------- */
@@ -184,7 +202,7 @@
     function tiempoAgotado() {
         if (resuelto) return;
         resuelto = true;
-        registrar(false);
+        registrar(false, "⏰ Time's up");
         racha = 0;
         pintarRacha();
         feedback.innerHTML = '';
@@ -229,7 +247,7 @@
         evaluar = function () {
             grid.children[correcta].classList.add('ok');
             if (sel !== correcta) grid.children[sel].classList.add('mal');
-            return { ok: sel === correcta, solucion: opciones[correcta] };
+            return { ok: sel === correcta, solucion: opciones[correcta], respuesta: sel >= 0 ? opciones[sel] : '' };
         };
     }
 
@@ -258,7 +276,7 @@
         });
         evaluar = function () {
             var frase = Array.prototype.map.call(zona.children, function (c) { return c.textContent; }).join(' ');
-            return { ok: normalizar(frase) === normalizar(e.solucion), solucion: e.solucion };
+            return { ok: normalizar(frase) === normalizar(e.solucion), solucion: e.solucion, respuesta: frase };
         };
     }
 
@@ -356,7 +374,10 @@
             colEn.appendChild(b);
         });
         evaluar = function () {
-            return { ok: fallos === 0, parejas: true, fallos: fallos };
+            return {
+                ok: fallos === 0, parejas: true, fallos: fallos,
+                respuesta: fallos === 0 ? 'All pairs, no mistakes' : fallos + ' mistake(s)'
+            };
         };
     }
 
@@ -387,7 +408,7 @@
             var bien = normalizar(input.value) === normalizar(e.solucion);
             input.classList.add(bien ? 'ok' : 'mal');
             input.disabled = true;
-            return { ok: bien, solucion: e.solucion };
+            return { ok: bien, solucion: e.solucion, respuesta: input.value };
         };
     }
 
@@ -474,7 +495,7 @@
         resuelto = true;
         pararTimer();
         var r = evaluar();
-        registrar(r.ok);
+        registrar(r.ok, r.respuesta);
         if (r.ok) { aciertos++; racha++; } else { racha = 0; }
         pintarRacha();
 
@@ -516,6 +537,7 @@
         barra.style.width = '100%';
         var fd = new FormData();
         fd.append('accion', 'terminar');
+        fd.append('tarea', tareaActual);
         fd.append('aciertos', aciertos);
         fd.append('detalle', JSON.stringify(detalle));
         fetch(KIRU_INGLES.api, { method: 'POST', body: fd })
@@ -530,19 +552,20 @@
                 sonidoFinal();
                 confeti(pct >= 0.6 ? 40 : 16);
 
-                var detalle = $('finDetalle');
+                var caja = $('finDetalle');
+                var notaTxt = (typeof d.nota === 'number') ? 'Your mark: ' + String(d.nota).replace('.', ',') + '/10' : '';
                 if (typeof d.coins === 'number' && d.coins > 0) {
                     // Contador animado de monedas.
                     var v = 0;
                     var timer = setInterval(function () {
                         v++;
-                        detalle.textContent = 'You won +' + v + ' SkillCoins 🪙';
+                        caja.textContent = notaTxt + ' · You won +' + v + ' SkillCoins 🪙';
                         if (v >= d.coins) clearInterval(timer);
                     }, 700 / d.coins);
                 } else if (typeof d.coins === 'number') {
-                    detalle.textContent = "You have today's maximum of SkillCoins. Keep playing for fun!";
+                    caja.textContent = notaTxt + " · You have today's maximum of SkillCoins.";
                 } else {
-                    detalle.textContent = '';
+                    caja.textContent = notaTxt;
                 }
             });
     }
@@ -609,7 +632,7 @@
         var fill = el('div', 'ingles-carga-fill');
         pista.appendChild(fill);
         caja.appendChild(pista);
-        caja.appendChild(el('p', 'ingles-carga-txt', 'Getting your games ready… 🎲'));
+        caja.appendChild(el('p', 'ingles-carga-txt', 'Getting your task ready… 🎲'));
         boton.parentNode.insertBefore(caja, boton.nextSibling);
         return { caja: caja, fill: fill };
     }
@@ -636,6 +659,7 @@
         }
         var fd = new FormData();
         fd.append('accion', 'nueva');
+        fd.append('tarea', tareaActual);
         fetch(KIRU_INGLES.api, { method: 'POST', body: fd })
             .then(function (r) { return r.json(); })
             .then(function (d) {
@@ -666,10 +690,17 @@
             })
             .catch(function () {
                 quitarCarga();
-                alert('Oops! The lesson did not load. Try again!');
+                alert('Oops! The task did not load. Try again!');
             });
     }
 
-    if (btnEmpezar) btnEmpezar.addEventListener('click', function () { empezar(btnEmpezar); });
-    if (btnOtra) btnOtra.addEventListener('click', function () { empezar(btnOtra); });
+    // Cada tarea de la lista tiene su propio botón «Empezar» / «Repetir».
+    document.querySelectorAll('.tarea-empezar').forEach(function (b) {
+        b.addEventListener('click', function () {
+            tareaActual = parseInt(b.dataset.tarea, 10) || 0;
+            empezar(b);
+        });
+    });
+    // Al terminar se vuelve a la lista de tareas (con la nota y el estado al día).
+    if (btnOtra) btnOtra.addEventListener('click', function () { location.reload(); });
 })();

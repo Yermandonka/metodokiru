@@ -44,11 +44,15 @@ Stack: **PHP 8 + MySQL/MariaDB** (pensado para **XAMPP**). Sin dependencias exte
 - Pantalla de SkillCoins (total, semana, mes, faltan para el premio, histórico).
 - Estadísticas con gráficos (SkillCoins por semana/mes, racha, hábitos, objetivos).
 - Recompensas con barra de progreso.
-- **Summer English**: mini-juegos tipo Duolingo con 8 tipos de reto (traducir, completar, ordenar,
-  parejas con cuerdas, escucha, verdadero/falso, escribir y emoji), corrección instantánea,
-  mini-lecciones en inglés sencillo y toda la interfaz del juego en inglés.
-  Las lecciones se generan con IA (Gemini) para que no se repitan; sin clave usa un banco local.
-  Cada acierto da 1 SkillCoin (máx. 50/día). En móvil se juega a pantalla completa.
+- **Tareas de inglés**: lista de tareas creadas por el mentor (una por destreza evaluable:
+  vocabulario, gramática, comprensión, escucha y escritura), cada una con título, fecha de
+  entrega y estado (pendiente/completada). Los ejercicios son mini-retos tipo Duolingo con
+  8 tipos de reto (traducir, completar, ordenar, parejas con cuerdas, escucha, verdadero/falso,
+  escribir y emoji), corrección instantánea y mini-lecciones en inglés sencillo.
+  Al terminar, el alumno ve su **nota sobre 10** y puede revisar sus respuestas
+  (correctas e incorrectas, con la solución). Se generan con IA (Gemini) para que no se
+  repitan; sin clave usa un banco local. Cada acierto da 1 SkillCoin (máx. 50/día).
+  En móvil se hace a pantalla completa.
 - El alumno puede cambiar su animal (avatar) y su nombre de perfil desde la pantalla de inicio.
 
 **Mentor**
@@ -59,8 +63,12 @@ Stack: **PHP 8 + MySQL/MariaDB** (pensado para **XAMPP**). Sin dependencias exte
 
 **Administrador**
 - Resumen de la plataforma.
-- Crear mentores y alumnos, asignar alumnos a mentores.
+- Crear y **eliminar** mentores, alumnos y cuentas de familia; asignar alumnos a mentores.
 - Editar niveles/mundos y los umbrales de SkillCoins.
+
+**Familias (rol padre, solo lectura)**
+- Progreso de cada hijo: SkillCoins, racha, objetivos, objetivos de recompensa y
+  radar de destrezas de inglés.
 
 **Fase 2 (parcial):** Zona académica del mentor: activar materias y **generar teoría/ejercicios con IA**
 (requiere una clave gratuita de Google Gemini; ver abajo).
