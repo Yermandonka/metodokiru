@@ -27,8 +27,11 @@ function render_header(string $titulo, string $tema = 'panel', string $mundo = '
 <header class="topbar">
     <a class="brand" href="<?= url('index.php') ?>" title="Ir a la página principal">
         <span class="brand-logo">
-            <span class="brand-logo-kiru">KIRU</span>
-            <span class="brand-logo-sub">Mentoría a<br>domicilio</span>
+            <img class="brand-icono" src="<?= asset('assets/img/logo.svg') ?>" alt="Kiru">
+            <span class="brand-texto">
+                <span class="brand-logo-kiru">KIRU</span>
+                <span class="brand-logo-sub">Mentoría a<br>domicilio</span>
+            </span>
         </span>
     </a>
     <?php if ($nav): ?>

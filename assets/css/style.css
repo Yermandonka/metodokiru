@@ -58,7 +58,9 @@ code { background: #efe7d8; padding: 1px 6px; border-radius: 6px; font-size: .85
     border-bottom: 1px solid var(--linea); position: sticky; top: 0; z-index: 20;
 }
 .brand { display: flex; align-items: center; text-decoration: none; color: var(--marron-osc); }
-.brand-logo { display: flex; flex-direction: column; align-items: center; gap: 2px; border: 1.5px solid currentColor; padding: 5px 13px 4px; }
+.brand-logo { display: flex; align-items: center; gap: 9px; }
+.brand-icono { width: 36px; height: 36px; border-radius: 9px; display: block; }
+.brand-texto { display: flex; flex-direction: column; align-items: center; gap: 2px; }
 .brand-logo-kiru {
     font-family: 'Italiana', var(--serif); font-weight: 400; font-size: 19px; line-height: 1;
     letter-spacing: 1px; text-indent: 1px; /* compensa el hueco final del letter-spacing */
@@ -230,9 +232,10 @@ code { background: #efe7d8; padding: 1px 6px; border-radius: 6px; font-size: .85
 }
 .login-logo {
     display: inline-flex; flex-direction: column; align-items: center; gap: 5px;
-    margin: 0 auto 16px; padding: 12px 24px 10px; border: 2px solid var(--marron-osc);
+    margin: 0 auto 16px;
     color: var(--marron-osc); text-decoration: none; transition: transform .2s;
 }
+.login-logo-icono { width: 76px; height: 76px; border-radius: 18px; margin-bottom: 6px; }
 .login-logo .brand-logo-kiru { font-size: 36px; letter-spacing: 2.5px; text-indent: 2.5px; }
 .login-logo .brand-logo-sub { font-size: 8px; letter-spacing: 2.6px; text-indent: 2.6px; }
 .login-logo:hover { transform: scale(1.06); }
@@ -400,7 +403,8 @@ img { max-width: 100%; height: auto; }
 @media (max-width: 640px) {
     /* Barra superior: marca + usuario en la primera fila; navegación deslizable debajo */
     .topbar { flex-wrap: wrap; gap: 8px 12px; padding: 10px 14px; }
-    .brand-logo { padding: 3px 8px 2px; gap: 1px; }
+    .brand-logo { gap: 6px; }
+    .brand-icono { width: 28px; height: 28px; border-radius: 7px; }
     .brand-logo-kiru { font-size: 12px; letter-spacing: 1px; text-indent: 1px; }
     .brand-logo-sub { font-size: 4px; letter-spacing: 1px; text-indent: 1px; }    .topbar-user { margin-left: auto; gap: 8px; }
     .uname { display: none; }

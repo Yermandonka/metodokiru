@@ -134,11 +134,22 @@ h1{
 
 .brand-logo{
   display:flex;
+  align-items:center;
+  gap:10px;
+}
+
+.brand-icono{
+  width:42px;
+  height:42px;
+  border-radius:10px;
+  display:block;
+}
+
+.brand-texto{
+  display:flex;
   flex-direction:column;
   align-items:center;
   gap:3px;
-  border:1.5px solid currentColor;
-  padding:7px 16px 6px;
 }
 
 .brand-logo-kiru{
@@ -832,7 +843,13 @@ a.family-card:hover{
     font-size:15px;
   }
 
-  .brand-logo{ padding:5px 12px 4px; }
+  .brand-logo{ gap:8px; }
+
+  .brand-icono{
+    width:34px;
+    height:34px;
+    border-radius:8px;
+  }
 
   .brand-logo-kiru{
     font-size:19px;
