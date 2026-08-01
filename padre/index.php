@@ -92,21 +92,29 @@ render_header('Familia', 'panel', '', [['Mis hijos', 'padre/index.php', true]]);
         </div>
 
         <?php if ($recompensas): ?>
-        <h4 class="muted" style="margin:14px 0 8px">Objetivos de recompensa</h4>
+        <h4 class="muted" style="margin:16px 0 8px">🎁 Objetivos de recompensa</h4>
         <div class="reward-grid">
             <?php foreach ($recompensas as $r):
-                $faltan = max(0, (int)$r['costo'] - $scTotal);
-                $pct = min(100, round($scTotal / max(1, (int)$r['costo']) * 100)); ?>
-                <div class="reward">
-                    <div class="reward-title">🎁 <?= e($r['titulo']) ?> <small class="muted">(<?= (int)$r['costo'] ?> 🪙)</small></div>
-                    <div class="progress"><div class="progress-fill gold" style="width:<?= $pct ?>%"></div></div>
-                    <?php if ($r['conseguida']): ?>
-                        <small class="ready">¡Conseguida! 🎉</small>
-                    <?php elseif ($faltan > 0): ?>
-                        <small>Le faltan <strong><?= $faltan ?></strong> SkillCoins</small>
-                    <?php else: ?>
-                        <small class="ready">¡Ya puede reclamarla!</small>
-                    <?php endif; ?>
+                $costo  = max(1, (int) $r['costo']);
+                $faltan = max(0, $costo - $scTotal);
+                $pct    = $r['conseguida'] ? 100 : min(100, round($scTotal / $costo * 100)); ?>
+                <div class="padre-reward <?= $r['conseguida'] ? 'won' : '' ?>">
+                    <div class="padre-reward-ico"><?= $r['conseguida'] ? '🏆' : '🎁' ?></div>
+                    <div class="padre-reward-body">
+                        <div class="reward-title"><?= e($r['titulo']) ?></div>
+                        <div class="padre-reward-meta">
+                            <strong><?= min($scTotal, (int) $r['costo']) ?></strong> de <strong><?= (int) $r['costo'] ?></strong> 🪙
+                            · <?= $pct ?> %
+                        </div>
+                        <div class="progress"><div class="progress-fill gold" style="width:<?= $pct ?>%"></div></div>
+                        <?php if ($r['conseguida']): ?>
+                            <small class="ready">¡Conseguida! 🎉</small>
+                        <?php elseif ($faltan > 0): ?>
+                            <small class="muted">Le faltan <strong><?= $faltan ?></strong> SkillCoins</small>
+                        <?php else: ?>
+                            <small class="ready">¡Ya puede reclamarla!</small>
+                        <?php endif; ?>
+                    </div>
                 </div>
             <?php endforeach; ?>
         </div>

@@ -313,6 +313,22 @@ code { background: #efe7d8; padding: 1px 6px; border-radius: 6px; font-size: .85
 .reward-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }
 .reward-card.won { outline: 2px solid var(--dorado); }
 
+/* ---------- Recompensas en el área de familias ---------- */
+.padre-reward {
+    display: flex; gap: 12px; align-items: flex-start;
+    background: var(--crema); border: 1px solid var(--linea);
+    border-radius: 14px; padding: 14px 16px;
+}
+.padre-reward-ico {
+    flex-shrink: 0; width: 46px; height: 46px; display: grid; place-items: center;
+    font-size: 1.6rem; background: #f6ead0; border-radius: 12px;
+}
+.padre-reward-body { flex: 1; min-width: 0; }
+.padre-reward .reward-title { margin-bottom: 2px; }
+.padre-reward-meta { font-size: .82rem; color: var(--muted); }
+.padre-reward-meta strong { color: var(--marron-osc); }
+.padre-reward.won { border-color: var(--dorado); background: #fdf6e3; }
+
 /* =========================================================
    CONTENIDO IA (Markdown) + herramientas
    ========================================================= */
