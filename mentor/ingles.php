@@ -34,14 +34,19 @@ if ($alumno && $_SERVER['REQUEST_METHOD'] === 'POST') {
     $accion = $_POST['accion'] ?? '';
     try {
         if ($accion === 'add_tarea') {
-            $titulo = post_texto('titulo', 100);
+            $titulo = post_texto('titulo', 80);
             if ($titulo === '') {
                 throw new RuntimeException('La tarea necesita un título.');
             }
-            $destreza = post_opcion('destreza', array_keys(ingles_destrezas()), 'vocabulario');
-            db()->prepare('INSERT INTO ingles_tareas (alumno_id, titulo, destreza, fecha_entrega) VALUES (?,?,?,?)')
-                ->execute([$aid, $titulo, $destreza, fecha_o_null($_POST['fecha_entrega'] ?? null)]);
-            flash('Tarea «' . $titulo . '» creada.');
+            // La tarea se crea directamente en las 5 áreas: una por destreza.
+            $fecha = fecha_o_null($_POST['fecha_entrega'] ?? null);
+            $st = db()->prepare('INSERT INTO ingles_tareas (alumno_id, titulo, destreza, fecha_entrega) VALUES (?,?,?,?)');
+            foreach (ingles_destrezas() as $clave => $nombre) {
+                // El nombre lleva un emoji delante («📚 Vocabulario»): se quita para el título.
+                $limpio = trim(preg_replace('/^[^\p{L}]+/u', '', $nombre));
+                $st->execute([$aid, $titulo . ' · ' . $limpio, $clave, $fecha]);
+            }
+            flash('Tarea «' . $titulo . '» creada en las ' . count(ingles_destrezas()) . ' áreas.');
             redirect('mentor/ingles.php?id=' . $aid);
 
         } elseif ($accion === 'del_tarea') {
@@ -190,18 +195,13 @@ render_header('Inglés', 'panel', '', $nav);
     <form method="post" class="form" style="margin-top:14px">
         <input type="hidden" name="accion" value="add_tarea">
         <input type="hidden" name="alumno_id" value="<?= $aid ?>">
-        <label>Título <input type="text" name="titulo" placeholder="Ej: Vocabulario de la comida" required></label>
+        <p class="muted" style="margin:0 0 10px">Al añadirla se crea directamente en las <?= count($destrezas) ?> áreas:
+            una tarea por destreza (vocabulario, gramática, comprensión, escucha y escritura).</p>
         <div class="row">
-            <label>Destreza
-                <select name="destreza">
-                    <?php foreach ($destrezas as $clave => $nombre): ?>
-                        <option value="<?= $clave ?>"><?= e($nombre) ?></option>
-                    <?php endforeach; ?>
-                </select>
-            </label>
+            <label>Título <input type="text" name="titulo" placeholder="Ej: Semana del 4 de agosto" required></label>
             <label>Fecha de entrega <input type="date" name="fecha_entrega"></label>
         </div>
-        <button class="btn-sm">Añadir tarea</button>
+        <button class="btn-sm">Añadir tarea en las <?= count($destrezas) ?> áreas</button>
     </form>
 </div>
 
