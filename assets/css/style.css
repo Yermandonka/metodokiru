@@ -457,8 +457,15 @@ img { max-width: 100%; height: auto; }
 .tarea-cab { display: flex; justify-content: space-between; align-items: flex-start; gap: 14px; flex-wrap: wrap; }
 .tarea-cab h3 { margin-bottom: 6px; }
 .tarea-acciones { display: flex; gap: 8px; align-items: center; flex-shrink: 0; }
-.tarea-hecha { border-left: 5px solid #58cc02; }
-.tag.tag-completada { background: #58cc02; color: #fff; }
+/* Halo de estado: verde si está completada, naranja-amarillento si está pendiente */
+.tarea-hecha {
+    border-left: 5px solid #58cc02;
+    box-shadow: 0 0 0 2px rgba(88, 204, 2, .5), 0 0 14px rgba(88, 204, 2, .45);
+}
+.tarea-pendiente {
+    border-left: 5px solid #ffb020;
+    box-shadow: 0 0 0 2px rgba(255, 176, 32, .5), 0 0 14px rgba(255, 176, 32, .45);
+}
 /* Nota bien grande en las tareas completadas */
 .tarea-nota {
     text-align: center; min-width: 82px; padding: 8px 14px;

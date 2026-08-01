@@ -44,7 +44,7 @@ render_header('Inglés', 'alumno', $mundo, nav_alumno('ingles'));
         $atrasada = !$hecha && $t['fecha_entrega'] && $t['fecha_entrega'] < $hoy;
         $det      = $hecha ? (array) json_decode((string) $t['detalle'], true) : [];
     ?>
-    <div class="card tarea <?= $hecha ? 'tarea-hecha' : '' ?>">
+    <div class="card tarea <?= $hecha ? 'tarea-hecha' : 'tarea-pendiente' ?>">
         <div class="tarea-cab">
             <div>
                 <h3><?= e($t['titulo']) ?></h3>
@@ -55,7 +55,7 @@ render_header('Inglés', 'alumno', $mundo, nav_alumno('ingles'));
                             <?= e(date('d/m/Y', strtotime($t['fecha_entrega']))) ?><?= $atrasada ? ' · ¡atrasada!' : '' ?></span>
                     <?php endif; ?>
                     <?php if ($hecha): ?>
-                        <span class="tag tag-completada">✅ Completada</span>
+                        <span class="tag nivel">✅ Completada</span>
                     <?php else: ?>
                         <span class="tag prio-media">⬜ Pendiente</span>
                     <?php endif; ?>
